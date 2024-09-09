@@ -1,0 +1,16 @@
+.banner-container {
+    width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  
+  .banner-image {
+    width: 100%; /* Hoặc giá trị cụ thể như width: 80%; */
+    max-width: 1%; /* Đảm bảo ảnh không vượt quá kích thước container */
+    height: auto; /* Tự động điều chỉnh chiều cao để giữ tỷ lệ */
+    object-fit: cover; /* Giữ tỷ lệ ảnh và cắt phần thừa nếu kích thước không phù hợp */
+  }
+  
+  
+
+  

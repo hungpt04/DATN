@@ -5,7 +5,14 @@ body {
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-family: 'poppins';
+    font-family: "Playfair Display", serif;
+     
+    
+    /* Máy 15.6 inch thì xóa đoạn này */
+    transform: scale(0.67); /* Giảm kích thước xuống 67% */
+    transform-origin: top left; /* Giữ nội dung căn chỉnh từ góc trên trái */
+    width: 150%; /* Đảm bảo không bị cắt nội dung ở phía bên phải */
+    overflow-x: hidden; /* Để tránh cuộn ngang */
   }
   
   code {
