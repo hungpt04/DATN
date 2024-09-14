@@ -80,3 +80,35 @@
     background: red;
     color: white;
 }
+
+.nav-menu a {
+    text-decoration: none; /* Loại bỏ gạch chân */
+    color: #292929; /* Màu mặc định của liên kết */
+}
+
+.nav-menu a:visited {
+    color: #292929; /* Màu sau khi đã thăm */
+}
+
+.nav-menu a:hover {
+    color: #2f19ae; /* Màu khi di chuột qua */
+}
+
+.nav-menu a:active {
+    color: red; /* Màu khi nhấn vào */
+}
+
+.nav-menu li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 10px 0;
+}
+
+.nav-menu li.active a {
+    color: red; /* Màu cho liên kết khi đang được chọn */
+    border-bottom: 3px solid red; /* Đổi màu của đường dưới */
+}

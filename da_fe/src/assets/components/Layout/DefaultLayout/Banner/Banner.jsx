@@ -3,10 +3,11 @@ import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
 
-import banner1 from '../Assets/banner1.webp';
-import banner2 from '../Assets/banner2.webp';
-import banner3 from '../Assets/banner3.webp';
-import banner4 from '../Assets/banner4.webp';
+import banner1 from '../../../Assets/banner1.webp';
+import banner2 from '../../../Assets/banner2.webp';
+import banner3 from '../../../Assets/banner3.webp';
+import banner4 from '../../../Assets/banner4.webp';
+
 
 
 const Banner = () => {
