@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/api")
+@RequestMapping("/api/sanpham")
 public class SanPhamController {
     @Autowired
     private SanPhamService sanPhamService;
