@@ -10,10 +10,10 @@ body {
      
     
     /* Máy 15.6 inch thì xóa đoạn này */
-    /* transform: scale(0.67); 
+    transform: scale(0.67); 
     transform-origin: top left; 
     width: 150%; 
-    overflow-x: hidden;  */
+    overflow-x: hidden; 
 
   }
   
