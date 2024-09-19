@@ -1,9 +1,9 @@
 import Navbar from './Navbar/Navbar';
-
+import './DefaultLayout.css';
 
 function DefaultLayout({ children }) {
     return (
-        <div>
+        <div className="DefaultLayout">
             <Navbar />
             <div className="container">
                 <div className="content">{children}</div>

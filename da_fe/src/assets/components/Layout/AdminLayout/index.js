@@ -1,14 +1,15 @@
 import Sidebar from './Sidebar/Sidebar';
-
-
+import './AdminLayout.css';
 
 function AdminLayout({ children }) {
     return (
-        <div style={{ width: "100vw", height: "100vh"}}>
-            <Sidebar/>
-            {/* <div className="container">
-                <div className="content">{children}</div>
-            </div> */}
+        <div>
+            <Sidebar />
+            <div className="container-sidebar">
+                <div className="content-sidebar">
+                    {children}
+                </div>
+            </div>
         </div>
     );
 }

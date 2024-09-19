@@ -2,6 +2,7 @@
 
 import AdminLayout from "../assets/components/Layout/AdminLayout";
 import Admin from "../pages/admin";
+import Brand from "../pages/admin/Brand";
 import Contact from "../pages/users/Contact";
 import Home from "../pages/users/Home";
 import Intro from "../pages/users/Intro";
@@ -13,7 +14,8 @@ import Product from "../pages/users/Product";
 // Public routes
 const publicRoutes = [
     { path: '/', component: Home },
-    { path: 'admin', component: Admin, layout: AdminLayout },
+    { path: '/admin', component: Admin, layout: AdminLayout },
+    { path: '/quan-ly-san-pham/thuong-hieu', component: Brand, layout: AdminLayout },
     { path: '/san-pham', component: Product },
     { path: '/gioi-thieu', component: Intro },
     { path: '/tin-tuc', component: News },

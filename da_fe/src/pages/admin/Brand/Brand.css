@@ -1,0 +1,119 @@
+/* styles.css */
+
+.title-brand {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 35px;
+    font-family: "Roboto", sans-serif;
+}
+
+.container-brand {
+    width: 95%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+
+.button-group-brand {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.button-brand {
+    text-decoration: none;
+    color: rgb(240, 233, 233);
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: 1px solid #353535;
+    font-size: 15px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.add-button-brand {
+    background-color: #28a745; /* Green for Add */
+}
+
+.add-button-brand:hover {
+    background-color: #218838;
+}
+
+.table-brand {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+
+.table-brand th, .table-brand td {
+    padding: 7px;
+    font-family: "Roboto", sans-serif;
+    text-align: left; 
+   
+}
+
+.table-brand td {
+    background-color: #e3e2e2;
+    border: 1px solid #dee2e6;
+}
+
+
+.table-brand tr:nth-child(even) {
+    background-color: #f2f2f2; /* Light gray for alternate rows */
+}
+
+
+.update-button-brand {
+    background-color: #ffc107; /* Yellow for Update */
+    margin-right: 5px;
+}
+
+.update-button-brand:hover {
+    background-color: #e0a800;
+    cursor: pointer;
+}
+
+.delete-button-brand {
+    background-color: #dc3545; /* Red for Delete */
+}
+
+.delete-button-brand:hover {
+    background-color: #c82333;
+    cursor: pointer;
+}
+
+/* Phong cách cho các nút phân trang */
+.pagination {
+    margin-top: 220px;
+    text-align: center;
+}
+
+.page-button {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #333;
+    padding: 5px 10px;
+    margin: 0 5px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.page-button:hover {
+    background-color: #f0f0f0;
+}
+
+.page-button.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Định dạng cho nút Back và Next */
+.page-button {
+    font-size: 16px; /* Điều chỉnh kích thước font cho < và > */
+}
+
+.page-button:first-child,
+.page-button:last-child {
+    font-weight: bold; /* Làm đậm các nút Back và Next */
+}
