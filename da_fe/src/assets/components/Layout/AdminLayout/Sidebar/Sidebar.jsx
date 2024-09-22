@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './Sidebar.css';
 import { SidebarData } from './SidebarData';
 
 function Sidebar() {
@@ -10,28 +9,28 @@ function Sidebar() {
     };
 
     return (
-        <div className="Sidebar">
-            <ul className='SidebarList'>
+        <div className="h-screen w-[250px] bg-gray-800 fixed top-0 left-0 transition-all duration-300 shadow-lg overflow-auto pt-5">
+            <ul className="list-none p-0 m-0">
                 {SidebarData.map((item, index) => {
                     if (item.subItems) {
                         return (
                             <React.Fragment key={index}>
                                 <li 
-                                    className={`row ${subMenuOpen ? "show-submenu" : ""}`} 
+                                    className={`flex items-center h-[50px] pl-5 mb-2 text-gray-200 cursor-pointer rounded-lg transition-all duration-300 ${subMenuOpen ? "bg-gray-700 pl-6 text-teal-500" : "hover:bg-gray-700 hover:pl-6 hover:text-teal-500"}`} 
                                     onClick={toggleSubMenu} // Đổi trạng thái khi click
                                 >
-                                    <div id='icon'>{item.icon}</div>
-                                    <div id='title'>{item.title}</div>
-                                    <div className="toggle-icon">{subMenuOpen ? "▼" : "▶"}</div> {/* Icon mũi tên */}
+                                    <div className="flex-[20%] text-xl">{item.icon}</div>
+                                    <div className="flex-[80%] text-base">{item.title}</div>
+                                    <div className="ml-auto text-sm transition-transform duration-300">{subMenuOpen ? "▼" : "▶"}</div>
                                 </li>
-                                <ul className='SubMenu' style={{ display: subMenuOpen ? 'block' : 'none' }}>
+                                <ul className={`list-none p-0 m-0 ${subMenuOpen ? 'block' : 'hidden'}`}>
                                     {item.subItems.map((subItem, subIndex) => (
                                         <li 
-                                            className='sub-row' 
+                                            className="flex items-center h-[40px] pl-10 text-gray-400 cursor-pointer transition-all duration-300 hover:bg-gray-700 hover:text-teal-500" 
                                             key={subIndex}
                                             onClick={() => { window.location.pathname = subItem.link }}
                                         >
-                                            <div id='sub-title'>{subItem.title}</div>
+                                            <div className="text-sm">{subItem.title}</div>
                                         </li>
                                     ))}
                                 </ul>
@@ -40,12 +39,12 @@ function Sidebar() {
                     } else {
                         return (
                             <li 
-                                className='row'
+                                className="flex items-center h-[50px] pl-5 mb-2 text-gray-200 cursor-pointer rounded-lg transition-all duration-300 hover:bg-gray-700 hover:pl-6 hover:text-teal-500"
                                 key={index}
                                 onClick={() => { window.location.pathname = item.link }}
                             >
-                                <div id='icon'>{item.icon}</div>
-                                <div id='title'>{item.title}</div>
+                                <div className="flex-[20%] text-xl">{item.icon}</div>
+                                <div className="flex-[80%] text-base">{item.title}</div>
                             </li>
                         );
                     }

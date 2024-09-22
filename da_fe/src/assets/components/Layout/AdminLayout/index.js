@@ -1,17 +1,20 @@
 import Sidebar from './Sidebar/Sidebar';
-import './AdminLayout.css';
 
 function AdminLayout({ children }) {
-    return (
-        <div>
-            <Sidebar />
-            <div className="container-sidebar">
-                <div className="content-sidebar">
-                    {children}
-                </div>
-            </div>
+  return (
+    <div className="flex">
+      {/* Sidebar cố định với kích thước */}
+      <Sidebar />
+      {/* Nội dung chính thay đổi dựa vào hover của Sidebar */}
+      <div className="flex-1 transition-all duration-300 group-hover:ml-[300px] ml-[250px]">
+        <div className="p-6 bg-gray-100 min-h-screen">
+          <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-md">
+            {children}
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }
 
 export default AdminLayout;

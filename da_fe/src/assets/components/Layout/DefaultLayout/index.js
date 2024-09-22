@@ -1,5 +1,4 @@
 import Navbar from './Navbar/Navbar';
-import './DefaultLayout.css';
 
 function DefaultLayout({ children }) {
     return (
