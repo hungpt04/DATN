@@ -8,29 +8,41 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000") // Cho phép kết nối từ React
 @RequestMapping("/api/thuonghieu")
 public class ThuongHieuController {
+
     @Autowired
     private ThuongHieuService thuongHieuService;
 
+    // Lấy danh sách tất cả thương hiệu
     @GetMapping
     public List<ThuongHieu> getAllThuongHieu() {
         return thuongHieuService.getAllThuongHieu();
     }
 
-    @DeleteMapping("{id}")
-    public void deleteThuongHieu(@PathVariable int id) {
-        this.thuongHieuService.deleteThuongHieuById(id);
+    // Lấy thông tin thương hiệu theo id
+    @GetMapping("/{id}")
+    public ThuongHieu getThuongHieuById(@PathVariable int id) {
+        return thuongHieuService.getThuongHieuById(id);
     }
 
+    // Xóa thương hiệu theo id
+    @DeleteMapping("/{id}")
+    public void deleteThuongHieu(@PathVariable int id) {
+        thuongHieuService.deleteThuongHieuById(id);
+    }
+
+    // Thêm thương hiệu mới
     @PostMapping
     public ThuongHieu addThuongHieu(@RequestBody ThuongHieu thuongHieu) {
-        return this.thuongHieuService.saveOrUpdateThuongHieu(thuongHieu);
+        return thuongHieuService.saveOrUpdateThuongHieu(thuongHieu);
     }
 
-    @PutMapping
-    public ThuongHieu updateThuongHieu(@RequestBody ThuongHieu thuongHieu) {
-        return this.thuongHieuService.saveOrUpdateThuongHieu(thuongHieu);
+    // Cập nhật thông tin thương hiệu
+    @PutMapping("/{id}")
+    public ThuongHieu updateThuongHieu(@PathVariable int id, @RequestBody ThuongHieu thuongHieu) {
+        thuongHieu.setId(id);  // Đảm bảo ID trong body và path là giống nhau
+        return thuongHieuService.saveOrUpdateThuongHieu(thuongHieu);
     }
 }

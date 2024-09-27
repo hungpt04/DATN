@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import logo from "../../../Assets/logo.png";
+import logo from "../../../Assets/logob.png";
 import cart_icon from "../../../Assets/cart_icon.png";
 
 const Navbar = () => {
@@ -17,8 +17,6 @@ const Navbar = () => {
           onClick={() => setMenu("trangchu")}
           className="flex flex-col items-center gap-1 cursor-pointer py-3 text-[15px]"
         >
-          {" "}
-          {/* Đặt font-size 15px */}
           <Link to="/">Trang chủ</Link>
           {menu === "trangchu" && (
             <hr className="border-none w-full h-[3px] rounded-lg bg-[#2f19ae]" />
@@ -63,17 +61,18 @@ const Navbar = () => {
       </ul>
 
       <div className="flex items-center gap-10">
-    <button className="w-28 h-10 text-sm outline-none border border-gray-400 rounded-full text-gray-600 font-medium bg-white cursor-pointer active:bg-gray-100">
-        Login
-    </button>
-    <div className="relative">
-        <img src={cart_icon} alt="Cart Icon" className="w-8 h-8" />
-        <div className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-full text-xs bg-red-600 text-white transform translate-x-1/2 -translate-y-1/2">
+        <Link to="/login">
+          <button className="w-28 h-10 text-sm outline-none border border-gray-400 rounded-full text-gray-600 font-medium bg-white cursor-pointer active:bg-gray-100">
+            Login
+          </button>
+        </Link>
+        <div className="relative">
+          <img src={cart_icon} alt="Cart Icon" className="w-8 h-8" />
+          <div className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-full text-xs bg-red-600 text-white transform translate-x-1/2 -translate-y-1/2">
             0
+          </div>
         </div>
-    </div>
-</div>
-
+      </div>
     </div>
   );
 };

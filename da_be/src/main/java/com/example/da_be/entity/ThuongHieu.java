@@ -22,5 +22,5 @@ public class ThuongHieu {
     private String ten;
 
     @Column(name = "TrangThai")
-    private int trangthai;
+    private Integer trangThai;
 }

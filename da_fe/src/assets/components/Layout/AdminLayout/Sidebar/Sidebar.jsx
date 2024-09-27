@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { SidebarData } from './SidebarData';
 
 function Sidebar() {
@@ -21,16 +22,16 @@ function Sidebar() {
                                 >
                                     <div className="flex-[20%] text-xl">{item.icon}</div>
                                     <div className="flex-[80%] text-base">{item.title}</div>
-                                    <div className="ml-auto text-sm transition-transform duration-300">{subMenuOpen ? "▼" : "▶"}</div>
                                 </li>
                                 <ul className={`list-none p-0 m-0 ${subMenuOpen ? 'block' : 'hidden'}`}>
                                     {item.subItems.map((subItem, subIndex) => (
                                         <li 
                                             className="flex items-center h-[40px] pl-10 text-gray-400 cursor-pointer transition-all duration-300 hover:bg-gray-700 hover:text-teal-500" 
                                             key={subIndex}
-                                            onClick={() => { window.location.pathname = subItem.link }}
                                         >
-                                            <div className="text-sm">{subItem.title}</div>
+                                            <Link to={subItem.link} className="flex w-full h-full items-center">
+                                                <div className="text-sm">{subItem.title}</div>
+                                            </Link>
                                         </li>
                                     ))}
                                 </ul>
@@ -41,10 +42,11 @@ function Sidebar() {
                             <li 
                                 className="flex items-center h-[50px] pl-5 mb-2 text-gray-200 cursor-pointer rounded-lg transition-all duration-300 hover:bg-gray-700 hover:pl-6 hover:text-teal-500"
                                 key={index}
-                                onClick={() => { window.location.pathname = item.link }}
                             >
-                                <div className="flex-[20%] text-xl">{item.icon}</div>
-                                <div className="flex-[80%] text-base">{item.title}</div>
+                                <Link to={item.link} className="flex w-full h-full items-center">
+                                    <div className="flex-[20%] text-xl">{item.icon}</div>
+                                    <div className="flex-[80%] text-base">{item.title}</div>
+                                </Link>
                             </li>
                         );
                     }
