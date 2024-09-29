@@ -1,6 +1,6 @@
 // Pages
 
-import AdminLayout from "../assets/components/Layout/AdminLayout";
+import AdminLayout from "../components/Layout/AdminLayout";
 import Admin from "../pages/admin";
 import Brand from "../pages/admin/Brand";
 import Contact from "../pages/users/Contact";

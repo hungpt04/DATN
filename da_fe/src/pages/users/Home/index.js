@@ -1,12 +1,12 @@
-import Banner from "../../../assets/components/Layout/DefaultLayout/Banner/Banner";
+import Banner from '../../../components/Layout/DefaultLayout/Banner/Banner';
 
 function Home() {
-    return ( 
+    return (
         <div>
-            <Banner/>
+            <Banner />
             <h1>Home</h1>
         </div>
-     );
+    );
 }
 
 export default Home;

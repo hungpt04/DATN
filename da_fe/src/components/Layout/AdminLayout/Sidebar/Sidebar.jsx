@@ -16,8 +16,12 @@ function Sidebar() {
                     if (item.subItems) {
                         return (
                             <React.Fragment key={index}>
-                                <li 
-                                    className={`flex items-center h-[50px] pl-5 mb-2 text-gray-200 cursor-pointer rounded-lg transition-all duration-300 ${subMenuOpen ? "bg-gray-700 pl-6 text-teal-500" : "hover:bg-gray-700 hover:pl-6 hover:text-teal-500"}`} 
+                                <li
+                                    className={`flex items-center h-[50px] pl-5 mb-2 text-gray-200 cursor-pointer rounded-lg transition-all duration-300 ${
+                                        subMenuOpen
+                                            ? 'bg-gray-700 pl-6 text-teal-500'
+                                            : 'hover:bg-gray-700 hover:pl-6 hover:text-teal-500'
+                                    }`}
                                     onClick={toggleSubMenu} // Đổi trạng thái khi click
                                 >
                                     <div className="flex-[20%] text-xl">{item.icon}</div>
@@ -25,8 +29,8 @@ function Sidebar() {
                                 </li>
                                 <ul className={`list-none p-0 m-0 ${subMenuOpen ? 'block' : 'hidden'}`}>
                                     {item.subItems.map((subItem, subIndex) => (
-                                        <li 
-                                            className="flex items-center h-[40px] pl-10 text-gray-400 cursor-pointer transition-all duration-300 hover:bg-gray-700 hover:text-teal-500" 
+                                        <li
+                                            className="flex items-center h-[40px] pl-10 text-gray-400 cursor-pointer transition-all duration-300 hover:bg-gray-700 hover:text-teal-500"
                                             key={subIndex}
                                         >
                                             <Link to={subItem.link} className="flex w-full h-full items-center">
@@ -39,7 +43,7 @@ function Sidebar() {
                         );
                     } else {
                         return (
-                            <li 
+                            <li
                                 className="flex items-center h-[50px] pl-5 mb-2 text-gray-200 cursor-pointer rounded-lg transition-all duration-300 hover:bg-gray-700 hover:pl-6 hover:text-teal-500"
                                 key={index}
                             >

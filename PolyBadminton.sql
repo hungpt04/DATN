@@ -11,13 +11,13 @@
 		TrangThai INT
 	);
 
-	CREATE TABLE QuanCan(
+	CREATE TABLE MauSac(
 		Id INT IDENTITY(1,1) PRIMARY KEY,
 		Ten NVARCHAR(255),
 		TrangThai INT
 	);
 
-	CREATE TABLE Cuoc(
+	CREATE TABLE ChatLieu(
 		Id INT IDENTITY(1,1) PRIMARY KEY,
 		Ten NVARCHAR(255),
 		TrangThai INT
@@ -30,6 +30,12 @@
 	);
 
 	CREATE TABLE DiemCanBang(
+		Id INT IDENTITY(1,1) PRIMARY KEY,
+		Ten NVARCHAR(255),
+		TrangThai INT
+	);
+
+	CREATE TABLE DoCung(
 		Id INT IDENTITY(1,1) PRIMARY KEY,
 		Ten NVARCHAR(255),
 		TrangThai INT
@@ -82,8 +88,8 @@
 		Id INT IDENTITY(1,1) PRIMARY KEY,
 		IdSanPham INT,
 		IdThuongHieu INT,
-		IdQuanCan INT,
-		IdCuoc INT,
+		IdMauSac INT,
+		IdChatLieu INT,
 		IdTrongLuong INT,
 		IdDiemCanBang INT,
 		Ma NVARCHAR(255),
@@ -92,8 +98,8 @@
 		TrangThai INT,
 		FOREIGN KEY (IdSanPham) REFERENCES SanPham(Id),
 		FOREIGN KEY (IdThuongHieu) REFERENCES ThuongHieu(Id),
-		FOREIGN KEY (IdQuanCan) REFERENCES QuanCan(Id),
-		FOREIGN KEY (IdCuoc) REFERENCES Cuoc(Id),
+		FOREIGN KEY (IdMauSac) REFERENCES MauSac(Id),
+		FOREIGN KEY (IdChatLieu) REFERENCES ChatLieu(Id),
 		FOREIGN KEY (IdTrongLuong) REFERENCES TrongLuong(Id),
 		FOREIGN KEY (IdDiemCanBang) REFERENCES DiemCanBang(Id)
 	);
@@ -225,21 +231,21 @@
 ('Kumpoo', 1),
 ('Adidas', 0);
 
--- QuanCan
-INSERT INTO QuanCan (Ten, TrangThai) VALUES
-('Yonex AC102EX', 1),
-('Bumbee AS007', 1),
-('HBT', 1),
-('Kumpoo K003', 0),
-('Kamito KMC2041', 0);
+-- MauSac
+INSERT INTO MauSac (Ten, TrangThai) VALUES
+('Đen', 1),
+('Xanh dương', 1),
+('Xám', 1),
+('Đỏ', 0),
+('Trắng', 0);
 
--- Cuoc
-INSERT INTO Cuoc (Ten, TrangThai) VALUES
-('Yonex BG65 Titanium', 1),
-('Victor VBS66', 1),
-('Lining NO1', 1),
-('kizuna Z69T', 0),
-('Yonex BG66 Ultimax', 0);
+-- ChatLieu
+INSERT INTO ChatLieu (Ten, TrangThai) VALUES
+('HM Graphite', 1),
+('Woven Graphite', 1),
+('46T Hot Melt Graphite', 1),
+('30T HM Graphite', 0),
+('Cacbon S.M.A.R.T', 0);
 
 -- TrongLuong
 INSERT INTO TrongLuong (Ten, TrangThai) VALUES
@@ -257,7 +263,13 @@ INSERT INTO DiemCanBang (Ten, TrangThai) VALUES
 ('305mm', 0),
 ('310mm', 0);
 
-
+--DoCung
+INSERT INTO DoCung (Ten, TrangThai) VALUES
+('Cứng', 1),
+('Hơi cứng', 1),
+('Dẻo', 1),
+('Siêu dẻo', 0),
+('Siêu cứng', 0);
 
 	-- KhuyenMai
 INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc, TrangThai) VALUES
@@ -295,7 +307,7 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc, TrangThai) VALUES
 	('SP005', 'lining Axforce 100', 0);
 
 
-	INSERT INTO SanPhamCT (IdSanPham, IdThuongHieu, IdQuanCan, IdCuoc, IdTrongLuong, IdDiemCanBang, Ma, SoLuong, DonGia, TrangThai) VALUES
+	INSERT INTO SanPhamCT (IdSanPham, IdThuongHieu, IdMauSac, IdChatLieu, IdTrongLuong, IdDiemCanBang, Ma, SoLuong, DonGia, TrangThai) VALUES
 	(1, 1, 1, 1, 1, 1, 'SPCT001', 10, 3000000, 1),
 	(2, 2, 2, 2, 2, 2, 'SPCT002', 20, 2500000, 1),
 	(3, 3, 3, 3, 3, 3, 'SPCT003', 15, 2800000, 0),
