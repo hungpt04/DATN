@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import logo from '../../../Assets/logob.png';
+import logo from '../../../Assets/logo.png';
 import cart_icon from '../../../Assets/cart_icon.png';
 
 const Navbar = () => {
@@ -9,7 +9,7 @@ const Navbar = () => {
     return (
         <div className="flex justify-around shadow-md h-20">
             <div className="flex items-center gap-2">
-                <img src={logo} alt="Logo" className="w-10 h-10" />
+                <img src={logo} alt="Logo" className="w-[100px] h-[100px]" />
                 <p className="text-[#171717] text-3xl font-semibold">Poly Badminton</p>
             </div>
             <ul className="flex items-center list-none gap-8 text-[#292929] font-medium">

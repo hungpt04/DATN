@@ -28,6 +28,7 @@ export const SidebarData = [
         icon: <Inventory2Icon />,
         link: '/admin/quan-ly-san-pham',
         subItems: [
+            { title: 'Sản phẩm', link: '/admin/quan-ly-san-pham/san-pham' },
             { title: 'Thương hiệu', link: '/admin/quan-ly-san-pham/thuong-hieu' },
             { title: 'Màu sắc', link: '/admin/quan-ly-san-pham/mau-sac' },
             { title: 'Chất liệu', link: '/admin/quan-ly-san-pham/chat-lieu' },
@@ -50,5 +51,9 @@ export const SidebarData = [
         title: 'Tài khoản',
         icon: <AccountCircleIcon />,
         link: '/admin/tai-khoan',
+        subItems: [
+            { title: 'Nhân viên', link: '/admin/tai-khoan/nhan-vien' },
+            { title: 'Khách hàng', link: '/admin/tai-khoan/khach-hang' },
+        ],
     },
 ];

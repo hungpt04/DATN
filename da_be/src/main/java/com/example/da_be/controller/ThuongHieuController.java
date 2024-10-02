@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000") // Cho phép kết nối từ React
-@RequestMapping("/api/thuonghieu")
+@RequestMapping("/api/thuong-hieu")
 public class ThuongHieuController {
 
     @Autowired

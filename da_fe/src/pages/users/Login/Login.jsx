@@ -38,7 +38,7 @@ const Login = () => {
                             ></input>
                             <label className="ml-2 block text-sm text-gray-600">Remember Me</label>
                         </div>
-                        <a href="#" className="text-sm text-blue-600 hover:underline">
+                        <a href="https://example.com" className="text-sm text-blue-600 hover:underline">
                             Forgot Password?
                         </a>
                     </div>
@@ -66,7 +66,7 @@ const Login = () => {
 
                 <p className="mt-6 text-sm text-center text-gray-500">
                     Don't have an account?{' '}
-                    <a href="#" className="text-blue-600 hover:underline">
+                    <a href="https://example.com" className="text-blue-600 hover:underline">
                         Sign Up
                     </a>
                 </p>

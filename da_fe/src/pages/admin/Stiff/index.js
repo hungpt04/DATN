@@ -8,17 +8,17 @@ import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
 import { useForm } from 'react-hook-form';
 import swal from 'sweetalert';
 
-function Brand() {
-    const [brands, setBrands] = useState([]);
+function Stiff() {
+    const [stiffs, setStiffs] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
-    const [brandToDelete, setBrandToDelete] = useState(null);
-    const [brandToUpdate, setBrandToUpdate] = useState(null);
+    const [stiffToDelete, setStiffToDelete] = useState(null);
+    const [stiffToUpdate, setStiffToUpdate] = useState(null);
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const brandsPerPage = 4;
+    const stiffsPerPage = 4;
 
     const {
         register,
@@ -28,51 +28,51 @@ function Brand() {
         formState: { errors },
     } = useForm();
 
-    const loadBrands = async () => {
+    const loadStiffs = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/thuong-hieu');
-            setBrands(response.data);
+            const response = await axios.get('http://localhost:8080/api/do-cung');
+            setStiffs(response.data);
         } catch (error) {
-            console.error('Failed to fetch brands', error);
+            console.error('Failed to fetch stiffs', error);
         }
     };
 
     useEffect(() => {
-        loadBrands();
+        loadStiffs();
     }, []);
 
-    // Delete a brand
+    // Delete a stiff
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:8080/api/thuong-hieu/${id}`);
-            loadBrands();
+            await axios.delete(`http://localhost:8080/api/do-cung/${id}`);
+            loadStiffs();
             setShowModal(false);
         } catch (error) {
-            console.error('Failed to delete brand', error);
+            console.error('Failed to delete stiff', error);
         }
     };
 
-    // Add a new brand
-    const handleAddBrand = async (values) => {
-        const newBrand = {
-            ten: values.brandName,
+    // Add a new stiff
+    const handleAddstiff = async (values) => {
+        const newstiff = {
+            ten: values.stiffName,
             trangThai: values.status === '1' ? 1 : 0,
         };
         try {
-            await axios.post('http://localhost:8080/api/thuong-hieu', newBrand);
-            swal('Thành công!', 'Thương hiệu đã được thêm!', 'success');
+            await axios.post('http://localhost:8080/api/do-cung', newstiff);
+            swal('Thành công!', 'độ cứng đã được thêm!', 'success');
             setShowAddModal(false);
-            loadBrands();
+            loadStiffs();
             reset(); // Reset form values after adding
         } catch (error) {
-            console.error('Có lỗi xảy ra khi thêm thương hiệu!', error);
-            swal('Thất bại!', 'Có lỗi xảy ra khi thêm thương hiệu!', 'error');
+            console.error('Có lỗi xảy ra khi thêm độ cứng!', error);
+            swal('Thất bại!', 'Có lỗi xảy ra khi thêm độ cứng!', 'error');
         }
     };
 
     // Open modal to confirm deletion
     const confirmDelete = (id) => {
-        setBrandToDelete(id);
+        setStiffToDelete(id);
         setShowModal(true);
     };
 
@@ -82,46 +82,46 @@ function Brand() {
     };
 
     // Open update modal and fill the form
-    const handleUpdateModal = async (brand) => {
+    const handleUpdateModal = async (stiff) => {
         reset();
-        setValue('brandName', brand.ten);
-        setValue('status', brand.trangThai.toString());
-        setBrandToUpdate(brand.id);
+        setValue('stiffName', stiff.ten);
+        setValue('status', stiff.trangThai.toString());
+        setStiffToUpdate(stiff.id);
         setShowUpdateModal(true);
     };
 
-    // Update a brand
-    const handleUpdateBrand = async (values) => {
-        const updatedBrand = {
-            ten: values.brandName,
+    // Update a stiff
+    const handleUpdatestiff = async (values) => {
+        const updatedstiff = {
+            ten: values.stiffName,
             trangThai: values.status === '1' ? 1 : 0,
         };
         try {
-            await axios.put(`http://localhost:8080/api/thuong-hieu/${brandToUpdate}`, updatedBrand);
-            swal('Thành công!', 'Thương hiệu đã được cập nhật!', 'success');
+            await axios.put(`http://localhost:8080/api/do-cung/${stiffToUpdate}`, updatedstiff);
+            swal('Thành công!', 'độ cứng đã được cập nhật!', 'success');
             setShowUpdateModal(false);
-            loadBrands();
+            loadStiffs();
             reset(); // Reset form values after updating
         } catch (error) {
-            console.error('Có lỗi xảy ra khi cập nhật thương hiệu!', error);
-            swal('Thất bại!', 'Có lỗi xảy ra khi cập nhật thương hiệu!', 'error');
+            console.error('Có lỗi xảy ra khi cập nhật độ cứng!', error);
+            swal('Thất bại!', 'Có lỗi xảy ra khi cập nhật độ cứng!', 'error');
         }
     };
 
-    // Get current brands based on pagination
-    const indexOfLastBrand = currentPage * brandsPerPage;
-    const indexOfFirstBrand = indexOfLastBrand - brandsPerPage;
-    const currentBrands = brands.slice(indexOfFirstBrand, indexOfLastBrand);
+    // Get current stiffs based on pagination
+    const indexOfLastStiff = currentPage * stiffsPerPage;
+    const indexOfFirststiff = indexOfLastStiff - stiffsPerPage;
+    const currentStiffs = stiffs.slice(indexOfFirststiff, indexOfLastStiff);
 
     // Calculate total pages
-    const totalPages = Math.ceil(brands.length / brandsPerPage);
+    const totalPages = Math.ceil(stiffs.length / stiffsPerPage);
 
     // Pagination controls
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
         <div className="p-2 max-w-7xl mx-auto bg-white rounded-lg">
-            <h4 className="text-center text-5xl font-bold text-gray-800">Danh sách thương hiệu</h4>
+            <h4 className="text-center text-5xl font-bold text-gray-800">Danh sách độ cứng</h4>
             <div>
                 <div className="flex justify-end mb-4">
                     <button
@@ -142,22 +142,22 @@ function Brand() {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentBrands.map((brand, index) => (
-                            <tr key={brand.id} className="border-t border-gray-200 hover:bg-gray-100">
-                                <td className="py-4 px-6">{indexOfFirstBrand + index + 1}</td>
-                                <td className="py-4 px-6">{brand.id}</td>
-                                <td className="py-4 px-6">{brand.ten}</td>
-                                <td className="py-4 px-6">{brand.trangThai ? 'Active' : 'Inactive'}</td>
+                        {currentStiffs.map((stiff, index) => (
+                            <tr key={stiff.id} className="border-t border-gray-200 hover:bg-gray-100">
+                                <td className="py-4 px-6">{indexOfFirststiff + index + 1}</td>
+                                <td className="py-4 px-6">{stiff.id}</td>
+                                <td className="py-4 px-6">{stiff.ten}</td>
+                                <td className="py-4 px-6">{stiff.trangThai ? 'Active' : 'Inactive'}</td>
                                 <td className="py-4 px-6">
                                     <div className="flex">
                                         <button
-                                            onClick={() => handleUpdateModal(brand)}
+                                            onClick={() => handleUpdateModal(stiff)}
                                             className=" hover:bg-gray-400 font-medium py-2 px-4 rounded"
                                         >
                                             <PencilIcon className="h-5 w-5" />
                                         </button>
                                         <button
-                                            onClick={() => confirmDelete(brand.id)}
+                                            onClick={() => confirmDelete(stiff.id)}
                                             className="hover:bg-gray-400 font-medium py-2 px-4 rounded"
                                         >
                                             <TrashIcon className="w-5" />
@@ -174,7 +174,7 @@ function Brand() {
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
                         <div className="bg-white rounded-lg shadow-lg p-6">
                             <h3 className="text-lg font-bold mb-4">Xác nhận xóa</h3>
-                            <p>Bạn có chắc chắn muốn xóa thương hiệu này không?</p>
+                            <p>Bạn có chắc chắn muốn xóa độ cứng này không?</p>
                             <div className="mt-4 flex justify-end space-x-2">
                                 <button
                                     onClick={() => setShowModal(false)}
@@ -183,7 +183,7 @@ function Brand() {
                                     Hủy
                                 </button>
                                 <button
-                                    onClick={() => handleDelete(brandToDelete)}
+                                    onClick={() => handleDelete(stiffToDelete)}
                                     className="bg-red-400 hover:bg-red-600 text-white py-2 px-4 rounded-lg"
                                 >
                                     Xóa
@@ -193,24 +193,22 @@ function Brand() {
                     </div>
                 )}
 
-                {/* Modal for adding a brand */}
+                {/* Modal for adding a stiff */}
                 {showAddModal && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
                         <div className="bg-white rounded-lg shadow-lg p-6">
-                            <h3 className="text-lg font-bold mb-4">Thêm thương hiệu</h3>
-                            <form onSubmit={handleSubmit(handleAddBrand)}>
+                            <h3 className="text-lg font-bold mb-4">Thêm độ cứng</h3>
+                            <form onSubmit={handleSubmit(handleAddstiff)}>
                                 <div className="mb-4">
-                                    <label className="block text-gray-700">Tên thương hiệu</label>
+                                    <label className="block text-gray-700">Tên độ cứng</label>
                                     <input
                                         type="text"
                                         className={`border border-gray-300 p-2 w-full rounded-lg ${
-                                            errors.brandName ? 'border-red-500' : ''
+                                            errors.stiffName ? 'border-red-500' : ''
                                         }`}
-                                        {...register('brandName', { required: true })}
+                                        {...register('stiffName', { required: true })}
                                     />
-                                    {errors.brandName && (
-                                        <span className="text-red-500">Tên thương hiệu là bắt buộc.</span>
-                                    )}
+                                    {errors.stiffName && <span className="text-red-500">Tên độ cứng là bắt buộc.</span>}
                                 </div>
                                 <div className="mb-4">
                                     <label className="block text-gray-700">Trạng thái</label>
@@ -256,24 +254,22 @@ function Brand() {
                     </div>
                 )}
 
-                {/* Modal for updating a brand */}
+                {/* Modal for updating a stiff */}
                 {showUpdateModal && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
                         <div className="bg-white rounded-lg shadow-lg p-6">
-                            <h3 className="text-lg font-bold mb-4">Cập nhật thương hiệu</h3>
-                            <form onSubmit={handleSubmit(handleUpdateBrand)}>
+                            <h3 className="text-lg font-bold mb-4">Cập nhật độ cứng</h3>
+                            <form onSubmit={handleSubmit(handleUpdatestiff)}>
                                 <div className="mb-4">
-                                    <label className="block text-gray-700">Tên thương hiệu</label>
+                                    <label className="block text-gray-700">Tên độ cứng</label>
                                     <input
                                         type="text"
                                         className={`border border-gray-300 p-2 w-full rounded-lg ${
-                                            errors.brandName ? 'border-red-500' : ''
+                                            errors.stiffName ? 'border-red-500' : ''
                                         }`}
-                                        {...register('brandName', { required: true })}
+                                        {...register('stiffName', { required: true })}
                                     />
-                                    {errors.brandName && (
-                                        <span className="text-red-500">Tên thương hiệu là bắt buộc.</span>
-                                    )}
+                                    {errors.stiffName && <span className="text-red-500">Tên độ cứng là bắt buộc.</span>}
                                 </div>
                                 <div className="mb-4">
                                     <label className="block text-gray-700">Trạng thái</label>
@@ -352,4 +348,4 @@ function Brand() {
     );
 }
 
-export default Brand;
+export default Stiff;
