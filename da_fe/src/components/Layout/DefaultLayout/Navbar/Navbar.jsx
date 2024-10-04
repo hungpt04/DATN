@@ -9,8 +9,8 @@ const Navbar = () => {
     return (
         <div className="flex justify-around shadow-md h-20">
             <div className="flex items-center gap-2">
-                <img src={logo} alt="Logo" className="w-[100px] h-[100px]" />
-                <p className="text-[#171717] text-3xl font-semibold">Poly Badminton</p>
+                <img src={logo} alt="Logo" className="w-[100px] h-[50px]" />
+                <p className="text-[#171717] text-3xl font-semibold">Backet</p>
             </div>
             <ul className="flex items-center list-none gap-8 text-[#292929] font-medium">
                 <li

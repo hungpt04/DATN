@@ -28,7 +28,7 @@ function Balance() {
         formState: { errors },
     } = useForm();
 
-    const loadbalances = async () => {
+    const loadBalances = async () => {
         try {
             const response = await axios.get('http://localhost:8080/api/diem-can-bang');
             setBalances(response.data);
@@ -38,14 +38,16 @@ function Balance() {
     };
 
     useEffect(() => {
-        loadbalances();
+        loadBalances();
     }, []);
+
+    console.log(balances);
 
     // Delete a balance
     const handleDelete = async (id) => {
         try {
             await axios.delete(`http://localhost:8080/api/diem-can-bang/${id}`);
-            loadbalances();
+            loadBalances();
             setShowModal(false);
         } catch (error) {
             console.error('Failed to delete balance', error);
@@ -62,7 +64,7 @@ function Balance() {
             await axios.post('http://localhost:8080/api/diem-can-bang', newbalance);
             swal('Thành công!', 'điểm cân bằng đã được thêm!', 'success');
             setShowAddModal(false);
-            loadbalances();
+            loadBalances();
             reset(); // Reset form values after adding
         } catch (error) {
             console.error('Có lỗi xảy ra khi thêm điểm cân bằng!', error);
@@ -100,7 +102,7 @@ function Balance() {
             await axios.put(`http://localhost:8080/api/diem-can-bang/${balanceToUpdate}`, updatedbalance);
             swal('Thành công!', 'điểm cân bằng đã được cập nhật!', 'success');
             setShowUpdateModal(false);
-            loadbalances();
+            loadBalances();
             reset(); // Reset form values after updating
         } catch (error) {
             console.error('Có lỗi xảy ra khi cập nhật điểm cân bằng!', error);
@@ -126,7 +128,7 @@ function Balance() {
                 <div className="flex justify-end mb-4">
                     <button
                         onClick={handleAddModal}
-                        className="border border-green-500 text-green-500 hover:bg-green-500 hover:text-white font-medium py-2 px-4 rounded"
+                        className="border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium py-2 px-4 rounded"
                     >
                         <AddIcon />
                     </button>
@@ -147,7 +149,18 @@ function Balance() {
                                 <td className="py-4 px-6">{indexOfFirstBalance + index + 1}</td>
                                 <td className="py-4 px-6">{balance.id}</td>
                                 <td className="py-4 px-6">{balance.ten}</td>
-                                <td className="py-4 px-6">{balance.trangThai ? 'Active' : 'Inactive'}</td>
+                                <td className="py-4 px-6">
+                                    <span
+                                        className={`px-2 py-1 rounded-full text-xs font-semibold
+                        ${
+                            balance.trangThai
+                                ? 'text-green-600 bg-green-100 border border-green-600'
+                                : 'text-red-600 bg-red-100 border border-red-600'
+                        }`}
+                                    >
+                                        {balance.trangThai ? 'Active' : 'Inactive'}
+                                    </span>
+                                </td>
                                 <td className="py-4 px-6">
                                     <div className="flex">
                                         <button

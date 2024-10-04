@@ -1,7 +1,7 @@
-﻿	DROP DATABASE POLYBADMINTON;
-	CREATE DATABASE POLYBADMINTON
+﻿	DROP DATABASE BACKET2;
+	CREATE DATABASE BACKET2
 
-	USE POLYBADMINTON;
+	USE BACKET2;
 	GO
 
 
@@ -283,12 +283,13 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc, TrangThai) VALUES
 
 
 
-	INSERT INTO TaiKhoan (Ma, HoTen, Sdt, Email, MatKhau, GioiTinh, VaiTro, Avatar, TrangThai) VALUES
-	('TK001', 'Nguyen Van A', '0123456789', 'a@example.com', 'password123', 1, 'Customer', 'avatar1.png', 1),
-	('TK002', 'Tran Thi B', '0987654321', 'b@example.com', 'password123', 0, 'Admin', 'avatar2.png', 1),
-	('TK003', 'Le Van C', '0912345678', 'c@example.com', 'password123', 1, 'Customer', 'avatar3.png', 0),
-	('TK004', 'Pham Thi D', '0908765432', 'd@example.com', 'password123', 0, 'Customer', 'avatar4.png', 1),
-	('TK005', 'Hoang Van E', '0897654321', 'e@example.com', 'password123', 1, 'Customer', 'avatar5.png', 0);
+	INSERT INTO TaiKhoan (Ma, HoTen, Sdt, Email, MatKhau, GioiTinh, VaiTro, Avatar, NgaySinh, CCCD, TrangThai) VALUES
+	('TK001', 'Nguyen Van A', '0123456789', 'a@example.com', 'password123', 1, 'Customer', 'avatar1.png', '1990-01-01', '123456789', 1),
+	('TK002', 'Tran Thi B', '0987654321', 'b@example.com', 'password123', 0, 'Admin', 'avatar2.png', '1985-02-15', '987654321', 1),
+	('TK003', 'Le Van C', '0912345678', 'c@example.com', 'password123', 1, 'Customer', 'avatar3.png', '1992-03-10', '345678912', 0),
+	('TK004', 'Pham Thi D', '0908765432', 'd@example.com', 'password123', 0, 'Customer', 'avatar4.png', '1991-04-20', '654321987', 1),
+	('TK005', 'Hoang Van E', '0897654321', 'e@example.com', 'password123', 1, 'Customer', 'avatar5.png', '1988-05-30', '234567891', 0);
+
 
 
 
@@ -306,7 +307,10 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc, TrangThai) VALUES
 	('SP002', 'Lining Halbertec 9000', 1),
 	('SP003', 'Victor Ryuga D', 1),
 	('SP004', 'Yonex Nanoflare 1000z', 0),
-	('SP005', 'lining Axforce 100', 0);
+	('SP005', 'lining Axforce 100', 0),
+	('SP006', 'Victor Ryuga Metallic', 1),
+	('SP007', 'Victor Auraspeed 90K', 1),
+	('SP008', 'Yonex Nanoflare 700 pro', 0);
 
 
 	INSERT INTO SanPhamCT (IdSanPham, IdThuongHieu, IdMauSac, IdChatLieu, IdTrongLuong, IdDiemCanBang, Ma, SoLuong, DonGia, TrangThai) VALUES
@@ -314,15 +318,21 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc, TrangThai) VALUES
 	(2, 2, 2, 2, 2, 2, 'SPCT002', 20, 2500000, 1),
 	(3, 3, 3, 3, 3, 3, 'SPCT003', 15, 2800000, 0),
 	(4, 4, 4, 4, 4, 4, 'SPCT004', 5, 2700000, 0),
-	(5, 5, 5, 5, 5, 5, 'SPCT005', 8, 2200000, 1);
+	(5, 5, 5, 5, 5, 5, 'SPCT005', 8, 2200000, 1),
+	(6, 5, 5, 5, 5, 5, 'SPCT006', 8, 2200000, 1),
+	(7, 5, 5, 5, 5, 5, 'SPCT007', 8, 2200000, 1),
+	(8, 5, 5, 5, 5, 5, 'SPCT008', 8, 2200000, 1);
 
 
 	INSERT INTO HinhAnh (IdSanPhamCT, Link, TrangThai) VALUES
-	(1, 'yonex_voltric80.png', 1),
-	(2, 'lining_turbo_x.png', 1),
-	(3, 'victor_thruster_k.png', 1),
-	(4, 'adidas_p800.png', 0),
-	(5, 'apacs_ziggler.png', 1);
+	(1, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-nanoflare-700-pro-chinh-hang_1727042472.webp', 1),
+	(2, 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-yonex-astrox-99-pro-do-chinh-hang-1.webp', 1),
+	(3, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-88s-pro-ch-noi-dia-trung-limited-5.webp', 1),
+	(4, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-ryuga-metallic-china-open-2024-noi-dia-trung_1726449913.webp', 0),
+	(5, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-nanoflare-wex-noi-dia-trung_1719176769.webp', 1),
+	(6, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-ryuga-d-taiwan_1712201755.webp', 1),
+	(7, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-mjolnir-metallic-limited-2024-ma-taiwan_1716431807.webp', 1),
+	(8, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-bkex-noi-dia-trung_1719176463.webp', 1);
 
 
 	INSERT INTO DiaChi (IdTaiKhoan, Ten, Sdt, IdTinh, IdHuyen, IdXa, DiaChiCuThe) VALUES

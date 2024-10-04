@@ -126,7 +126,7 @@ function Material() {
                 <div className="flex justify-end mb-4">
                     <button
                         onClick={handleAddModal}
-                        className="border border-green-500 text-green-500 hover:bg-green-500 hover:text-white font-medium py-2 px-4 rounded"
+                        className="border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium py-2 px-4 rounded"
                     >
                         <AddIcon />
                     </button>
@@ -147,7 +147,18 @@ function Material() {
                                 <td className="py-4 px-6">{indexOfFirstMaterial + index + 1}</td>
                                 <td className="py-4 px-6">{material.id}</td>
                                 <td className="py-4 px-6">{material.ten}</td>
-                                <td className="py-4 px-6">{material.trangThai ? 'Active' : 'Inactive'}</td>
+                                <td className="py-4 px-6">
+                                    <span
+                                        className={`px-2 py-1 rounded-full text-xs font-semibold
+                        ${
+                            material.trangThai
+                                ? 'text-green-600 bg-green-100 border border-green-600'
+                                : 'text-red-600 bg-red-100 border border-red-600'
+                        }`}
+                                    >
+                                        {material.trangThai ? 'Active' : 'Inactive'}
+                                    </span>
+                                </td>
                                 <td className="py-4 px-6">
                                     <div className="flex">
                                         <button
