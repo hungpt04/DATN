@@ -56,12 +56,15 @@ const Navbar = () => {
                         Login
                     </button>
                 </Link>
-                <div className="relative">
-                    <img src={cart_icon} alt="Cart Icon" className="w-8 h-8" />
-                    <div className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-full text-xs bg-red-600 text-white transform translate-x-1/2 -translate-y-1/2">
-                        0
+
+                <Link to="/gio-hang">
+                    <div className="relative cursor-pointer">
+                        <img src={cart_icon} alt="Cart Icon" className="w-8 h-8" />
+                        <div className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-full text-xs bg-red-600 text-white transform translate-x-1/2 -translate-y-1/2">
+                            0
+                        </div>
                     </div>
-                </div>
+                </Link>
             </div>
         </div>
     );

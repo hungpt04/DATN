@@ -58,6 +58,7 @@ function Brand() {
             ten: values.brandName,
             trangThai: values.status === '1' ? 1 : 0,
         };
+
         try {
             await axios.post('http://localhost:8080/api/thuong-hieu', newBrand);
             swal('Thành công!', 'Thương hiệu đã được thêm!', 'success');

@@ -97,6 +97,7 @@
 		Ma NVARCHAR(255),
 		SoLuong INT,
 		DonGia DECIMAL(10,2),
+		MoTa NVARCHAR(255),
 		TrangThai INT,
 		FOREIGN KEY (IdSanPham) REFERENCES SanPham(Id),
 		FOREIGN KEY (IdThuongHieu) REFERENCES ThuongHieu(Id),
@@ -307,23 +308,32 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc, TrangThai) VALUES
 	('SP002', 'Lining Halbertec 9000', 1),
 	('SP003', 'Victor Ryuga D', 1),
 	('SP004', 'Yonex Nanoflare 1000z', 0),
-	('SP005', 'lining Axforce 100', 0);
+	('SP005', 'lining Axforce 100', 0),
+	('SP006', 'Victor Ryuga Metallic', 1),
+	('SP007', 'Victor Auraspeed 90K', 1),
+	('SP008', 'Yonex Nanoflare 700 pro', 0);
 
 
-	INSERT INTO SanPhamCT (IdSanPham, IdThuongHieu, IdMauSac, IdChatLieu, IdTrongLuong, IdDiemCanBang, Ma, SoLuong, DonGia, TrangThai) VALUES
-	(1, 1, 1, 1, 1, 1, 'SPCT001', 10, 3000000, 1),
-	(2, 2, 2, 2, 2, 2, 'SPCT002', 20, 2500000, 1),
-	(3, 3, 3, 3, 3, 3, 'SPCT003', 15, 2800000, 0),
-	(4, 4, 4, 4, 4, 4, 'SPCT004', 5, 2700000, 0),
-	(5, 5, 5, 5, 5, 5, 'SPCT005', 8, 2200000, 1);
+	INSERT INTO SanPhamCT (IdSanPham, IdThuongHieu, IdMauSac, IdChatLieu, IdTrongLuong, IdDiemCanBang, Ma, SoLuong, DonGia, MoTa, TrangThai) VALUES
+	(1, 1, 1, 1, 1, 1, 'SPCT001', 10, 3000000,N'Vợt cầu lông đẹp và đẳng cấp nhất thế giới', 1),
+	(2, 2, 2, 2, 2, 2, 'SPCT002', 20, 2500000,N'Vợt cầu lông đẹp và đẳng cấp nhất việt nam', 1),
+	(3, 3, 3, 3, 3, 3, 'SPCT003', 15, 2800000,N'Vợt cầu lông đẹp và đẳng cấp nhất vũ trụ', 0),
+	(4, 4, 4, 4, 4, 4, 'SPCT004', 5, 2700000,N'Vợt cầu lông đẹp và đẳng cấp nhất thiên hà', 0),
+	(5, 5, 5, 5, 5, 5, 'SPCT005', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất hành tinh', 1),
+	(6, 5, 5, 5, 5, 5, 'SPCT006', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất hệ mặt trời', 1),
+	(7, 5, 5, 5, 5, 5, 'SPCT007', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất xóm', 1),
+	(8, 5, 5, 5, 5, 5, 'SPCT008', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất nhà', 1);
 
 
 	INSERT INTO HinhAnh (IdSanPhamCT, Link, TrangThai) VALUES
-	(1, '../../../components/Assets/nanoflare-700-pro.webp', 1),
-	(2, '../../../components/Assets/arcsaber-11.webp', 1),
-	(3, '../../../components/Assets/arcsaber-7-tour.webp', 1),
-	(4, '../../../components/Assets/astrox-69.webp', 0),
-	(5, '../../../components/Assets/astrox-88d-pro-2024.webp', 1);
+	(1, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-nanoflare-700-pro-chinh-hang_1727042472.webp', 1),
+	(2, 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-yonex-astrox-99-pro-do-chinh-hang-1.webp', 1),
+	(3, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-88s-pro-ch-noi-dia-trung-limited-5.webp', 1),
+	(4, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-ryuga-metallic-china-open-2024-noi-dia-trung_1726449913.webp', 0),
+	(5, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-nanoflare-wex-noi-dia-trung_1719176769.webp', 1),
+	(6, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-ryuga-d-taiwan_1712201755.webp', 1),
+	(7, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-mjolnir-metallic-limited-2024-ma-taiwan_1716431807.webp', 1),
+	(8, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-bkex-noi-dia-trung_1719176463.webp', 1);
 
 
 	INSERT INTO DiaChi (IdTaiKhoan, Ten, Sdt, IdTinh, IdHuyen, IdXa, DiaChiCuThe) VALUES
