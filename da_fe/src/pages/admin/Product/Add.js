@@ -15,6 +15,8 @@ function AddProduct() {
     const [hardness, setHardness] = useState('');
     const [stiffs, setStiffs] = useState([]);
     const [status, setStatus] = useState('');
+    const [colors, setColors] = useState([]);
+    const [weights, setWeights] = useState([]);
     const [description, setDescription] = useState('');
     const [variants, setVariants] = useState([
         { id: 1, name: '', quantity: '', weight: '', price: '', selected: false },
@@ -32,6 +34,10 @@ function AddProduct() {
     const [showMaterialModal, setShowMaterialModal] = useState(false);
     const [showBalanceModal, setShowBalanceModal] = useState(false);
     const [showStiffModal, setShowStiffModal] = useState(false);
+    const [showColorModal, setShowColorModal] = useState(false);
+    const [showAddColorModal, setShowAddColorModal] = useState(false);
+    const [showWeightModal, setShowWeightModal] = useState(false);
+    const [showAddWeightModal, setShowAddWeightModal] = useState(false);
 
     const loadBrands = async () => {
         try {
@@ -69,6 +75,24 @@ function AddProduct() {
         }
     };
 
+    const loadColors = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/api/mau-sac');
+            setColors(response.data);
+        } catch (error) {
+            console.error('Failed to fetch Colors', error);
+        }
+    };
+
+    const loadWeights = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/api/trong-luong');
+            setWeights(response.data);
+        } catch (error) {
+            console.error('Failed to fetch Weights', error);
+        }
+    };
+
     const handleVariantChange = (index, field, value) => {
         const newVariants = [...variants];
         newVariants[index][field] = value;
@@ -94,6 +118,8 @@ function AddProduct() {
         loadMaterials();
         loadBalances();
         loadStiffs();
+        loadColors();
+        loadWeights();
     }, []);
 
     //Add
@@ -165,6 +191,40 @@ function AddProduct() {
         }
     };
 
+    const handleAddColor = async (values) => {
+        const newColor = {
+            ten: values.colorName,
+            trangThai: values.status === '1' ? 1 : 0,
+        };
+        try {
+            await axios.post('http://localhost:8080/api/mau-sac', newColor);
+            swal('Thành công!', 'Màu sắc đã được thêm!', 'success');
+            setShowAddColorModal(false);
+            loadColors();
+            reset(); // Reset form values after adding
+        } catch (error) {
+            console.error('Có lỗi xảy ra khi thêm Màu sắc!', error);
+            swal('Thất bại!', 'Có lỗi xảy ra khi thêm Màu sắc!', 'error');
+        }
+    };
+
+    const handleAddWeight = async (values) => {
+        const newWeight = {
+            ten: values.weightName,
+            trangThai: values.status === '1' ? 1 : 0,
+        };
+        try {
+            await axios.post('http://localhost:8080/api/trong-luong', newWeight);
+            swal('Thành công!', 'Trọng lượng đã được thêm!', 'success');
+            setShowAddWeightModal(false);
+            loadWeights();
+            reset(); // Reset form values after adding
+        } catch (error) {
+            console.error('Có lỗi xảy ra khi thêm Trọng lượng!', error);
+            swal('Thất bại!', 'Có lỗi xảy ra khi thêm Trọng lượng!', 'error');
+        }
+    };
+
     const handleAddBrandModal = () => {
         reset(); // Reset the form values and errors
         setShowBrandModal(true);
@@ -183,6 +243,26 @@ function AddProduct() {
     const handleAddStiffModal = () => {
         reset(); // Reset the form values and errors
         setShowStiffModal(true);
+    };
+
+    const handleColorModal = () => {
+        reset(); // Reset the form values and errors
+        setShowColorModal(true);
+    };
+
+    const handleWeightModal = () => {
+        reset(); // Reset the form values and errors
+        setShowWeightModal(true);
+    };
+
+    const handleAddColorModal = () => {
+        reset(); // Reset the form values and errors
+        setShowAddColorModal(true);
+    };
+
+    const handleAddWeightModal = () => {
+        reset(); // Reset the form values and errors
+        setShowAddWeightModal(true);
     };
 
     return (
@@ -361,6 +441,7 @@ function AddProduct() {
                     <div className="flex items-center">
                         <span className="block text-xl font-bold text-gray-700 mr-2">Màu sắc:</span>
                         <button
+                            onClick={handleColorModal}
                             type="button"
                             className="border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium py-1 px-2 rounded ml-[60px]"
                         >
@@ -373,6 +454,7 @@ function AddProduct() {
                     <div className="flex items-center">
                         <span className="block text-xl font-bold text-gray-700 mr-2">Trọng lượng:</span>
                         <button
+                            onClick={handleWeightModal}
                             type="button"
                             className="border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium py-1 px-2 rounded ml-[20px]"
                         >
@@ -705,6 +787,193 @@ function AddProduct() {
                                 <button
                                     type="button"
                                     onClick={() => setShowStiffModal(false)}
+                                    className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded-lg"
+                                >
+                                    Thêm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showColorModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-[435px]">
+                        <h2 className="font-bold text-xl text-center mb-5">Màu sắc</h2>
+                        <div>
+                            {colors.map((color) => (
+                                <button
+                                    className=" hover:bg-slate-700 text-white py-1 px-1 rounded-lg h-8 w-[65px] text-[11px] mr-3 mb-3"
+                                    style={{ backgroundColor: color.ten }}
+                                >
+                                    {color.ten}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="mt-5 flex space-x-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowColorModal(false)}
+                                className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={handleAddColorModal}
+                                type="submit"
+                                className="bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded-lg"
+                            >
+                                Thêm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showAddColorModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6">
+                        <h3 className="text-lg font-bold mb-4">Thêm màu sắc</h3>
+                        <form onSubmit={handleSubmit(handleAddColor)}>
+                            <div className="mb-4">
+                                <label className="block text-gray-700">Tên màu sắc</label>
+                                <input
+                                    type="text"
+                                    className={`border border-gray-300 p-2 w-full rounded-lg ${
+                                        errors.colorName ? 'border-red-500' : ''
+                                    }`}
+                                    {...register('colorName', { required: true })}
+                                />
+                                {errors.colorName && <span className="text-red-500">Tên màu sắc là bắt buộc.</span>}
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700">Trạng thái</label>
+                                <div className="flex space-x-4">
+                                    <label className="flex items-center">
+                                        <input
+                                            type="radio"
+                                            value="1"
+                                            className="form-radio"
+                                            {...register('status', { required: true })}
+                                        />
+                                        <span className="ml-2">Active</span>
+                                    </label>
+                                    <label className="flex items-center">
+                                        <input
+                                            type="radio"
+                                            value="0"
+                                            className="form-radio"
+                                            {...register('status', { required: true })}
+                                        />
+                                        <span className="ml-2">Inactive</span>
+                                    </label>
+                                </div>
+                                {errors.status && <span className="text-red-500">Trạng thái là bắt buộc.</span>}
+                            </div>
+                            <div className="mt-4 flex justify-end space-x-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddColorModal(false)}
+                                    className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded-lg"
+                                >
+                                    Thêm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showWeightModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-[435px]">
+                        <h2 className="font-bold text-xl text-center mb-5">Trọng lượng</h2>
+                        <div>
+                            {weights.map((weight) => (
+                                <button className=" bg-black hover:bg-slate-700 text-white py-1 px-1 rounded-lg h-8 w-[65px] text-[11px] mr-3 mb-3">
+                                    {weight.ten}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="mt-5 flex space-x-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowWeightModal(false)}
+                                className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={handleAddWeightModal}
+                                type="submit"
+                                className="bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded-lg"
+                            >
+                                Thêm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showAddWeightModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6">
+                        <h3 className="text-lg font-bold mb-4">Thêm trọng lượng</h3>
+                        <form onSubmit={handleSubmit(handleAddWeight)}>
+                            <div className="mb-4">
+                                <label className="block text-gray-700">Tên trọng lượng</label>
+                                <input
+                                    type="text"
+                                    className={`border border-gray-300 p-2 w-full rounded-lg ${
+                                        errors.weightName ? 'border-red-500' : ''
+                                    }`}
+                                    {...register('weightName', { required: true })}
+                                />
+                                {errors.weightName && (
+                                    <span className="text-red-500">Tên trọng lượng là bắt buộc.</span>
+                                )}
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700">Trạng thái</label>
+                                <div className="flex space-x-4">
+                                    <label className="flex items-center">
+                                        <input
+                                            type="radio"
+                                            value="1"
+                                            className="form-radio"
+                                            {...register('status', { required: true })}
+                                        />
+                                        <span className="ml-2">Active</span>
+                                    </label>
+                                    <label className="flex items-center">
+                                        <input
+                                            type="radio"
+                                            value="0"
+                                            className="form-radio"
+                                            {...register('status', { required: true })}
+                                        />
+                                        <span className="ml-2">Inactive</span>
+                                    </label>
+                                </div>
+                                {errors.status && <span className="text-red-500">Trạng thái là bắt buộc.</span>}
+                            </div>
+                            <div className="mt-4 flex justify-end space-x-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddWeightModal(false)}
                                     className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
                                 >
                                     Hủy
