@@ -39,6 +39,9 @@ function AddProduct() {
     const [showWeightModal, setShowWeightModal] = useState(false);
     const [showAddWeightModal, setShowAddWeightModal] = useState(false);
 
+    const [selectedColors, setSelectedColors] = useState([]);
+    const [selectedWeights, setSelectedWeights] = useState([]);
+
     const loadBrands = async () => {
         try {
             const response = await axios.get('http://localhost:8080/api/thuong-hieu');
@@ -440,6 +443,21 @@ function AddProduct() {
                 <div className="mb-2 mt-[100px] ml-[74px]">
                     <div className="flex items-center">
                         <span className="block text-xl font-bold text-gray-700 mr-2">Màu sắc:</span>
+
+                        {/* Render các button với màu đã chọn */}
+                        {selectedColors.map((color, index) => (
+                            <button
+                                key={index}
+                                className="border font-medium py-1 px-1 rounded ml-2 w-9 h-9"
+                                style={{
+                                    backgroundColor: color, // Màu nền là màu được chọn
+                                    color: '#fff', // Chữ trắng để dễ đọc
+                                    borderColor: color === 'white' ? '#000' : 'transparent', // Nếu là màu trắng, thêm viền đen
+                                }}
+                            ></button>
+                        ))}
+
+                        {/* Nút dấu + */}
                         <button
                             onClick={handleColorModal}
                             type="button"
@@ -453,6 +471,20 @@ function AddProduct() {
                 <div className="mb-2 mt-[40px] ml-[74px]">
                     <div className="flex items-center">
                         <span className="block text-xl font-bold text-gray-700 mr-2">Trọng lượng:</span>
+                        {selectedWeights.map((weight, index) => (
+                            <button
+                                key={index}
+                                className="border font-medium py-1 px-1 rounded ml-2 w-9 h-9"
+                                style={{
+                                    backgroundColor: 'black', // Màu nền là màu được chọn
+                                    color: 'white', // Chữ trắng để dễ đọc
+                                    borderColor: 'black', // Nếu là màu trắng, thêm viền đen
+                                }}
+                            >
+                                {weight}
+                            </button>
+                        ))}
+
                         <button
                             onClick={handleWeightModal}
                             type="button"
@@ -605,7 +637,7 @@ function AddProduct() {
                                     onClick={() => setShowBrandModal(false)}
                                     className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
                                 >
-                                    Hủy
+                                    Đóng
                                 </button>
                                 <button
                                     type="submit"
@@ -667,7 +699,7 @@ function AddProduct() {
                                     onClick={() => setShowMaterialModal(false)}
                                     className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
                                 >
-                                    Hủy
+                                    Đóng
                                 </button>
                                 <button
                                     type="submit"
@@ -729,7 +761,7 @@ function AddProduct() {
                                     onClick={() => setShowBalanceModal(false)}
                                     className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
                                 >
-                                    Hủy
+                                    Đóng
                                 </button>
                                 <button
                                     type="submit"
@@ -789,7 +821,7 @@ function AddProduct() {
                                     onClick={() => setShowStiffModal(false)}
                                     className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
                                 >
-                                    Hủy
+                                    Đóng
                                 </button>
                                 <button
                                     type="submit"
@@ -810,8 +842,23 @@ function AddProduct() {
                         <div>
                             {colors.map((color) => (
                                 <button
-                                    className=" hover:bg-slate-700 text-white py-1 px-1 rounded-lg h-8 w-[65px] text-[11px] mr-3 mb-3"
-                                    style={{ backgroundColor: color.ten }}
+                                    onClick={() => {
+                                        if (selectedColors.includes(color.ten)) {
+                                            // Nếu màu đã được chọn, loại bỏ nó khỏi mảng
+                                            setSelectedColors(selectedColors.filter((c) => c !== color.ten));
+                                        } else {
+                                            // Nếu màu chưa được chọn, thêm nó vào mảng
+                                            setSelectedColors([...selectedColors, color.ten]);
+                                        }
+                                    }}
+                                    className={`hover:bg-slate-700 text-white py-1 px-1 rounded-lg h-8 w-[65px] text-[11px] mr-3 mb-3 ${
+                                        selectedColors.includes(color.ten) ? 'bg-white text-black border-2' : ''
+                                    }`}
+                                    style={{
+                                        backgroundColor: selectedColors.includes(color.ten) ? 'white' : color.ten, // Nếu đã click thì đổi backgroundColor
+                                        color: selectedColors.includes(color.ten) ? 'black' : 'white', // Nếu đã click thì đổi color
+                                        borderColor: selectedColors.includes(color.ten) ? color.ten : 'transparent', // Đổi borderColor thành màu cũ
+                                    }}
                                 >
                                     {color.ten}
                                 </button>
@@ -823,7 +870,7 @@ function AddProduct() {
                                 onClick={() => setShowColorModal(false)}
                                 className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
                             >
-                                Hủy
+                                Đóng
                             </button>
                             <button
                                 onClick={handleAddColorModal}
@@ -883,7 +930,7 @@ function AddProduct() {
                                     onClick={() => setShowAddColorModal(false)}
                                     className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
                                 >
-                                    Hủy
+                                    Đóng
                                 </button>
                                 <button
                                     type="submit"
@@ -903,7 +950,25 @@ function AddProduct() {
                         <h2 className="font-bold text-xl text-center mb-5">Trọng lượng</h2>
                         <div>
                             {weights.map((weight) => (
-                                <button className=" bg-black hover:bg-slate-700 text-white py-1 px-1 rounded-lg h-8 w-[65px] text-[11px] mr-3 mb-3">
+                                <button
+                                    onClick={() => {
+                                        if (selectedWeights.includes(weight.ten)) {
+                                            // Nếu màu đã được chọn, loại bỏ nó khỏi mảng
+                                            setSelectedWeights(selectedWeights.filter((c) => c !== weight.ten));
+                                        } else {
+                                            // Nếu màu chưa được chọn, thêm nó vào mảng
+                                            setSelectedWeights([...selectedWeights, weight.ten]);
+                                        }
+                                    }}
+                                    className={`bg-slate-950 hover:bg-slate-700 text-white py-1 px-1 rounded-lg h-8 w-[65px] text-[11px] mr-3 mb-3 ${
+                                        selectedWeights.includes(weight.ten) ? 'bg-white text-black border-2' : ''
+                                    }`}
+                                    style={{
+                                        backgroundColor: selectedWeights.includes(weight.ten) ? 'white' : 'black', // Nếu đã click thì đổi backgroundWeight
+                                        color: selectedWeights.includes(weight.ten) ? 'black' : 'white', // Nếu đã click thì đổi Weight
+                                        borderColor: selectedWeights.includes(weight.ten) ? 'black' : 'transparent', // Đổi borderColor thành màu cũ
+                                    }}
+                                >
                                     {weight.ten}
                                 </button>
                             ))}
@@ -914,7 +979,7 @@ function AddProduct() {
                                 onClick={() => setShowWeightModal(false)}
                                 className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
                             >
-                                Hủy
+                                Đóng
                             </button>
                             <button
                                 onClick={handleAddWeightModal}
@@ -976,7 +1041,7 @@ function AddProduct() {
                                     onClick={() => setShowAddWeightModal(false)}
                                     className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
                                 >
-                                    Hủy
+                                    Đóng
                                 </button>
                                 <button
                                     type="submit"
