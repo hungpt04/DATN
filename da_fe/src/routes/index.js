@@ -20,11 +20,13 @@ import ProductDetail from '../pages/users/ProductDetail/ProductDetail.jsx';
 import Cart from '../pages/users/Cart/Cart.jsx';
 import ProductAdmin from '../pages/admin/Product';
 import AddProduct from '../pages/admin/Product/Add.js';
+import OfflineSale from '../pages/admin/OfflineSale/index.js';
 
 // Public routes
 const publicRoutes = [
     { path: '/', component: Home },
     { path: '/admin', component: Admin, layout: AdminLayout },
+    { path: '/admin/ban-hang-tai-quay', component: OfflineSale, layout: AdminLayout },
     { path: '/admin/quan-ly-san-pham/thuong-hieu', component: Brand, layout: AdminLayout },
     { path: '/admin/quan-ly-san-pham/mau-sac', component: Color, layout: AdminLayout },
     { path: '/admin/quan-ly-san-pham/chat-lieu', component: Material, layout: AdminLayout },
@@ -37,7 +39,7 @@ const publicRoutes = [
     { path: '/admin/tai-khoan/khach-hang', component: Customer, layout: AdminLayout },
 
     { path: '/san-pham', component: Product },
-    { path: '/san-pham/san-pham-ct', component: ProductDetail },
+    { path: '/san-pham/san-pham-ct/:id', component: ProductDetail },
     { path: '/gioi-thieu', component: Intro },
     { path: '/tin-tuc', component: News },
     { path: '/lien-he', component: Contact },

@@ -1,5 +1,6 @@
 package com.example.da_be.controller;
 
+import com.example.da_be.dto.SanPhamCTWithImagesDTO;
 import com.example.da_be.entity.SanPhamCT;
 import com.example.da_be.service.SanPhamCTService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,5 +56,20 @@ public class SanPhamCTController {
         return new ResponseEntity<>(updatedSanPhamCT, HttpStatus.OK);
     }
 
+
+
+
+    @GetMapping("/with-images/{id}")
+    public ResponseEntity<SanPhamCTWithImagesDTO> getSanPhamCTWithImages(@PathVariable Long id) {
+        SanPhamCTWithImagesDTO sanPhamCTWithImages = sanPhamCTService.getSanPhamCTWithImages(id);
+        return ResponseEntity.ok(sanPhamCTWithImages);
+    }
+
+
+    @GetMapping("/with-images")
+    public ResponseEntity<List<SanPhamCTWithImagesDTO>> getAllSanPhamCTWithImages() {
+        List<SanPhamCTWithImagesDTO> sanPhamCTWithImagesList = sanPhamCTService.getAllSanPhamCTWithImages();
+        return ResponseEntity.ok(sanPhamCTWithImagesList);
+    }
 
 }

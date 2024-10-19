@@ -37,7 +37,7 @@ export default function Product() {
     const [materials, setMaterials] = useState([]);
     const [stiffs, setStiffs] = useState([]);
     const [weights, setWeights] = useState([]);
-    const [images, setImages] = useState([]);
+    const [products, setProducts] = useState([]);
 
     const loadBrands = async () => {
         try {
@@ -93,12 +93,12 @@ export default function Product() {
         }
     };
 
-    const loadImages = async () => {
+    const loadProducts = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/hinh-anh');
-            setImages(response.data);
+            const response = await axios.get('http://localhost:8080/api/san-pham-ct/with-images');
+            setProducts(response.data);
         } catch (error) {
-            console.error('Failed to fetch Images', error);
+            console.error('Failed to fetch Products', error);
         }
     };
 
@@ -109,7 +109,7 @@ export default function Product() {
         loadMaterials();
         loadStiffs();
         loadWeights();
-        loadImages();
+        loadProducts();
     }, []);
 
     const filters = [
@@ -162,8 +162,6 @@ export default function Product() {
             })),
         },
     ];
-
-    console.log(images);
 
     return (
         <div className="bg-white">
@@ -351,8 +349,8 @@ export default function Product() {
                             {/* Product grid */}
                             <div className="lg:col-span-4 w-full">
                                 <div className="flex flex-wrap justify-center bg-white py-5">
-                                    {images.map((image) => (
-                                        <ProductCard key={image.id} product={image} />
+                                    {products.map((product) => (
+                                        <ProductCard key={product.id} product={product} />
                                     ))}
                                 </div>
                             </div>

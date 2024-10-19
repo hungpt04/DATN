@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../../../Assets/logo.png';
 import cart_icon from '../../../Assets/cart_icon.png';
+import { CartContext } from '../../../../pages/users/Cart/CartContext';
 
 const Navbar = () => {
     const [menu, setMenu] = useState('trangchu');
+    const { cartItemCount } = useContext(CartContext);
 
     return (
         <div className="flex justify-around shadow-md h-20">
@@ -61,7 +63,7 @@ const Navbar = () => {
                     <div className="relative cursor-pointer">
                         <img src={cart_icon} alt="Cart Icon" className="w-8 h-8" />
                         <div className="absolute top-0 right-0 w-5 h-5 flex items-center justify-center rounded-full text-xs bg-red-600 text-white transform translate-x-1/2 -translate-y-1/2">
-                            0
+                            {cartItemCount}
                         </div>
                     </div>
                 </Link>

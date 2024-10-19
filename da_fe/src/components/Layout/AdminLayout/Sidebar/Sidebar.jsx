@@ -4,13 +4,13 @@ import { SidebarData } from './SidebarData';
 import logo from '../../../Assets/logo.png';
 
 function Sidebar() {
-    const location = useLocation(); // Get current route for active state
-    const [openSubMenus, setOpenSubMenus] = useState({}); // Store open state for each submenu
+    const location = useLocation();
+    const [openSubMenus, setOpenSubMenus] = useState({});
 
     const toggleSubMenu = (index) => {
         setOpenSubMenus((prevState) => ({
             ...prevState,
-            [index]: !prevState[index], // Toggle the specific submenu
+            [index]: !prevState[index],
         }));
     };
 
@@ -68,7 +68,7 @@ function Sidebar() {
                             <li
                                 className={`flex items-center h-[50px] pl-5 mb-2 cursor-pointer transition-all duration-300 ${
                                     isActive
-                                        ? 'bg-gray-200 border-l-4 border-x-blue-800 text-gray-800'
+                                        ? 'bg-gray-200 border-l-4 border-x-blue-800  text-gray-800'
                                         : 'bg-white text-gray-700 hover:bg-gray-200 hover:text-gray-900'
                                 }`}
                                 key={index}

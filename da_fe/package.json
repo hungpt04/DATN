@@ -25,9 +25,11 @@
     "react-router-dom": "^6.26.2",
     "react-scripts": "5.0.1",
     "react-slick": "^0.30.2",
+    "react-spinners": "^0.14.1",
     "sass": "^1.78.0",
     "slick-carousel": "^1.8.1",
     "sweetalert": "^2.1.2",
+    "sweetalert2": "^11.14.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
