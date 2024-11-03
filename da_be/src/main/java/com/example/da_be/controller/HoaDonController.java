@@ -1,5 +1,6 @@
 package com.example.da_be.controller;
 
+import com.example.da_be.dto.UpdateHoaDonStatusRequest;
 import com.example.da_be.entity.HoaDon;
 import com.example.da_be.service.HoaDonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,15 @@ public class HoaDonController {
     public ResponseEntity<HoaDon> updateHoaDon(@PathVariable Long id, @RequestBody HoaDon hoaDon) {
         hoaDon.setId(id);  // Đảm bảo ID trong body và path là giống nhau
         HoaDon updatedHoaDon = hoaDonService.saveOrUpdateHoaDon(hoaDon);
+        return new ResponseEntity<>(updatedHoaDon, HttpStatus.OK);
+    }
+
+    @PutMapping("/update-status")
+    public ResponseEntity<HoaDon> updateHoaDonStatus(@RequestBody UpdateHoaDonStatusRequest request) {
+        HoaDon updatedHoaDon = hoaDonService.updateHoaDonStatus(request.getHoaDonId(), request.getStatus());
+        if (updatedHoaDon == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         return new ResponseEntity<>(updatedHoaDon, HttpStatus.OK);
     }
 }

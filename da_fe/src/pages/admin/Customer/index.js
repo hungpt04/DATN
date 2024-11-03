@@ -1,50 +1,26 @@
 import AddIcon from '@mui/icons-material/Add';
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
-import anhdep from '../../../components/Assets/anhdep.jpg';
-import anhxau from '../../../components/Assets/anhxau.jpg';
-import anhxau1 from '../../../components/Assets/anhxau1.jpg';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
 function Customer() {
-    // Sample data for users
-    const users = [
-        {
-            id: 1,
-            avatar: anhdep,
-            ma: 'TK001',
-            hoTen: 'Nguyen Van A',
-            email: 'a@example.com',
-            sdt: '0123456789',
-            ngaySinh: '1990-01-01',
-            gioiTinh: 'Nam',
-            vaiTro: 'Customer',
-            trangThai: 'Hoạt động',
-        },
-        {
-            id: 2,
-            avatar: anhxau,
-            ma: 'TK002',
-            hoTen: 'Tran Thi B',
-            email: 'b@example.com',
-            sdt: '0987654321',
-            ngaySinh: '1985-02-15',
-            gioiTinh: 'Nữ',
-            vaiTro: 'Admin',
-            trangThai: 'Hoạt động',
-        },
-        {
-            id: 3,
-            avatar: anhxau1,
-            ma: 'TK003',
-            hoTen: 'Le Van C',
-            email: 'c@example.com',
-            sdt: '0912345678',
-            ngaySinh: '1992-03-10',
-            gioiTinh: 'Nam',
-            vaiTro: 'Customer',
-            trangThai: 'Ngừng hoạt động',
-        },
-    ];
+    const [customers, setCustomers] = useState([]);
+
+    const loadCustomers = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/api/tai-khoan');
+            setCustomers(response.data);
+        } catch (error) {
+            console.error('Failed to fetch Customers', error);
+        }
+    };
+
+    useEffect(() => {
+        loadCustomers();
+    }, []);
+
+    const filteredCustomers = customers.filter((customer) => customer.vaiTro === 'Customer');
 
     return (
         <div>
@@ -59,7 +35,6 @@ function Customer() {
                     <tr className="bg-gray-200 text-gray-700 text-[11px]">
                         <th className="py-4 px-6 text-left">STT</th>
                         <th className="py-4 px-6 text-left">Ảnh</th>
-                        <th className="py-4 px-6 text-left">Mã</th>
                         <th className="py-4 px-6 text-left">Họ tên</th>
                         <th className="py-4 px-6 text-left">Email</th>
                         <th className="py-4 px-6 text-left">SDT</th>
@@ -69,29 +44,28 @@ function Customer() {
                         <th className="py-4 px-6 text-left whitespace-nowrap overflow-hidden text-ellipsis">
                             Giới tính
                         </th>
-                        <th className="py-4 px-6 text-left">Vai trò</th>
                         <th className="py-4 px-6 text-left">Trạng thái</th>
                         <th className="py-4 px-6 text-left">Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {users.map((user, index) => (
-                        <tr key={user.id} className="border-t border-gray-200 hover:bg-gray-100 text-[10px]">
+                    {filteredCustomers.map((customer, index) => (
+                        <tr key={customer.id} className="border-t border-gray-200 hover:bg-gray-100 text-[10px]">
                             <td className="py-4 px-6">{index + 1}</td>
                             <td className="py-4 px-4">
-                                <img src={user.avatar} alt="Avatar" className="h-10 w-10 rounded-full" />
+                                <img src={customer.avatar} alt="Avatar" className="h-10 w-10 rounded-full" />
                             </td>
-                            <td className="py-4 px-6">{user.ma}</td>
-                            <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">{user.hoTen}</td>
-                            <td className="py-4 px-6">{user.email}</td>
-                            <td className="py-4 px-6">{user.sdt}</td>
                             <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
-                                {user.ngaySinh}
+                                {customer.hoTen}
                             </td>
-                            <td className="py-4 px-6">{user.gioiTinh}</td>
-                            <td className="py-4 px-6">{user.vaiTro}</td>
+                            <td className="py-4 px-6">{customer.email}</td>
+                            <td className="py-4 px-6">{customer.sdt}</td>
                             <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
-                                {user.trangThai}
+                                {customer.ngaySinh}
+                            </td>
+                            <td className="py-4 px-6">{customer.gioiTinh}</td>
+                            <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
+                                {customer.trangThai}
                             </td>
                             <td className="py-4 px-6">
                                 <div className="flex">

@@ -21,11 +21,15 @@ import Cart from '../pages/users/Cart/Cart.jsx';
 import ProductAdmin from '../pages/admin/Product';
 import AddProduct from '../pages/admin/Product/Add.js';
 import OfflineSale from '../pages/admin/OfflineSale/index.js';
+import Order from '../pages/admin/Order/index.js';
+import AddAddress from '../pages/users/Checkout/AddAddress.jsx';
+import OrderSummary from '../pages/users/Checkout/OrderSummary.jsx';
 
 // Public routes
 const publicRoutes = [
     { path: '/', component: Home },
     { path: '/admin', component: Admin, layout: AdminLayout },
+    { path: '/admin/quan-ly-don-hang', component: Order, layout: AdminLayout },
     { path: '/admin/ban-hang-tai-quay', component: OfflineSale, layout: AdminLayout },
     { path: '/admin/quan-ly-san-pham/thuong-hieu', component: Brand, layout: AdminLayout },
     { path: '/admin/quan-ly-san-pham/mau-sac', component: Color, layout: AdminLayout },
@@ -44,6 +48,8 @@ const publicRoutes = [
     { path: '/tin-tuc', component: News },
     { path: '/lien-he', component: Contact },
     { path: '/gio-hang', component: Cart },
+    { path: '/gio-hang/checkout', component: AddAddress },
+    { path: '/gio-hang/checkout/order-summary', component: OrderSummary },
     { path: '/login', component: Login, layout: null },
 ];
 

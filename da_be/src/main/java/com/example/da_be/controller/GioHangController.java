@@ -75,4 +75,11 @@ public class GioHangController {
         List<GioHangWithImagesDTO> cartsWithImages = gioHangRepository.findGioHangCTWithImages(taiKhoanId);
         return ResponseEntity.ok(cartsWithImages);
     }
+
+    @DeleteMapping("/tai-khoan/{taiKhoanId}")
+    public ResponseEntity<Void> deleteCartByAccountId(@PathVariable Long taiKhoanId) {
+        gioHangService.deleteCartByAccountId(taiKhoanId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

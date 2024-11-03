@@ -30,4 +30,15 @@ public class HoaDonService {
     public void deleteHoaDonById(Long id) {
         hoaDonRepository.deleteById(id);
     }
+
+    // Phương thức cập nhật trạng thái hóa đơn
+    public HoaDon updateHoaDonStatus(Long id, int status) {
+        Optional<HoaDon> optionalHoaDon = hoaDonRepository.findById(id);
+        if (optionalHoaDon.isPresent()) {
+            HoaDon hoaDon = optionalHoaDon.get();
+            hoaDon.setTrangThai(status);
+            return hoaDonRepository.save(hoaDon);
+        }
+        return null; // Hoặc ném ngoại lệ nếu không tìm thấy hóa đơn
+    }
 }

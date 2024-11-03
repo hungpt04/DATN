@@ -30,4 +30,9 @@ public class GioHangService {
     public void deleteGioHangById(int id) {
         gioHangRepository.deleteById(id);
     }
+
+    public void deleteCartByAccountId(Long taiKhoanId) {
+        gioHangRepository.deleteByTaiKhoanId(taiKhoanId);
+    }
+
 }

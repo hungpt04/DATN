@@ -4,6 +4,7 @@ import { Button } from '@mui/material';
 import axios from 'axios';
 import { CartContext } from './CartContext';
 import swal from 'sweetalert';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const Cart = () => {
     const { setCartItemCount } = useContext(CartContext);
@@ -12,6 +13,8 @@ const Cart = () => {
     const [totalAmount, setTotalAmount] = useState(0); // Tổng tiền
     const discount = 218000; // Giảm giá
     const shippingFee = 0; // Phí vận chuyển (ở đây là miễn phí)
+
+    const navigate = useNavigate(); // Khởi tạo hàm navigate
 
     const loadCarts = async (taiKhoanId) => {
         try {
@@ -65,12 +68,10 @@ const Cart = () => {
 
     const handleQuantityChange = async (cartId, newQuantity) => {
         try {
-            // Cập nhật số lượng trong cơ sở dữ liệu
             await axios.put(`http://localhost:8080/api/gio-hang/${cartId}/update-quantity`, null, {
                 params: { quantity: newQuantity },
             });
 
-            // Cập nhật state để phản ánh số lượng mới
             setCarts((prevCarts) =>
                 prevCarts.map((cart) =>
                     cart.gioHang.id === cartId ? { ...cart, gioHang: { ...cart.gioHang, soLuong: newQuantity } } : cart,
@@ -83,10 +84,8 @@ const Cart = () => {
 
     const handleDeleteCart = async (cartId) => {
         try {
-            // Gọi API để xóa sản phẩm trong giỏ hàng
             await axios.delete(`http://localhost:8080/api/gio-hang/${cartId}`);
 
-            // Cập nhật lại danh sách giỏ hàng sau khi xóa
             setCarts((prevCarts) => prevCarts.filter((cart) => cart.gioHang.id !== cartId));
             swal('Thành công!', 'Giỏ hàng đã được xóa!', 'success');
         } catch (error) {
@@ -95,6 +94,10 @@ const Cart = () => {
     };
 
     const firstCartItems = getFirstCartItemPerProduct(carts);
+
+    const handleCheckout = () => {
+        navigate('/gio-hang/checkout'); // Chuyển hướng đến trang AddAddress
+    };
 
     return (
         <div className="mt-10">
@@ -123,7 +126,7 @@ const Cart = () => {
                             </div>
                             <div className="flex justify-between">
                                 <span>Giảm giá</span>
-                                <span className="text-green-700">-{discount}</span>
+                                <span className="text-green-700">-{discount.toLocaleString()} đ</span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Phí vận chuyển</span>
@@ -140,7 +143,7 @@ const Cart = () => {
 
                         <Button
                             variant="contained"
-                            type="submit"
+                            onClick={handleCheckout} // Gọi hàm handleCheckout khi nhấn nút
                             sx={{
                                 padding: '.8rem 2rem',
                                 marginTop: '2rem',

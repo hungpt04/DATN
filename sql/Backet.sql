@@ -282,11 +282,12 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc, TrangThai) VALUES
 
 
 	INSERT INTO TaiKhoan ( HoTen, Sdt, Email, MatKhau, GioiTinh, VaiTro, Avatar, NgaySinh, CCCD, TrangThai) VALUES
-	( 'Nguyen Van A', '0123456789', 'a@example.com', 'password123', 1, 'Customer', 'avatar1.png', '1990-01-01', '123456789', 1),
-	('Tran Thi B', '0987654321', 'b@example.com', 'password123', 0, 'Admin', 'avatar2.png', '1985-02-15', '987654321', 1),
-	('Le Van C', '0912345678', 'c@example.com', 'password123', 1, 'Customer', 'avatar3.png', '1992-03-10', '345678912', 0),
-	( 'Pham Thi D', '0908765432', 'd@example.com', 'password123', 0, 'Customer', 'avatar4.png', '1991-04-20', '654321987', 1),
-	('Hoang Van E', '0897654321', 'e@example.com', 'password123', 1, 'Customer', 'avatar5.png', '1988-05-30', '234567891', 0);
+	( 'Nguyen Van A', '0123456789', 'a@example.com', 'password123', 1, 'Customer', 'https://gcs.tripi.vn/public-tripi/tripi-feed/img/474622SvZ/tom-cruise-1020088.jpg', '1990-01-01', '123456789', 1),
+	('Tran Thi B', '0987654321', 'b@example.com', 'password123', 0, 'User', 'https://source.boomplaymusic.com/buzzgroup1/M00/3D/A7/rBEevGLXpSiAU3jLAAIwlwO9nlo220.jpg', '1985-02-15', '987654321', 1),
+	('Le Van C', '0912345678', 'c@example.com', 'password123', 1, 'Customer', 'https://images.javatpoint.com/top10-technologies/images/top-10-hollywood-actors6.png', '1992-03-10', '345678912', 0),
+	( 'Pham Thi D', '0908765432', 'd@example.com', 'password123', 0, 'Customer', 'https://images.javatpoint.com/top10-technologies/images/top-10-hollywood-actors9.png', '1991-04-20', '654321987', 1),
+	('Hoang Van E', '0897654321', 'e@example.com', 'password123', 1, 'User', 'https://images.javatpoint.com/top10-technologies/images/top-10-hollywood-actors5.png', '1988-05-30', '234567891', 0),
+	('Nguyen Tien N', '0981238651', 'e@example.com', 'password123', 1, 'User', 'https://cdn.shopify.com/s/files/1/0182/8937/files/tom_hordy_1024x1024.jpg?v=1482502984', '1986-08-30', '214557791', 0);
 
 
 

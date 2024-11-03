@@ -20,8 +20,9 @@ public class HoaDon {
     @Column(name = "Id")
     private Long id;
 
-    @Column(name = "IdTaiKhoan")
-    private Long idTaiKhoan;
+    @ManyToOne
+    @JoinColumn(name = "IdTaiKhoan", referencedColumnName = "Id")
+    private TaiKhoan taiKhoan;
 
     @Column(name = "IdVoucher")
     private Long idVoucher;

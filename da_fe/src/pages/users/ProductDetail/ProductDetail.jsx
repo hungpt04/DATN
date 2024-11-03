@@ -6,11 +6,10 @@ import axios from 'axios';
 import classNames from 'classnames'; // Import classNames ở đây
 import { useParams } from 'react-router-dom';
 import { CartContext } from '../Cart/CartContext';
-import ClipLoader from 'react-spinners/ClipLoader'; // Thêm react-spinners
 
 export default function ProductDetail() {
     const [product, setProduct] = useState(null);
-    const [loading, setLoading] = useState(true); // Sử dụng trạng thái loading
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { setCartItemCount } = useContext(CartContext);
 
@@ -20,11 +19,35 @@ export default function ProductDetail() {
         try {
             const response = await axios.get(`http://localhost:8080/api/san-pham-ct/with-images/${sanPhamId}`);
             setProduct(response.data);
-            setLoading(false); // Dừng loading khi dữ liệu được tải xong
+            setLoading(false);
         } catch (error) {
             console.error('Failed to fetch Products with images', error);
             setError(error.message);
-            setLoading(false); // Dừng loading nếu có lỗi xảy ra
+            setLoading(false);
+        }
+    };
+
+    const handleAddCart = async (values) => {
+        const newCart = {
+            sanPhamCT: {
+                id: values.sanPhamCTId,
+            },
+            taiKhoan: {
+                id: values.taiKhoanId,
+            },
+            soLuong: values.soLuong,
+            trangThai: values.trangThai === '1' ? 1 : 0,
+            ngayTao: values.ngayTao,
+            ngaySua: values.ngaySua,
+        };
+
+        try {
+            await axios.post('http://localhost:8080/api/gio-hang', newCart);
+            swal('Thành công!', 'Giỏ hàng đã được thêm!', 'success');
+            setCartItemCount((prevCount) => prevCount + 1);
+        } catch (error) {
+            console.error('Có lỗi xảy ra khi thêm Giỏ hàng!', error);
+            swal('Thất bại!', 'Có lỗi xảy ra khi thêm Giỏ hàng!', 'error');
         }
     };
 
@@ -32,14 +55,9 @@ export default function ProductDetail() {
         loadProductsWithImages(id);
     }, [id]);
 
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-screen">
-                <ClipLoader size={50} color={'#123abc'} loading={loading} />
-            </div>
-        );
-    }
+    console.log('Product ID:', id);
 
+    if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
 
     return (
@@ -112,6 +130,7 @@ export default function ProductDetail() {
                                                 key={rating}
                                                 aria-hidden="true"
                                                 className={classNames(
+                                                    // Giả sử reviews.average = 4
                                                     4 > rating ? 'text-gray-900' : 'text-gray-200',
                                                     'h-5 w-5 flex-shrink-0',
                                                 )}
@@ -153,6 +172,7 @@ export default function ProductDetail() {
 
                                     <fieldset aria-label="Chọn kích cỡ" className="mt-4">
                                         <RadioGroup className="grid grid-cols-4 gap-4 sm:grid-cols-8 lg:grid-cols-4">
+                                            {/* Giả sử bạn có một danh sách kích thước và trạng thái còn hàng */}
                                             {[{ name: product.trongLuongTen, inStock: true }].map((size) => (
                                                 <Radio
                                                     key={size.name}
@@ -200,9 +220,17 @@ export default function ProductDetail() {
 
                                 <button
                                     type="button"
-                                    className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 py-3 px-8 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                    className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                    onClick={() => {
+                                        handleAddCart({
+                                            sanPhamCTId: id,
+                                            taiKhoanId: 1,
+                                            soLuong: 1,
+                                            trangThai: 1,
+                                        });
+                                    }}
                                 >
-                                    Thêm vào giỏ hàng
+                                    THÊM VÀO GIỎ HÀNG
                                 </button>
                             </form>
                         </div>
