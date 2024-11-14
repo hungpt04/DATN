@@ -6,21 +6,32 @@ import { useForm } from 'react-hook-form';
 
 function AddProduct() {
     const [productName, setProductName] = useState('');
+
     const [brand, setBrand] = useState('');
     const [brands, setBrands] = useState([]);
+
     const [material, setMaterial] = useState('');
     const [materials, setMaterials] = useState([]);
+
     const [balancePoint, setBalancePoint] = useState('');
     const [balances, setBalances] = useState([]);
+
     const [hardness, setHardness] = useState('');
     const [stiffs, setStiffs] = useState([]);
+
     const [status, setStatus] = useState('');
+
     const [colors, setColors] = useState([]);
     const [weights, setWeights] = useState([]);
     const [description, setDescription] = useState('');
     const [variants, setVariants] = useState([
         { id: 1, name: '', quantity: '', weight: '', price: '', selected: false },
     ]);
+
+    const [imageList, setImageList] = useState([]);
+    const [selectedImages, setSelectedImages] = useState([]);
+    const [showImageModal, setShowImageModal] = useState(false);
+    const [currentVariantIndex, setCurrentVariantIndex] = useState(null);
 
     const {
         register,
@@ -268,6 +279,103 @@ function AddProduct() {
         setShowAddWeightModal(true);
     };
 
+    const handleImageModal = (index) => {
+        setCurrentVariantIndex(index); // Lưu chỉ số biến thể hiện tại
+        setShowImageModal(true);
+        setSelectedImages(variants[index].images || []);
+    };
+
+    const handleAddImage = (e) => {
+        const files = Array.from(e.target.files);
+        const newImages = files.map((file) => URL.createObjectURL(file));
+        setImageList((prev) => [...prev, ...newImages]);
+    };
+
+    const handleSelectImage = (image) => {
+        if (selectedImages.includes(image)) {
+            setSelectedImages(selectedImages.filter((img) => img !== image));
+        } else {
+            setSelectedImages([...selectedImages, image]);
+        }
+    };
+
+    const handleSaveImages = () => {
+        if (currentVariantIndex !== null) {
+            const newVariants = [...variants];
+            newVariants[currentVariantIndex].images = selectedImages;
+            setVariants(newVariants);
+            setShowImageModal(false);
+        }
+    };
+
+    const createVariants = () => {
+        const newVariants = [];
+        selectedColors.forEach((color) => {
+            selectedWeights.forEach((weight) => {
+                newVariants.push({
+                    id: newVariants.length + 1,
+                    name: `${productName} - ${color} - ${weight}`,
+                    quantity: '',
+                    weight: weight,
+                    price: '',
+                    selected: false,
+                });
+            });
+        });
+        setVariants(newVariants);
+    };
+
+    useEffect(() => {
+        if (selectedColors.length > 0 && selectedWeights.length > 0) {
+            createVariants();
+        } else {
+            setVariants([]); // Reset variants nếu không có màu sắc hoặc trọng lượng
+        }
+    }, [selectedColors, selectedWeights]);
+
+    const handleAddProduct = async (e) => {
+        e.preventDefault(); // Ngăn chặn hành vi mặc định của form
+
+        // Tạo đối tượng sản phẩm chi tiết
+        const newSanPhamCT = {
+            sanPham: { id: 1 }, // Giả sử bạn đã có sản phẩm với ID = 1, bạn có thể thay đổi theo nhu cầu
+            thuongHieu: { id: brand },
+            mauSac: { id: material },
+            chatLieu: { id: material }, // Nếu bạn muốn sử dụng biến chất liệu, hãy thay đổi thành biến đúng
+            trongLuong: { id: material }, // Sử dụng biến đã định nghĩa
+            diemCanBang: { id: balancePoint },
+            doCung: { id: hardness },
+            ma: `SPCT${variants.length + 1}`, // Tạo mã sản phẩm chi tiết
+            soLuong: variants.reduce((total, variant) => total + parseInt(variant.quantity || 0, 10), 0), // Tổng số lượng
+            donGia: calculateAveragePrice(variants), // Tính đơn giá trung bình
+            moTa: description, // Mô tả sản phẩm
+            trangThai: status === 'Active' ? 1 : 0, // Trạng thái sản phẩm chi tiết
+        };
+
+        console.log('newSanPhamCT:', newSanPhamCT); // Log đối tượng sản phẩm chi tiết
+
+        try {
+            const response = await axios.post('http://localhost:8080/api/san-pham-ct', newSanPhamCT);
+            swal('Thành công!', 'Sản phẩm đã được thêm!', 'success');
+            reset(); // Reset form values after adding
+            setVariants([{ id: 1, name: '', quantity: '', weight: '', price: '', selected: false }]); // Reset variants
+        } catch (error) {
+            console.error('Có lỗi xảy ra khi thêm sản phẩm!', error);
+            swal('Thất bại!', 'Có lỗi xảy ra khi thêm sản phẩm!', 'error');
+        }
+    };
+
+    // Hàm tính đơn giá trung bình
+    const calculateAveragePrice = (variants) => {
+        const totalQuantity = variants.reduce((total, variant) => total + parseInt(variant.quantity || 0, 10), 0);
+        const totalPrice = variants.reduce(
+            (total, variant) => total + (parseFloat(variant.price) || 0) * (parseInt(variant.quantity) || 0),
+            0,
+        );
+
+        // Tránh chia cho 0
+        return totalQuantity > 0 ? totalPrice / totalQuantity : 0;
+    };
     return (
         <div className="p-4 max-w-full mx-auto bg-white rounded-lg shadow-md w-[1000px]">
             <h2 className="text-xl font-bold mb-4">Thêm sản phẩm</h2>
@@ -501,14 +609,11 @@ function AddProduct() {
                         <tr className="bg-gray-200 text-gray-700">
                             <th className="p-1 text-sm"></th>
                             <th className="p-1 text-sm">STT</th>
-                            <th className="p-1 text-sm w-[250px]">Tên sản phẩm</th>{' '}
-                            {/* Tăng chiều rộng cho cột Tên sản phẩm */}
-                            <th className="p-4 text-sm w-[100px]">Số lượng</th> {/* Giảm chiều rộng cho cột Số lượng */}
-                            <th className="p-1 text-sm w-[100px]">Trọng lượng</th>{' '}
-                            {/* Giảm chiều rộng cho cột Trọng lượng */}
+                            <th className="p-1 text-sm w-[250px]">Tên sản phẩm</th>
+                            <th className="p-4 text-sm w-[100px]">Số lượng</th>
                             <th className="p-1 text-sm w-[100px]">Giá</th>
                             <th className="p-1 text-sm">Hành động</th>
-                            <th className="p-1 text-sm w-[150px]">Ảnh</th> {/* Điều chỉnh chiều rộng cho cột Ảnh */}
+                            <th className="p-1 text-sm w-[150px]">Ảnh</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -526,27 +631,12 @@ function AddProduct() {
                                     />
                                 </td>
                                 <td className="p-1 text-sm text-center">{index + 1}</td>
-                                <td className="p-1 text-sm">
-                                    <input
-                                        type="text"
-                                        value={variant.name}
-                                        onChange={(e) => handleVariantChange(index, 'name', e.target.value)}
-                                        className="border border-gray-300 rounded-md p-0.5 text-xs w-full"
-                                    />
-                                </td>
+                                <td className="p-1 text-sm">{variant.name}</td>
                                 <td className="p-1 text-sm text-center">
                                     <input
                                         type="number"
                                         value={variant.quantity}
                                         onChange={(e) => handleVariantChange(index, 'quantity', e.target.value)}
-                                        className="border border-gray-300 rounded-md p-0.5 text-xs w-[60px]"
-                                    />
-                                </td>
-                                <td className="p-1 text-sm text-center">
-                                    <input
-                                        type="text"
-                                        value={variant.weight}
-                                        onChange={(e) => handleVariantChange(index, 'weight', e.target.value)}
                                         className="border border-gray-300 rounded-md p-0.5 text-xs w-[60px]"
                                     />
                                 </td>
@@ -562,18 +652,40 @@ function AddProduct() {
                                     <button className="text-red-600 hover:underline">Xóa</button>
                                 </td>
                                 <td className="p-1 text-sm text-center">
-                                    <button
-                                        onClick={() => document.getElementById(`fileInput${index}`).click()}
-                                        className="bg-blue-500 text-white px-2 py-1 rounded-md text-xs"
-                                    >
-                                        Chọn ảnh
-                                    </button>
-                                    <input
-                                        type="file"
-                                        id={`fileInput${index}`}
-                                        className="hidden"
-                                        onChange={(e) => handleFileChange(e, index)}
-                                    />
+                                    {variant.images && variant.images.length > 0 ? (
+                                        // Nếu đã có ảnh, hiển thị ảnh
+                                        <div className="flex space-x-2 overflow-x-auto">
+                                            {' '}
+                                            {/* Sử dụng flex để sắp xếp ảnh theo chiều ngang */}
+                                            {variant.images.map((img, imgIndex) => (
+                                                <img
+                                                    key={imgIndex}
+                                                    src={img}
+                                                    alt="variant"
+                                                    className="w-20 h-20 object-cover" // Thay đổi kích thước ảnh ở đây
+                                                />
+                                            ))}
+                                            {/* Nút "Chọn ảnh" sẽ được hiển thị bên cạnh ảnh cuối cùng */}
+                                            <button
+                                                onClick={() => handleImageModal(index)}
+                                                type="button"
+                                                className="flex flex-col items-center justify-center w-20 h-20 border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium rounded"
+                                            >
+                                                <AddIcon />
+                                                <span className="text-xs">Upload</span>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        // Nếu chưa có ảnh, hiển thị nút "Chọn ảnh"
+                                        <button
+                                            onClick={() => handleImageModal(index)}
+                                            type="button"
+                                            className="flex flex-col items-center justify-center w-20 h-20 border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium rounded"
+                                        >
+                                            <AddIcon />
+                                            <span className="text-xs">Upload</span>
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ))}
@@ -585,7 +697,11 @@ function AddProduct() {
                 </button>
 
                 <div className="mt-6">
-                    <button type="submit" className="bg-blue-600 text-white rounded-md px-4 py-2">
+                    <button
+                        type="button"
+                        onClick={handleAddProduct}
+                        className="bg-blue-600 text-white rounded-md px-4 py-2"
+                    >
                         Thêm sản phẩm
                     </button>
                 </div>
@@ -1051,6 +1167,43 @@ function AddProduct() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {showImageModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-[600px]">
+                        <h3 className="text-lg font-bold mb-4">Chọn ảnh</h3>
+                        <input type="file" multiple onChange={handleAddImage} />
+                        <div className="mt-4">
+                            {imageList.map((image, index) => (
+                                <div key={index} className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedImages.includes(image)}
+                                        onChange={() => handleSelectImage(image)}
+                                    />
+                                    <img src={image} alt="preview" className="w-20 h-20 object-cover ml-2" />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-4 flex justify-end space-x-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowImageModal(false)}
+                                className="bg-gray-300 hover:bg-gray-400 text-black py-2 px-4 rounded-lg"
+                            >
+                                Đóng
+                            </button>
+                            <button
+                                onClick={handleSaveImages} // Không cần truyền index nữa
+                                type="button"
+                                className="bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded-lg"
+                            >
+                                Lưu ảnh
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

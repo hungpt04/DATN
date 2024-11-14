@@ -24,12 +24,18 @@ import OfflineSale from '../pages/admin/OfflineSale/index.js';
 import Order from '../pages/admin/Order/index.js';
 import AddAddress from '../pages/users/Checkout/AddAddress.jsx';
 import OrderSummary from '../pages/users/Checkout/OrderSummary.jsx';
+import OrderHistory from '../pages/admin/Order/OrderHistory.jsx';
+import SearchOrder from '../pages/admin/Return/SearchOrder.jsx';
+import ReturnOrder from '../pages/admin/Return/ReturnOrder.jsx';
 
 // Public routes
 const publicRoutes = [
     { path: '/', component: Home },
     { path: '/admin', component: Admin, layout: AdminLayout },
     { path: '/admin/quan-ly-don-hang', component: Order, layout: AdminLayout },
+    { path: '/admin/tra-hang', component: SearchOrder, layout: AdminLayout },
+    { path: '/admin/tra-hang/don-hang', component: ReturnOrder, layout: AdminLayout },
+    { path: '/admin/quan-ly-don-hang/order-history', component: OrderHistory, layout: AdminLayout },
     { path: '/admin/ban-hang-tai-quay', component: OfflineSale, layout: AdminLayout },
     { path: '/admin/quan-ly-san-pham/thuong-hieu', component: Brand, layout: AdminLayout },
     { path: '/admin/quan-ly-san-pham/mau-sac', component: Color, layout: AdminLayout },

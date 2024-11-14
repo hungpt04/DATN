@@ -196,6 +196,7 @@
 		IdHoaDon INT,
 		Ma NVARCHAR(255),
 		TongTien DECIMAL(10,2),
+		NgayTao DATETIME,
 		PhuongThucThanhToan NVARCHAR(255),
 		TrangThai INT,
 		FOREIGN KEY (IdTaiKhoan) REFERENCES TaiKhoan(Id),

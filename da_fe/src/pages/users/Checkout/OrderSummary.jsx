@@ -101,6 +101,7 @@ const OrderSummary = () => {
 
     const handlePayment = async () => {
         try {
+            // Tạo hóa đơn
             const hoaDonResponse = await axios.post('http://localhost:8080/api/hoa-don', {
                 taiKhoan: { id: 1 },
                 soLuong: totalQuantity,
@@ -115,46 +116,66 @@ const OrderSummary = () => {
                 ngayTao: new Date(),
                 trangThai: 1,
             });
+
             const createdBill = hoaDonResponse.data;
 
+            // Tạo mã hóa đơn
             const billCode = `HD${createdBill.id}`;
             await axios.put(`http://localhost:8080/api/hoa-don/${createdBill.id}`, {
                 ...createdBill,
                 ma: billCode,
             });
 
-            // Aggregate quantity by unique sanPhamCT ID
+            // Tính toán số lượng sản phẩm để lưu vào hóa đơn chi tiết
             const groupedCarts = carts.reduce((acc, cart) => {
                 const sanPhamCTId = cart.gioHang.sanPhamCT.id;
                 if (!acc[sanPhamCTId]) {
-                    acc[sanPhamCTId] = { ...cart.gioHang, soLuong: cart.gioHang.soLuong };
+                    acc[sanPhamCTId] = {
+                        sanPhamCT: cart.gioHang.sanPhamCT,
+                        soLuong: cart.gioHang.soLuong,
+                        giaBan: cart.gioHang.sanPhamCT.donGia,
+                    };
                 } else {
                     acc[sanPhamCTId].soLuong = cart.gioHang.soLuong; // Cộng dồn số lượng
                 }
                 return acc;
             }, {});
 
-            // Create hoaDonCT records for each unique sanPhamCT
+            // Tạo hóa đơn chi tiết cho mỗi sản phẩm
             await Promise.all(
                 Object.values(groupedCarts).map(async (groupedCart) => {
                     await axios.post('http://localhost:8080/api/hoa-don-ct', {
                         hoaDon: { id: createdBill.id },
                         sanPhamCT: groupedCart.sanPhamCT,
                         soLuong: groupedCart.soLuong,
-                        giaBan: groupedCart.sanPhamCT.donGia,
+                        giaBan: groupedCart.giaBan,
                         trangThai: 1,
                     });
 
                     // Cập nhật số lượng sản phẩm
-                    const newQuantity = groupedCart.sanPhamCT.soLuong - groupedCart.soLuong; // Số lượng còn lại
+                    const newQuantity = groupedCart.sanPhamCT.soLuong - groupedCart.soLuong;
                     await axios.put(`http://localhost:8080/api/san-pham-ct/${groupedCart.sanPhamCT.id}`, {
                         ...groupedCart.sanPhamCT,
-                        soLuong: newQuantity, // Ghi đè số lượng mới
+                        soLuong: newQuantity,
                     });
                 }),
             );
 
+            // Xóa giỏ hàng của người dùng
             await axios.delete(`http://localhost:8080/api/gio-hang/tai-khoan/1`);
+
+            // Thêm thông tin vào bảng ThanhToan (nếu cần)
+
+            // Thêm lịch sử đơn hàng
+            const lichSuDonHang = {
+                taiKhoan: { id: 1 }, // Thay đổi ID này nếu cần
+                hoaDon: { id: createdBill.id },
+                moTa: 'Đơn hàng đã được tạo',
+                ngayTao: new Date(),
+                trangThai: 1, // Trạng thái hóa đơn là 1
+            };
+
+            await axios.post('http://localhost:8080/api/lich-su-don-hang', lichSuDonHang);
 
             swal('Thành công!', 'Thanh toán thành công', 'success');
             setCartItemCount(0);

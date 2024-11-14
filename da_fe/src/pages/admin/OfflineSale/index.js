@@ -106,12 +106,22 @@ function OfflineSale() {
             phuongThucThanhToan: 'Tiền mặt', // Bạn có thể để trống hoặc lấy từ input nếu cần
             trangThai: 1, // Trạng thái là 1
             taiKhoan: null, // Tài khoản để null
+            ngayTao: new Date(),
             hoaDon: {
                 id: selectedBill.id, // ID của hóa đơn đang được chọn
             },
         };
 
+        const lichSuDonHang = {
+            taiKhoan: { id: 1 }, // Thay đổi ID này nếu cần
+            hoaDon: { id: selectedBill.id },
+            moTa: 'Đơn hàng đã được tạo',
+            ngayTao: new Date(),
+            trangThai: 6, // Trạng thái hóa đơn là 1
+        };
+
         try {
+            await axios.post('http://localhost:8080/api/lich-su-don-hang', lichSuDonHang);
             // Gửi yêu cầu thêm giao dịch mới
             const response = await axios.post('http://localhost:8080/api/thanh-toan', newTransaction);
             const createdTransaction = response.data;
@@ -314,6 +324,16 @@ function OfflineSale() {
             // Tạo mã hóa đơn
             const billCode = `HD${createdBill.id}`; // Tạo mã hóa đơn với định dạng "HD" + id
 
+            const lichSuDonHang = {
+                taiKhoan: { id: 1 }, // Thay đổi ID này nếu cần
+                hoaDon: { id: createdBill.id },
+                moTa: 'Đơn hàng đã được tạo',
+                ngayTao: new Date(),
+                trangThai: 1, // Trạng thái hóa đơn là 1
+            };
+
+            await axios.post('http://localhost:8080/api/lich-su-don-hang', lichSuDonHang);
+
             // Cập nhật hóa đơn với mã hóa đơn
             await axios.put(`http://localhost:8080/api/hoa-don/${createdBill.id}`, {
                 ...createdBill,
@@ -420,6 +440,16 @@ function OfflineSale() {
             swal('Thất bại!', 'Số tiền thanh toán phải lớn hơn hoặc bằng tổng số tiền!', 'warning');
             return;
         }
+
+        const lichSuDonHang = {
+            taiKhoan: { id: 1 }, // Thay đổi ID này nếu cần
+            hoaDon: { id: selectedBill.id },
+            moTa: 'Đơn hàng đã được tạo',
+            ngayTao: new Date(),
+            trangThai: 7, // Trạng thái hóa đơn là 1
+        };
+
+        await axios.post('http://localhost:8080/api/lich-su-don-hang', lichSuDonHang);
 
         try {
             // Gửi yêu cầu xác nhận thanh toán
@@ -583,6 +613,8 @@ function OfflineSale() {
         }
     }, [transactions]);
 
+    console.log(billDetails);
+
     return (
         <div className="h-[500px] flex justify-between items-start p-4">
             <div className="container mx-auto p-4">
@@ -678,6 +710,8 @@ function OfflineSale() {
                                             }
                                             return isUnique;
                                         });
+
+                                    console.log(uniqueDetails);
 
                                     return uniqueDetails.length > 0 ? (
                                         <>

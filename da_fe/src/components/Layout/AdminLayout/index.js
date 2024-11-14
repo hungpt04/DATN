@@ -3,7 +3,9 @@ import HeaderAdmin from './HeaderAdmin/HeaderAdmin';
 
 function AdminLayout({ children }) {
     return (
-        <div className="flex">
+        <div className="flex ">
+            {' '}
+            {/* Ẩn thanh cuộn ngang */}
             <Sidebar />
             <div className="flex-1 transition-all duration-300 bg-white group-hover:ml-[300px] ml-[250px]">
                 <HeaderAdmin />

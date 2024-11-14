@@ -45,6 +45,10 @@ public class SanPhamCT {
     @JoinColumn(name = "IdDiemCanBang")
     private DiemCanBang diemCanBang;
 
+    @ManyToOne
+    @JoinColumn(name = "IdDoCung")
+    private DoCung doCung;
+
     @Column(name = "Ma")
     private String ma;
 

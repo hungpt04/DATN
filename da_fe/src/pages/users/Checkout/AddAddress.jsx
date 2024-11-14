@@ -120,7 +120,7 @@ const AddAddress = () => {
                                     <Grid item xs={12} sm={6}>
                                         <TextField
                                             type="text"
-                                            label="Tỉnh thành"
+                                            label="Tỉnh/Thành phố"
                                             className={`border border-gray-300 p-2 w-full rounded-lg ${
                                                 errors.Tinh ? 'border-red-500' : ''
                                             }`}
@@ -131,7 +131,7 @@ const AddAddress = () => {
                                     <Grid item xs={12} sm={6}>
                                         <TextField
                                             type="text"
-                                            label="Huyện"
+                                            label="Quận/Huyện"
                                             className={`border border-gray-300 p-2 w-full rounded-lg ${
                                                 errors.Huyen ? 'border-red-500' : ''
                                             }`}
@@ -142,7 +142,7 @@ const AddAddress = () => {
                                     <Grid item xs={12} sm={6}>
                                         <TextField
                                             type="text"
-                                            label="Xã"
+                                            label="Xã/Phường"
                                             className={`border border-gray-300 p-2 w-full rounded-lg ${
                                                 errors.Xa ? 'border-red-500' : ''
                                             }`}

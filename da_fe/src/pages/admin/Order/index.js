@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import { useNavigate } from 'react-router-dom';
+import swal from 'sweetalert';
 
 function Order() {
     const [orders, setOrders] = useState([]);
@@ -14,6 +16,7 @@ function Order() {
     const [filteredOrders, setFilteredOrders] = useState([]);
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [searchTerm, setSearchTerm] = useState(''); // Trạng thái tìm kiếm
+    const navigate = useNavigate();
 
     const loadOrders = async () => {
         try {
@@ -23,6 +26,20 @@ function Order() {
             setFilteredOrders(sortedOrders);
         } catch (error) {
             console.error('Failed to fetch orders', error);
+        }
+    };
+
+    const handleViewOrder = async (order) => {
+        try {
+            // Lấy thông tin hóa đơn theo ID
+            const hoaDonResponse = await axios.get(`http://localhost:8080/api/hoa-don/${order.id}`);
+
+            // Chuyển đến trang OrderHistory và truyền thông tin hóa đơn và thanh toán
+            navigate('/admin/quan-ly-don-hang/order-history', {
+                state: { order: hoaDonResponse.data || null }, // Gửi null nếu không có thanh toán
+            });
+        } catch (error) {
+            console.error('Failed to fetch order details', error);
         }
     };
 
@@ -238,8 +255,11 @@ function Order() {
                                     <span className={`${color} py-0.5 px-2 rounded-full text-xs`}>{label}</span>
                                 </td>
                                 <td className="py-1 px-2 border-b">
-                                    <button className=" hover:bg-gray-400 font-medium py-2 px-4 rounded">
-                                        <PencilIcon className="h-4 w-4" />
+                                    <button
+                                        onClick={() => handleViewOrder(order)}
+                                        className=" hover:bg-gray-400 font-medium py-2 px-4 rounded"
+                                    >
+                                        <RemoveRedEyeIcon className="h-4 w-4" />
                                     </button>
                                 </td>
                             </tr>
