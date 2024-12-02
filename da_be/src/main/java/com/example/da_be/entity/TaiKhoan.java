@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Getter
@@ -42,7 +43,7 @@ public class TaiKhoan {
     private String avatar;
 
     @Column(name = "NgaySinh")
-    private Date ngaySinh;
+    private LocalDate ngaySinh;
 
     @Column(name = "CCCD")
     private String cccd;

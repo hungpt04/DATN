@@ -46,6 +46,10 @@ export const SidebarData = [
         title: 'Giảm giá',
         icon: <TrendingDownIcon />,
         link: '/admin/giam-gia',
+        subItems: [
+            { title: 'Phiếu giảm giá', link: '/admin/giam-gia/phieu-giam-gia' },
+            { title: 'Đợt giảm giá', link: '/admin/giam-gia/dot-giam-gia' },
+        ]
     },
     {
         title: 'Tài khoản',

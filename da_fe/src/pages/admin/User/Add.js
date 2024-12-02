@@ -99,7 +99,7 @@ function AddUser() {
 
         try {
             // First, create the user account
-            const taiKhoanResponse = await fetch('http://localhost:8080/api/tai-khoan', {
+            const taiKhoanResponse = await fetch('http://localhost:8080/api/tai-khoan/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ function AddUser() {
                 diaChiCuThe: diaChiData.diaChiCuThe,
             };
 
-            const diaChiResponse = await fetch('http://localhost:8080/api/dia-chi', {
+            const diaChiResponse = await fetch('http://localhost:8080/api/dia-chi/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

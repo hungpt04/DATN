@@ -1,5 +1,6 @@
 import Sidebar from './Sidebar/Sidebar';
 import HeaderAdmin from './HeaderAdmin/HeaderAdmin';
+import {ToastContainer} from "react-toastify";
 
 function AdminLayout({ children }) {
     return (
@@ -9,7 +10,6 @@ function AdminLayout({ children }) {
             <Sidebar />
             <div className="flex-1 transition-all duration-300 bg-white group-hover:ml-[300px] ml-[250px]">
                 <HeaderAdmin />
-
                 <div className="p-4 min-h-screen">
                     <div className="max-w-[1500px] mx-auto bg-white rounded-lg">{children}</div>
                 </div>

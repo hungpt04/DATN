@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { format, parseISO, addDays } from 'date-fns'; // Thêm addDays
+import axios from "axios";
 
 function EditUser() {
     const [provinces, setProvinces] = useState([]);
@@ -14,13 +14,12 @@ function EditUser() {
     const [error, setError] = useState('');
     const { id } = useParams();
 
-    // Form data states
     const [formData, setFormData] = useState({
         hoTen: '',
         sdt: '',
         email: '',
         gioiTinh: 0,
-        vaiTro: 'User ',
+        vaiTro: 'User',
         avatar: '',
         ngaySinh: '',
         cccd: '',
@@ -34,90 +33,208 @@ function EditUser() {
         idXa: '',
     });
 
+    const getDiaChilenForm = async (id) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/dia-chi/tai-khoan/${id}`);
+            const data = response.data[0];
+
+            if (!data) throw new Error('Không tìm thấy thông tin địa chỉ');
+
+            // Cập nhật giá trị tỉnh, huyện, xã
+            setSelectedProvince(data.idTinh || '');
+            setSelectedDistrict(data.idHuyen || '');
+            setSelectedWard(data.idXa || '');
+
+            // Gọi API phụ để cập nhật danh sách huyện và xã
+            if (data.idTinh) await fetchDistricts(data.idTinh);
+            if (data.idHuyen) await fetchWards(data.idHuyen);
+
+            // Cập nhật thông tin địa chỉ chi tiết
+            setDiaChiData({
+                diaChiCuThe: data.diaChiCuThe || '',
+                idTinh: data.idTinh || '',
+                idHuyen: data.idHuyen || '',
+                idXa: data.idXa || '',
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: 'Có lỗi xảy ra khi tải thông tin địa chỉ! ' + error.message,
+            });
+        }
+    };
+
     useEffect(() => {
-        // Fetch user data when component mounts
+        if (id) {
+            getDiaChilenForm(id);
+        }
+    }, [id]);
+
+    useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/api/tai-khoan/${id}`);
-                const userData = await response.json();
+                const [userResponse, addressResponse] = await Promise.all([
+                    fetch(`http://localhost:8080/api/tai-khoan/${id}`),
+                    fetch(`http://localhost:8080/api/dia-chi/tai-khoan/${id}`)
+                ]);
 
-                // Xử lý ngày sinh - thêm 1 ngày để hiển thị đúng
-                const ngaySinh = userData.ngaySinh ? format(addDays(parseISO(userData.ngaySinh), 1), 'yyyy-MM-dd') : '';
-
-                setFormData({
-                    ...userData,
-                    gioiTinh: Number(userData.gioiTinh),
-                    ngaySinh: ngaySinh,
-                });
-                setPreviewImage(userData.avatar);
-
-                // Fetch address data
-                const addressResponse = await fetch(`http://localhost:8080/api/dia-chi/tai-khoan/${id}`);
+                const userData = await userResponse.json();
                 const addressData = await addressResponse.json();
-                setDiaChiData({
-                    diaChiCuThe: addressData.diaChiCuThe,
-                    idTinh: addressData.idTinh,
-                    idHuyen: addressData.idHuyen,
-                    idXa: addressData.idXa,
-                });
 
-                setSelectedProvince(addressData.idTinh);
-                setSelectedDistrict(addressData.idHuyen);
-                setSelectedWard(addressData.idXa);
+                // Cập nhật thông tin người dùng
+                setFormData(userData);
+
+                // Cập nhật địa chỉ
+                if (addressData && addressData.length > 0) {
+                    const address = addressData[0];
+                    setDiaChiData({
+                        diaChiCuThe: address.diaChiCuThe || '',
+                        idTinh: address.idTinh || '',
+                        idHuyen: address.idHuyen || '',
+                        idXa: address.idXa || '',
+                    });
+
+                    // Thiết lập các dropdown địa chỉ
+                    setSelectedProvince(address.idTinh || '');
+
+                    // Fetch districts nếu có tỉnh
+                    if (address.idTinh) {
+                        const districtResponse = await fetch(`https://provinces.open-api.vn/api/p/${address.idTinh}?depth=2`);
+                        const districtData = await districtResponse.json();
+                        setDistricts(districtData.districts || []);
+                        setSelectedDistrict(address.idHuyen || '');
+
+                        // Fetch wards nếu có huyện
+                        if (address.idHuyen) {
+                            const wardResponse = await fetch(`https://provinces.open-api.vn/api/d/${address.idHuyen}?depth=2`);
+                            const wardData = await wardResponse.json();
+                            setWards(wardData.wards || []);
+                            setSelectedWard(address.idXa || '');
+                        }
+                    }
+                }
             } catch (error) {
                 console.error('Error fetching user data:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi!',
-                    text: 'Có lỗi xảy ra khi tải dữ liệu nhân viên!',
+                    text: 'Có lỗi xảy ra khi tải dữ liệu! ' + error.message,
                 });
             }
         };
 
-        fetchUserData();
+        if (id) {
+            fetchUserData();
+        }
     }, [id]);
 
     useEffect(() => {
-        // Fetch provinces
-        fetch('https://provinces.open-api.vn/api/p/')
-            .then((response) => response.json())
-            .then((data) => setProvinces(data))
-            .catch(() => {
+        const fetchProvinces = async () => {
+            try {
+                const response = await fetch('https://provinces.open-api.vn/api/p/');
+                const data = await response.json();
+                setProvinces(data || []);
+            } catch {
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi!',
                     text: 'Có lỗi xảy ra khi tải danh sách tỉnh/thành!',
                 });
-            });
+            }
+        };
+        fetchProvinces();
     }, []);
 
+// Hàm để lấy danh sách huyện
+    const fetchDistricts = async (provinceId) => {
+        try {
+            const response = await fetch(`https://provinces.open-api.vn/api/p/${provinceId}?depth=2`);
+            const data = await response.json();
+            setDistricts(data.districts || []);
+            setSelectedDistrict(''); // Reset huyện khi tỉnh thay đổi
+            setSelectedWard('');    // Reset xã khi tỉnh thay đổi
+        } catch (error) {
+            console.error('Error fetching districts:', error);
+            setDistricts([]);
+        }
+    };
+
     useEffect(() => {
-        // Fetch districts when province changes
         if (selectedProvince) {
-            fetch(`https://provinces.open-api.vn/api/p/${selectedProvince}?depth=2`)
-                .then((response) => response.json())
-                .then((data) => setDistricts(data.districts));
-            setDiaChiData((prev) => ({ ...prev, idTinh: selectedProvince }));
+            fetchDistricts(selectedProvince);
+        } else {
+            setDistricts([]);
         }
     }, [selectedProvince]);
 
-    useEffect(() => {
-        // Fetch wards when district changes
-        if (selectedDistrict) {
-            fetch(`https://provinces.open-api.vn/api/d/${selectedDistrict}?depth=2`)
-                .then((response) => response.json())
-                .then((data) => setWards(data.wards));
-            setDiaChiData((prev) => ({ ...prev, idHuyen: selectedDistrict }));
+
+    const fetchWards = async (districtId) => {
+        try {
+            // Kiểm tra districtId hợp lệ
+            if (!districtId) {
+                console.warn('District ID is empty');
+                setWards([]);
+                return;
+            }
+
+            const response = await fetch(`https://provinces.open-api.vn/api/d/${districtId}?depth=2`);
+
+            // Kiểm tra response
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Kiểm tra dữ liệu trả về
+            if (!data || !data.wards) {
+                console.warn('No wards data found', data);
+                setWards([]);
+                return;
+            }
+
+            // Đảm bảo dữ liệu ward hợp lệ
+            const validWards = data.wards.filter(ward =>
+                ward && ward.code && ward.name
+            );
+
+            setWards(validWards);
+
+            // Reset ward nếu không có ward nào
+            if (validWards.length === 0) {
+                setSelectedWard('');
+            }
+        } catch (error) {
+            console.error('Error fetching wards:', error);
+            setWards([]);
+            setSelectedWard('');
         }
+    };
+
+// Useeffect để fetch wards
+    useEffect(() => {
+        const safelyFetchWards = async () => {
+            if (selectedDistrict) {
+                try {
+                    await fetchWards(selectedDistrict);
+                } catch (error) {
+                    console.error('Error in useEffect fetchWards:', error);
+                }
+            } else {
+                setWards([]);
+                setSelectedWard('');
+            }
+        };
+
+        safelyFetchWards();
     }, [selectedDistrict]);
 
+
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: name === 'gioiTinh' ? Number(value) : value,
-        }));
-    };
+        setFormData({...formData, [e.target.name]: e.target.value});
+    }
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -141,17 +258,135 @@ function EditUser() {
         }
     };
 
+    // const handleUpdateUser = async (e) => {
+    //     e.preventDefault();
+    //     setError('');
+    //
+    //     try {
+    //         // Update user account
+    //         const userResponse = await fetch(`http://localhost:8080/api/tai-khoan/${id}`, {
+    //             method: 'PUT',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify(formData),
+    //         });
+    //
+    //         if (!userResponse.ok) {
+    //             const errorText = await userResponse.text();
+    //             throw new Error(`Failed to update user account: ${errorText}`);
+    //         }
+    //
+    //         // Update address
+    //         const diaChiPayload = {
+    //             taiKhoan: { id: id },
+    //             ten: formData.hoTen,
+    //             sdt: formData.sdt,
+    //             idTinh: diaChiData.idTinh,
+    //             idHuyen: diaChiData.idHuyen,
+    //             idXa: selectedWard,
+    //             diaChiCuThe: diaChiData.diaChiCuThe,
+    //         };
+    //
+    //         const addressResponse = await fetch(`http://localhost:8080/api/dia-chi/tai-khoan/${id}`, {
+    //             method: 'PUT',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify(diaChiPayload),
+    //         });
+    //
+    //         if (!addressResponse.ok) {
+    //             const errorText = await addressResponse.text();
+    //             throw new Error(`Failed to update address: ${errorText}`);
+    //         }
+    //
+    //         // Chỉ hiển thị thông báo thành công nếu cả hai request đều thành công
+    //         await Promise.all([userResponse, addressResponse]);
+    //
+    //         Swal.fire({
+    //             icon: 'success',
+    //             title: 'Thành công!',
+    //             text: 'Cập nhật nhân viên thành công!',
+    //         });
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         Swal.fire({
+    //             icon: 'error',
+    //             title: 'Lỗi!',
+    //             text: 'Có lỗi xảy ra khi cập nhật nhân viên! Vui lòng kiểm tra lại thông tin.',
+    //         });
+    //     }
+    // };
+
+    // const handleUpdateUser = async (e) => {
+    //     e.preventDefault();
+    //     setError('');
+    //
+    //     try {
+    //         // Update user account
+    //         const userResponse = await fetch(`http://localhost:8080/api/tai-khoan/update/${id}`, {
+    //             method: 'PUT',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify(formData),
+    //         });
+    //
+    //         if (!userResponse.ok) {
+    //             const errorText = await userResponse.text();
+    //             throw new Error(`Failed to update user account: ${errorText}`);
+    //         }
+    //
+    //         // Update address
+    //         const diaChiPayload = {
+    //             taiKhoan: { id: id },
+    //             ten: formData.hoTen,
+    //             sdt: formData.sdt,
+    //             idTinh: diaChiData.idTinh,
+    //             idHuyen: diaChiData.idHuyen,
+    //             idXa: selectedWard,
+    //             diaChiCuThe: diaChiData.diaChiCuThe,
+    //         };
+    //
+    //         const addressResponse = await fetch(`http://localhost:8080/api/dia-chi/update/${id}`, {
+    //             method: 'PUT',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify(diaChiPayload),
+    //         });
+    //
+    //         if (!addressResponse.ok) {
+    //             const errorText = await addressResponse.text();
+    //             throw new Error(`Failed to update address: ${errorText}`);
+    //         }
+    //
+    //         // Chỉ hiển thị thông báo thành công nếu cả hai request đều thành công
+    //         await Promise.all([userResponse, addressResponse]);
+    //
+    //         Swal.fire({
+    //             icon: 'success',
+    //             title: 'Thành công!',
+    //             text: 'Cập nhật nhân viên thành công!',
+    //         });
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         Swal.fire({
+    //             icon: 'error',
+    //             title: 'Lỗi!',
+    //             text: 'Có lỗi xảy ra khi cập nhật nhân viên! Vui lòng kiểm tra lại thông tin.',
+    //         });
+    //     }
+    // };
+
     const handleUpdateUser = async (e) => {
         e.preventDefault();
         setError('');
 
         try {
             // Update user account
-            const userResponse = await fetch(`http://localhost:8080/api/tai-khoan/${id}`, {
+            const userResponse = await fetch(`http://localhost:8080/api/tai-khoan/update/${id}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
 
@@ -162,7 +397,9 @@ function EditUser() {
 
             // Update address
             const diaChiPayload = {
-                taiKhoan: { id: id },
+                taiKhoan: {
+                    id: id  // Đảm bảo truyền đúng ID tài khoản
+                },
                 ten: formData.hoTen,
                 sdt: formData.sdt,
                 idTinh: diaChiData.idTinh,
@@ -171,7 +408,9 @@ function EditUser() {
                 diaChiCuThe: diaChiData.diaChiCuThe,
             };
 
-            const addressResponse = await fetch(`http://localhost:8080/api/dia-chi/tai-khoan/${id}`, {
+            console.log('DiaChi Payload:', diaChiPayload); // Log payload để kiểm tra
+
+            const addressResponse = await fetch(`http://localhost:8080/api/dia-chi/update/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -184,8 +423,9 @@ function EditUser() {
                 throw new Error(`Failed to update address: ${errorText}`);
             }
 
-            // Chỉ hiển thị thông báo thành công nếu cả hai request đều thành công
-            await Promise.all([userResponse, addressResponse]);
+            // Kiểm tra response
+            const responseData = await addressResponse.json();
+            console.log('Address Update Response:', responseData);
 
             Swal.fire({
                 icon: 'success',
@@ -197,7 +437,7 @@ function EditUser() {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi!',
-                text: 'Có lỗi xảy ra khi cập nhật nhân viên! Vui lòng kiểm tra lại thông tin.',
+                text: error.message || 'Có lỗi xảy ra khi cập nhật nhân viên!',
             });
         }
     };
@@ -265,9 +505,12 @@ function EditUser() {
                                         <input
                                             type="radio"
                                             name="gioiTinh"
-                                            value="0"
+                                            value={0}
                                             checked={formData.gioiTinh === 0}
-                                            onChange={handleInputChange}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                gioiTinh: parseInt(e.target.value)
+                                            })}
                                             className="mr-2"
                                         />
                                         Nam
@@ -276,9 +519,12 @@ function EditUser() {
                                         <input
                                             type="radio"
                                             name="gioiTinh"
-                                            value="1"
+                                            value={1}
                                             checked={formData.gioiTinh === 1}
-                                            onChange={handleInputChange}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                gioiTinh: parseInt(e.target.value)
+                                            })}
                                             className="mr-2"
                                         />
                                         Nữ
@@ -296,7 +542,7 @@ function EditUser() {
                                     name="ngaySinh"
                                     value={formData.ngaySinh}
                                     className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    onChange={handleInputChange}
+                                    onChange={(e) => setFormData({...formData, ngaySinh: e.target.value})}
                                 />
                             </div>
 

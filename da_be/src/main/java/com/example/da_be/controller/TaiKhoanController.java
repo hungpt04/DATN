@@ -34,14 +34,14 @@ public class TaiKhoanController {
     }
 
     // Thêm tài khoản mới
-    @PostMapping
+    @PostMapping("/add")
     public ResponseEntity<TaiKhoan> addTaiKhoan(@RequestBody TaiKhoan taiKhoan) {
         TaiKhoan createdTaiKhoan = taiKhoanService.saveOrUpdateTaiKhoan(taiKhoan);
         return new ResponseEntity<>(createdTaiKhoan, HttpStatus.CREATED);
     }
 
     // Cập nhật tài khoản
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<TaiKhoan> updateTaiKhoan(@PathVariable int id, @RequestBody TaiKhoan taiKhoan) {
         taiKhoan.setId(id); // Đảm bảo ID được cập nhật
         TaiKhoan updatedTaiKhoan = taiKhoanService.saveOrUpdateTaiKhoan(taiKhoan);
@@ -49,7 +49,7 @@ public class TaiKhoanController {
     }
 
     // Xóa tài khoản
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteTaiKhoan(@PathVariable int id) {
         taiKhoanService.deleteTaiKhoanById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
