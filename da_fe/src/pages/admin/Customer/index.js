@@ -3,32 +3,36 @@ import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
-function Customer() {
-    const [customers, setCustomers] = useState([]);
+function User() {
+    const [users, setUsers] = useState([]);
 
-    const loadCustomers = async () => {
+    const loadUsers = async () => {
         try {
             const response = await axios.get('http://localhost:8080/api/tai-khoan');
-            setCustomers(response.data);
+            setUsers(response.data);
         } catch (error) {
-            console.error('Failed to fetch Customers', error);
+            console.error('Failed to fetch Users', error);
         }
     };
 
     useEffect(() => {
-        loadCustomers();
+        loadUsers();
     }, []);
 
-    const filteredCustomers = customers.filter((customer) => customer.vaiTro === 'Customer');
+    // Lọc ra những tài khoản có vai trò là "User"
+    const filteredUsers = users.filter((user) => user.vaiTro === 'Customer');
 
     return (
         <div>
             <h4 className="text-center text-5xl font-bold text-gray-800">Danh sách khách hàng</h4>
             <div className="flex justify-end mb-4">
-                <button className="hover:bg-gray-400 font-medium py-2 px-4 rounded">
-                    <AddIcon />
-                </button>
+                <Link to={'/admin/tai-khoan/khach-hang/add'}>
+                    <button className="hover:bg-gray-400 font-medium py-2 px-4 rounded">
+                        <AddIcon />
+                    </button>
+                </Link>
             </div>
             <table className="w-full table-auto bg-white rounded-lg shadow-md">
                 <thead>
@@ -49,23 +53,21 @@ function Customer() {
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredCustomers.map((customer, index) => (
-                        <tr key={customer.id} className="border-t border-gray-200 hover:bg-gray-100 text-[10px]">
+                    {filteredUsers.map((user, index) => (
+                        <tr key={user.id} className="border-t border-gray-200 hover:bg-gray-100 text-[10px]">
                             <td className="py-4 px-6">{index + 1}</td>
                             <td className="py-4 px-4">
-                                <img src={customer.avatar} alt="Avatar" className="h-10 w-10 rounded-full" />
+                                <img src={user.avatar} alt="Avatar" className="h-10 w-10 rounded-full" />
                             </td>
+                            <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">{user.hoTen}</td>
+                            <td className="py-4 px-6">{user.email}</td>
+                            <td className="py-4 px-6">{user.sdt}</td>
                             <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
-                                {customer.hoTen}
+                                {user.ngaySinh.split('T')[0]}
                             </td>
-                            <td className="py-4 px-6">{customer.email}</td>
-                            <td className="py-4 px-6">{customer.sdt}</td>
+                            <td className="py-4 px-6">{user.gioiTinh === 0 ? 'Nam' : 'Nữ'}</td>
                             <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
-                                {customer.ngaySinh}
-                            </td>
-                            <td className="py-4 px-6">{customer.gioiTinh}</td>
-                            <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
-                                {customer.trangThai}
+                                {user.trangThai === 1 ? 'Hoạt động' : 'Không hoạt động'}
                             </td>
                             <td className="py-4 px-6">
                                 <div className="flex">
@@ -85,4 +87,4 @@ function Customer() {
     );
 }
 
-export default Customer;
+export default User;

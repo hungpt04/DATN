@@ -110,6 +110,8 @@ function Order() {
                 return { label: 'Hoàn thành', color: 'bg-pink-200 text-gray-800' };
             case 8:
                 return { label: 'Đã hủy', color: 'bg-red-200 text-red-800' };
+            case 9:
+                return { label: 'Trả hàng', color: 'bg-red-400 text-white' };
             default:
                 return { label: 'Không xác định', color: 'bg-gray-200 text-gray-800' };
         }

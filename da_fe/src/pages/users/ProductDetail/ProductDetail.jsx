@@ -3,7 +3,7 @@ import { useState, useEffect, useContext } from 'react';
 import { StarIcon } from '@heroicons/react/20/solid';
 import { Radio, RadioGroup } from '@headlessui/react';
 import axios from 'axios';
-import classNames from 'classnames'; // Import classNames ở đây
+import classNames from 'classnames';
 import { useParams } from 'react-router-dom';
 import { CartContext } from '../Cart/CartContext';
 
@@ -11,6 +11,8 @@ export default function ProductDetail() {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedColor, setSelectedColor] = useState(null);
+    const [selectedWeight, setSelectedWeight] = useState(null);
     const { setCartItemCount } = useContext(CartContext);
 
     const { id } = useParams();
@@ -18,7 +20,29 @@ export default function ProductDetail() {
     const loadProductsWithImages = async (sanPhamId) => {
         try {
             const response = await axios.get(`http://localhost:8080/api/san-pham-ct/with-images/${sanPhamId}`);
-            setProduct(response.data);
+            const productData = response.data;
+
+            // Get all products with same name
+            const allProductsResponse = await axios.get('http://localhost:8080/api/san-pham-ct/with-images');
+            const allProducts = allProductsResponse.data;
+
+            const sameNameProducts = allProducts.filter((p) => p.sanPhamTen === productData.sanPhamTen);
+
+            // Get unique colors and weights
+            const colors = [...new Set(sameNameProducts.map((p) => p.mauSacTen))];
+            const weights = [...new Set(sameNameProducts.map((p) => p.trongLuongTen))];
+
+            // Merge data
+            const mergedProduct = {
+                ...productData,
+                colors: colors,
+                weights: weights,
+                variants: sameNameProducts,
+            };
+
+            setProduct(mergedProduct);
+            setSelectedColor(productData.mauSacTen);
+            setSelectedWeight(productData.trongLuongTen);
             setLoading(false);
         } catch (error) {
             console.error('Failed to fetch Products with images', error);
@@ -28,9 +52,19 @@ export default function ProductDetail() {
     };
 
     const handleAddCart = async (values) => {
+        // Find the correct variant based on selected color and weight
+        const selectedVariant = product.variants.find(
+            (v) => v.mauSacTen === selectedColor && v.trongLuongTen === selectedWeight,
+        );
+
+        if (!selectedVariant) {
+            swal('Thất bại!', 'Vui lòng chọn màu sắc và trọng lượng!', 'error');
+            return;
+        }
+
         const newCart = {
             sanPhamCT: {
-                id: values.sanPhamCTId,
+                id: selectedVariant.id,
             },
             taiKhoan: {
                 id: values.taiKhoanId,
@@ -43,19 +77,17 @@ export default function ProductDetail() {
 
         try {
             await axios.post('http://localhost:8080/api/gio-hang', newCart);
-            swal('Thành công!', 'Giỏ hàng đã được thêm!', 'success');
+            swal('Thành công!', 'Giỏ hàng đã được thêm!', 'success');
             setCartItemCount((prevCount) => prevCount + 1);
         } catch (error) {
-            console.error('Có lỗi xảy ra khi thêm Giỏ hàng!', error);
-            swal('Thất bại!', 'Có lỗi xảy ra khi thêm Giỏ hàng!', 'error');
+            console.error('Có lỗi xảy ra khi thêm Giỏ hàng!', error);
+            swal('Thất bại!', 'Có lỗi xảy ra khi thêm Giỏ hàng!', 'error');
         }
     };
 
     useEffect(() => {
         loadProductsWithImages(id);
     }, [id]);
-
-    console.log('Product ID:', id);
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
@@ -130,7 +162,6 @@ export default function ProductDetail() {
                                                 key={rating}
                                                 aria-hidden="true"
                                                 className={classNames(
-                                                    // Giả sử reviews.average = 4
                                                     4 > rating ? 'text-gray-900' : 'text-gray-200',
                                                     'h-5 w-5 flex-shrink-0',
                                                 )}
@@ -148,72 +179,88 @@ export default function ProductDetail() {
                             </div>
 
                             <form className="mt-10">
-                                {/* Options */}
+                                {/* Colors */}
                                 <div>
                                     <h3 className="text-sm font-medium text-gray-900">Màu sắc</h3>
 
                                     <fieldset aria-label="Chọn màu" className="mt-4">
-                                        <RadioGroup className="flex items-center space-x-3">
-                                            <Radio value={product.mauSacTen} className="cursor-pointer">
-                                                <span
-                                                    className="h-8 w-8 rounded-full border border-black border-opacity-10"
-                                                    style={{ backgroundColor: product.mauSacTen, display: 'block' }}
-                                                />
-                                            </Radio>
+                                        <RadioGroup
+                                            value={selectedColor}
+                                            onChange={setSelectedColor}
+                                            className="flex items-center space-x-3"
+                                        >
+                                            {product.colors.map((color) => (
+                                                <Radio key={color} value={color} className="cursor-pointer">
+                                                    <span
+                                                        className="h-8 w-8 rounded-full border border-black border-opacity-10"
+                                                        style={{ backgroundColor: color, display: 'block' }}
+                                                    />
+                                                </Radio>
+                                            ))}
                                         </RadioGroup>
                                     </fieldset>
                                 </div>
 
-                                {/* Sizes */}
+                                {/* Weights */}
                                 <div className="mt-10">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-sm font-medium text-gray-900">Kích cỡ</h3>
+                                        <h3 className="text-sm font-medium text-gray-900">Trọng lượng</h3>
                                     </div>
 
-                                    <fieldset aria-label="Chọn kích cỡ" className="mt-4">
-                                        <RadioGroup className="grid grid-cols-4 gap-4 sm:grid-cols-8 lg:grid-cols-4">
-                                            {/* Giả sử bạn có một danh sách kích thước và trạng thái còn hàng */}
-                                            {[{ name: product.trongLuongTen, inStock: true }].map((size) => (
-                                                <Radio
-                                                    key={size.name}
-                                                    value={size.name}
-                                                    disabled={!size.inStock}
-                                                    className={classNames(
-                                                        size.inStock
-                                                            ? 'cursor-pointer bg-white text-gray-900 shadow-sm'
-                                                            : 'cursor-not-allowed bg-gray-50 text-gray-200',
-                                                        'group relative flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6',
-                                                    )}
-                                                >
-                                                    <span>{size.name}</span>
-                                                    {size.inStock ? (
-                                                        <span
-                                                            aria-hidden="true"
-                                                            className="pointer-events-none absolute -inset-px rounded-md border-2 border-transparent group-data-[focus]:border group-data-[checked]:border-indigo-500"
-                                                        />
-                                                    ) : (
-                                                        <span
-                                                            aria-hidden="true"
-                                                            className="pointer-events-none absolute -inset-px rounded-md border-2 border-gray-200"
-                                                        >
-                                                            <svg
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 100 100"
-                                                                preserveAspectRatio="none"
-                                                                className="absolute inset-0 h-full w-full stroke-2 text-gray-200"
+                                    <fieldset aria-label="Chọn trọng lượng" className="mt-4">
+                                        <RadioGroup
+                                            value={selectedWeight}
+                                            onChange={setSelectedWeight}
+                                            className="grid grid-cols-4 gap-4 sm:grid-cols-8 lg:grid-cols-4"
+                                        >
+                                            {product.weights.map((weight) => {
+                                                const variant = product.variants.find(
+                                                    (v) => v.mauSacTen === selectedColor && v.trongLuongTen === weight,
+                                                );
+                                                const inStock = variant && variant.soLuong > 0;
+
+                                                return (
+                                                    <Radio
+                                                        key={weight}
+                                                        value={weight}
+                                                        disabled={!inStock}
+                                                        className={classNames(
+                                                            inStock
+                                                                ? 'cursor-pointer bg-white text-gray-900 shadow-sm'
+                                                                : 'cursor-not-allowed bg-gray-50 text-gray-200',
+                                                            'group relative flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6',
+                                                        )}
+                                                    >
+                                                        <span>{weight}</span>
+                                                        {inStock ? (
+                                                            <span
+                                                                aria-hidden="true"
+                                                                className="pointer-events-none absolute -inset-px rounded-md border-2 border-transparent group-data-[focus]:border group-data-[checked]:border-indigo-500"
+                                                            />
+                                                        ) : (
+                                                            <span
+                                                                aria-hidden="true"
+                                                                className="pointer-events-none absolute -inset-px rounded-md border-2 border-gray-200"
                                                             >
-                                                                <line
-                                                                    x1={0}
-                                                                    x2={100}
-                                                                    y1={100}
-                                                                    y2={0}
-                                                                    vectorEffect="non-scaling-stroke"
-                                                                />
-                                                            </svg>
-                                                        </span>
-                                                    )}
-                                                </Radio>
-                                            ))}
+                                                                <svg
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 100 100"
+                                                                    preserveAspectRatio="none"
+                                                                    className="absolute inset-0 h-full w-full stroke-2 text-gray-200"
+                                                                >
+                                                                    <line
+                                                                        x1={0}
+                                                                        x2={100}
+                                                                        y1={100}
+                                                                        y2={0}
+                                                                        vectorEffect="non-scaling-stroke"
+                                                                    />
+                                                                </svg>
+                                                            </span>
+                                                        )}
+                                                    </Radio>
+                                                );
+                                            })}
                                         </RadioGroup>
                                     </fieldset>
                                 </div>
@@ -223,7 +270,6 @@ export default function ProductDetail() {
                                     className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                     onClick={() => {
                                         handleAddCart({
-                                            sanPhamCTId: id,
                                             taiKhoanId: 1,
                                             soLuong: 1,
                                             trangThai: 1,

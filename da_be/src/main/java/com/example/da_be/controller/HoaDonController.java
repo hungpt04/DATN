@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -63,5 +64,17 @@ public class HoaDonController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(updatedHoaDon, HttpStatus.OK);
+    }
+
+    @GetMapping("/successful-orders")
+    public ResponseEntity<List<HoaDon>> getSuccessfulOrders() {
+        List<HoaDon> successfulOrders = hoaDonService.getSuccessfulOrders();
+        return new ResponseEntity<>(successfulOrders, HttpStatus.OK);
+    }
+
+    @GetMapping("/monthly-sales")
+    public ResponseEntity<List<Map<String, Object>>> getMonthlySales() {
+        List<Map<String, Object>> monthlySalesData = hoaDonService.getMonthlySalesData();
+        return new ResponseEntity<>(monthlySalesData, HttpStatus.OK);
     }
 }

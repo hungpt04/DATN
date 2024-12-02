@@ -3,9 +3,11 @@ import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 function User() {
     const [users, setUsers] = useState([]);
+    const navigate = useNavigate();
 
     const loadUsers = async () => {
         try {
@@ -20,6 +22,23 @@ function User() {
         loadUsers();
     }, []);
 
+    const handleDelete = async (id) => {
+        if (window.confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) {
+            try {
+                await axios.delete(`http://localhost:8080/api/tai-khoan/${id}`);
+                alert('Xóa nhân viên thành công!');
+                loadUsers(); // Reload the users list after deletion
+            } catch (error) {
+                console.error('Failed to delete user', error);
+                alert('Có lỗi xảy ra khi xóa nhân viên!');
+            }
+        }
+    };
+
+    const handleEdit = (id) => {
+        navigate(`/admin/tai-khoan/nhan-vien/edit/${id}`);
+    };
+
     // Lọc ra những tài khoản có vai trò là "User"
     const filteredUsers = users.filter((user) => user.vaiTro === 'User');
 
@@ -27,9 +46,11 @@ function User() {
         <div>
             <h4 className="text-center text-5xl font-bold text-gray-800">Danh sách nhân viên</h4>
             <div className="flex justify-end mb-4">
-                <button className="hover:bg-gray-400 font-medium py-2 px-4 rounded">
-                    <AddIcon />
-                </button>
+                <Link to={'/admin/tai-khoan/nhan-vien/add'}>
+                    <button className="hover:bg-gray-400 font-medium py-2 px-4 rounded">
+                        <AddIcon />
+                    </button>
+                </Link>
             </div>
             <table className="w-full table-auto bg-white rounded-lg shadow-md">
                 <thead>
@@ -60,18 +81,24 @@ function User() {
                             <td className="py-4 px-6">{user.email}</td>
                             <td className="py-4 px-6">{user.sdt}</td>
                             <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
-                                {user.ngaySinh}
+                                {user.ngaySinh.split('T')[0]}
                             </td>
-                            <td className="py-4 px-6">{user.gioiTinh}</td>
+                            <td className="py-4 px-6">{user.gioiTinh === 0 ? 'Nam' : 'Nữ'}</td>
                             <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
-                                {user.trangThai}
+                                {user.trangThai === 1 ? 'Hoạt động' : 'Không hoạt động'}
                             </td>
                             <td className="py-4 px-6">
                                 <div className="flex">
-                                    <button className="hover:bg-gray-400 font-medium py-2 px-4 rounded">
+                                    <button
+                                        onClick={() => handleEdit(user.id)}
+                                        className="hover:bg-gray-400 font-medium py-2 px-4 rounded"
+                                    >
                                         <PencilIcon className="h-5 w-5" />
                                     </button>
-                                    <button className="hover:bg-gray-400 font-medium py-2 px-4 rounded">
+                                    <button
+                                        onClick={() => handleDelete(user.id)}
+                                        className="hover:bg-gray-400 font-medium py-2 px-4 rounded"
+                                    >
                                         <TrashIcon className="w-5" />
                                     </button>
                                 </div>

@@ -1,6 +1,7 @@
 package com.example.da_be.service;
 
 import com.example.da_be.dto.ConfirmPurchaseRequestDTO;
+import com.example.da_be.entity.HoaDon;
 import com.example.da_be.entity.HoaDonCT;
 import com.example.da_be.entity.SanPhamCT;
 import com.example.da_be.repository.HoaDonCTRepository;
@@ -56,5 +57,16 @@ public class HoaDonCTService {
 
         // Xóa tất cả hóa đơn chi tiết
         hoaDonCTRepository.deleteAll(hoaDonCTList);
+    }
+
+    // Phương thức cập nhật trạng thái hóa đơn
+    public HoaDonCT updateHoaDonCTStatus(int id, int status) {
+        Optional<HoaDonCT> optionalHoaDonCT = hoaDonCTRepository.findById(id);
+        if (optionalHoaDonCT.isPresent()) {
+            HoaDonCT hoaDonCT = optionalHoaDonCT.get();
+            hoaDonCT.setTrangThai(status);
+            return hoaDonCTRepository.save(hoaDonCT);
+        }
+        return null; // Hoặc ném ngoại lệ nếu không tìm thấy hóa đơn
     }
 }

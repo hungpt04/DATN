@@ -1066,10 +1066,20 @@ function OfflineSale() {
                         <div className="flex justify-center">
                             <button
                                 className={`bg-green-600 text-white py-2 px-6 rounded-full text-md shadow-md hover:bg-green-500 transition duration-200 ${
-                                    transactions.length > 0 ? 'opacity-50 cursor-not-allowed' : ''
+                                    totalAmount - customerPayment > 0 ? 'opacity-50 cursor-not-allowed' : ''
                                 }`}
-                                onClick={transactions.length === 0 ? handleAddTransaction : undefined} // Disable click if transactions have data
-                                disabled={transactions.length > 0} // Disable button if transactions have data
+                                onClick={() => {
+                                    if (parseFloat(customerPayment) < totalAmount) {
+                                        swal(
+                                            'Thất bại!',
+                                            'Số tiền khách đưa phải lớn hơn hoặc bằng tổng tiền hàng!',
+                                            'warning',
+                                        );
+                                    } else {
+                                        handleAddTransaction(); // Gọi hàm thêm giao dịch nếu hợp lệ
+                                    }
+                                }}
+                                disabled={totalAmount - customerPayment > 0} // Disable button nếu tiền khách đưa không đủ
                             >
                                 XÁC NHẬN
                             </button>

@@ -85,8 +85,6 @@ const OrderHistory = () => {
         }
     }, [currentOrder]);
 
-    console.log(paymentHistory);
-
     const handleOpenModal = () => {
         setPaymentAmount(totalAmount);
         setIsModalOpen(true);
@@ -174,8 +172,10 @@ const OrderHistory = () => {
                 return { label: 'Hoàn thành', color: '#4caf50' };
             case 8:
                 return { label: 'Đã hủy', color: '#f5425d' };
+            case 9:
+                return { label: 'Trả hàng', color: '#f54278' }; // Thêm trường hợp cho trạng thái 9
             default:
-                return { label: 'Không xác định', color: 'bg-gray-200 text-gray-800' };
+                return { label: 'Không xác định', color: '#f54278' };
         }
     };
 
@@ -317,23 +317,6 @@ const OrderHistory = () => {
         }
     };
 
-    useEffect(() => {
-        // Kiểm tra localStorage để lấy trạng thái đơn hàng
-        const storedOrder = localStorage.getItem('currentOrder');
-        if (storedOrder) {
-            setCurrentOrder(JSON.parse(storedOrder));
-        } else {
-            setCurrentOrder(order);
-        }
-    }, [order]);
-
-    useEffect(() => {
-        // Lưu trạng thái đơn hàng vào localStorage khi nó thay đổi
-        if (currentOrder) {
-            localStorage.setItem('currentOrder', JSON.stringify(currentOrder));
-        }
-    }, [currentOrder]);
-
     const handleConfirmDelivery = async () => {
         const result = await updateBillStatus(currentOrder.id, 4);
         if (result) {
@@ -418,6 +401,10 @@ const OrderHistory = () => {
         }
     };
 
+    const getReturnedItems = () => {
+        return billDetails.filter((detail) => detail.hoaDonCT.trangThai === 2);
+    };
+
     if (!currentOrder) {
         return <div>Không tìm thấy thông tin đơn hàng.</div>;
     }
@@ -442,7 +429,7 @@ const OrderHistory = () => {
                 {currentOrder.trangThai < 4 && currentOrder.loaiHoaDon !== 'Tại quầy' && (
                     <button
                         onClick={handleCancelOrder}
-                        className="bg-white text-[#2f19ae] border border-[#2f19ae] hover:bg-[#2f19ae] hover:text-white font-medium py-1 px-2 rounded mx-1 transition duration-200"
+                        className="bg-white text-[#2f19ae ] border border-[#2f19ae] hover:bg-[#2f19ae] hover:text-white font-medium py-1 px-2 rounded mx-1 transition duration-200"
                     >
                         Hủy đơn
                     </button>
@@ -544,7 +531,12 @@ const OrderHistory = () => {
                     {(() => {
                         const uniqueProductIds = new Set();
                         const uniqueDetails = billDetails
-                            .filter((detail) => detail.hoaDonCT && detail.hoaDonCT.hoaDon.id === currentOrder.id)
+                            .filter(
+                                (detail) =>
+                                    detail.hoaDonCT &&
+                                    detail.hoaDonCT.hoaDon.id === currentOrder.id &&
+                                    detail.hoaDonCT.trangThai === 1,
+                            )
                             .filter((detail) => {
                                 const isUnique = !uniqueProductIds.has(detail.hoaDonCT.id);
                                 if (isUnique) {
@@ -651,8 +643,87 @@ const OrderHistory = () => {
                                 ))}
                             </>
                         ) : (
+                            <div className="text-gray-500 font-semibold text-center py-4">Không có sản phẩm nào.</div>
+                        );
+                    })()}
+                </div>
+                <div className="bg-white shadow-md rounded-lg p-4 mt-4">
+                    <h2 className="text-lg font-semibold mb-4">DANH SÁCH TRẢ HÀNG</h2>
+                    {(() => {
+                        const uniqueProductIds = new Set();
+                        const uniqueReturnedDetails = billDetails
+                            .filter(
+                                (detail) =>
+                                    detail.hoaDonCT &&
+                                    detail.hoaDonCT.hoaDon.id === currentOrder.id &&
+                                    detail.hoaDonCT.trangThai === 2, // Trạng thái trả hàng
+                            )
+                            .filter((detail) => {
+                                const isUnique = !uniqueProductIds.has(detail.hoaDonCT.id);
+                                if (isUnique) {
+                                    uniqueProductIds.add(detail.hoaDonCT.id);
+                                }
+                                return isUnique;
+                            });
+
+                        return uniqueReturnedDetails.length > 0 ? (
+                            <>
+                                {uniqueReturnedDetails.map((detail) => (
+                                    <div key={detail.hoaDonCT.id} className="flex items-center border-b py-4">
+                                        <input className="mr-4" type="checkbox" />
+                                        <div className="flex items-center">
+                                            <div className="relative">
+                                                <img
+                                                    src={detail.link || 'default_image.jpg'}
+                                                    alt={detail.hoaDonCT.sanPhamCT.sanPham.ten}
+                                                    className="w-20 h-20 object-cover"
+                                                />
+                                            </div>
+                                            <div className="ml-4">
+                                                <div className="text-gray-800 font-semibold">
+                                                    {detail.hoaDonCT.sanPhamCT.sanPham.ten}
+                                                </div>
+                                                <div className="text-gray-400 line-through">
+                                                    {detail.hoaDonCT.giaBan.toLocaleString()} VND
+                                                </div>
+                                                <div className="text-gray-600">
+                                                    Size: {detail.hoaDonCT.sanPhamCT.trongLuong.ten}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center ml-auto">
+                                            <span className="text-red-500 font-bold ml-8">
+                                                {(detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan).toLocaleString()}{' '}
+                                                VND
+                                            </span>
+                                            <button
+                                                className={`ml-4 text-red-500 ${
+                                                    currentOrder.trangThai === 3 ||
+                                                    currentOrder.trangThai === 4 ||
+                                                    currentOrder.trangThai === 5 ||
+                                                    currentOrder.trangThai === 6 ||
+                                                    currentOrder.trangThai === 7
+                                                        ? 'text-gray-400 cursor-not-allowed'
+                                                        : ''
+                                                }`}
+                                                onClick={() => handleDeleteDetail(detail.hoaDonCT.id)}
+                                                disabled={
+                                                    currentOrder.trangThai === 3 ||
+                                                    currentOrder.trangThai === 4 ||
+                                                    currentOrder.trangThai === 5 ||
+                                                    currentOrder.trangThai === 6 ||
+                                                    currentOrder.trangThai === 7
+                                                }
+                                            >
+                                                <TrashIcon className="w-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </>
+                        ) : (
                             <div className="text-gray-500 font-semibold text-center py-4">
-                                Không có chi tiết hóa đơn nào.
+                                Không có sản phẩm trả hàng nào.
                             </div>
                         );
                     })()}
@@ -672,7 +743,7 @@ const OrderHistory = () => {
                             Giảm giá: <span className="font-bold"> 0 VND</span>
                         </p>
                         <div className="flex items-center justify-end">
-                            <p className="text-gray-700 font-medium mr-2 ">Phí vận chuyển:</p>
+                            <p className="text-gray-700 font-medium mr-2 ">Ph í vận chuyển:</p>
                             <input
                                 type="text"
                                 value={shippingFee}
@@ -765,7 +836,23 @@ const OrderHistory = () => {
                             <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={handleCloseModal}>
                                 Đóng
                             </button>
-                            <button className="bg-orange-500 text-white px-4 py-2 rounded" onClick={handleSavePayment}>
+                            <button
+                                className={`bg-orange-500 text-white px-4 py-2 rounded ${
+                                    customerMoney < totalAmount ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                                onClick={() => {
+                                    if (parseFloat(customerMoney) < totalAmount) {
+                                        swal(
+                                            'Thất bại!',
+                                            'Số tiền khách đưa phải lớn hơn hoặc bằng tổng tiền!',
+                                            'warning',
+                                        );
+                                    } else {
+                                        handleSavePayment(); // Gọi hàm lưu thanh toán nếu hợp lệ
+                                    }
+                                }}
+                                disabled={customerMoney < totalAmount} // Disable button nếu tiền khách đưa không đủ
+                            >
                                 Lưu
                             </button>
                         </div>

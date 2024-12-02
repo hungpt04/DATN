@@ -299,10 +299,19 @@ function AddProduct() {
         }
     };
 
-    const handleSaveImages = () => {
+    const handleSaveImages = async () => {
         if (currentVariantIndex !== null) {
             const newVariants = [...variants];
-            newVariants[currentVariantIndex].images = selectedImages;
+            const variant = newVariants[currentVariantIndex];
+
+            // Chỉ cập nhật hình ảnh vào biến thể hiện tại, không gửi API request
+            variant.images = selectedImages;
+
+            // Đảm bảo ảnh đầu tiên được chọn sẽ là ảnh đầu tiên hiển thị
+            if (variant.images.length > 0) {
+                variant.selectedImage = variant.images[0];
+            }
+
             setVariants(newVariants);
             setShowImageModal(false);
         }
@@ -319,6 +328,9 @@ function AddProduct() {
                     weight: weight,
                     price: '',
                     selected: false,
+                    colorId: colors.find((c) => c.ten === color)?.id,
+                    weightId: weights.find((w) => w.ten === weight)?.id,
+                    images: [], // Thêm mảng images rỗng cho mỗi variant mới
                 });
             });
         });
@@ -329,53 +341,79 @@ function AddProduct() {
         if (selectedColors.length > 0 && selectedWeights.length > 0) {
             createVariants();
         } else {
-            setVariants([]); // Reset variants nếu không có màu sắc hoặc trọng lượng
+            setVariants([]);
         }
     }, [selectedColors, selectedWeights]);
 
     const handleAddProduct = async (e) => {
-        e.preventDefault(); // Ngăn chặn hành vi mặc định của form
+        e.preventDefault();
 
-        // Tạo đối tượng sản phẩm chi tiết
-        const newSanPhamCT = {
-            sanPham: { id: 1 }, // Giả sử bạn đã có sản phẩm với ID = 1, bạn có thể thay đổi theo nhu cầu
-            thuongHieu: { id: brand },
-            mauSac: { id: material },
-            chatLieu: { id: material }, // Nếu bạn muốn sử dụng biến chất liệu, hãy thay đổi thành biến đúng
-            trongLuong: { id: material }, // Sử dụng biến đã định nghĩa
-            diemCanBang: { id: balancePoint },
-            doCung: { id: hardness },
-            ma: `SPCT${variants.length + 1}`, // Tạo mã sản phẩm chi tiết
-            soLuong: variants.reduce((total, variant) => total + parseInt(variant.quantity || 0, 10), 0), // Tổng số lượng
-            donGia: calculateAveragePrice(variants), // Tính đơn giá trung bình
-            moTa: description, // Mô tả sản phẩm
-            trangThai: status === 'Active' ? 1 : 0, // Trạng thái sản phẩm chi tiết
+        const newProduct = {
+            ten: productName,
+            trangThai: 1,
         };
 
-        console.log('newSanPhamCT:', newSanPhamCT); // Log đối tượng sản phẩm chi tiết
-
         try {
-            const response = await axios.post('http://localhost:8080/api/san-pham-ct', newSanPhamCT);
+            // Bước 1: Thêm sản phẩm vào bảng SanPham
+            const productResponse = await axios.post('http://localhost:8080/api/san-pham', newProduct);
+            const newProductId = productResponse.data.id;
+
+            // Bước 2: Lặp qua từng biến thể và tạo SanPhamCT
+            for (const variant of variants) {
+                const newSanPhamCT = {
+                    sanPham: { id: newProductId },
+                    thuongHieu: { id: brand },
+                    mauSac: { id: variant.colorId },
+                    chatLieu: { id: material },
+                    trongLuong: { id: variant.weightId },
+                    diemCanBang: { id: balancePoint },
+                    doCung: { id: hardness },
+                    ma: `SPCT${variant.id}`,
+                    soLuong: variant.quantity,
+                    donGia: variant.price,
+                    moTa: description,
+                    trangThai: status === 'Active' ? 1 : 0,
+                };
+
+                // Thêm SanPhamCT và lấy response
+                const sanPhamCTResponse = await axios.post('http://localhost:8080/api/san-pham-ct', newSanPhamCT);
+                const sanPhamCTId = sanPhamCTResponse.data.id;
+
+                // Bước 3: Thêm hình ảnh cho SanPhamCT hiện tại
+                if (variant.images && variant.images.length > 0) {
+                    for (const image of variant.images) {
+                        const hinhAnhData = {
+                            sanPhamCT: { id: sanPhamCTId },
+                            link: image,
+                            trangThai: 1,
+                        };
+                        await axios.post('http://localhost:8080/api/hinh-anh', hinhAnhData);
+                    }
+                }
+            }
+
+            // Hiển thị thông báo thành công
             swal('Thành công!', 'Sản phẩm đã được thêm!', 'success');
-            reset(); // Reset form values after adding
-            setVariants([{ id: 1, name: '', quantity: '', weight: '', price: '', selected: false }]); // Reset variants
+
+            // Reset form
+            reset();
+            setVariants([
+                {
+                    id: 1,
+                    name: '',
+                    quantity: '',
+                    weight: '',
+                    price: '',
+                    selected: false,
+                    images: [], // Thêm mảng images rỗng
+                },
+            ]);
         } catch (error) {
             console.error('Có lỗi xảy ra khi thêm sản phẩm!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm sản phẩm!', 'error');
         }
     };
 
-    // Hàm tính đơn giá trung bình
-    const calculateAveragePrice = (variants) => {
-        const totalQuantity = variants.reduce((total, variant) => total + parseInt(variant.quantity || 0, 10), 0);
-        const totalPrice = variants.reduce(
-            (total, variant) => total + (parseFloat(variant.price) || 0) * (parseInt(variant.quantity) || 0),
-            0,
-        );
-
-        // Tránh chia cho 0
-        return totalQuantity > 0 ? totalPrice / totalQuantity : 0;
-    };
     return (
         <div className="p-4 max-w-full mx-auto bg-white rounded-lg shadow-md w-[1000px]">
             <h2 className="text-xl font-bold mb-4">Thêm sản phẩm</h2>
@@ -691,10 +729,6 @@ function AddProduct() {
                         ))}
                     </tbody>
                 </table>
-
-                <button type="button" onClick={handleAddVariant} className="text-blue-600 hover:underline mt-4">
-                    Thêm biến thể
-                </button>
 
                 <div className="mt-6">
                     <button

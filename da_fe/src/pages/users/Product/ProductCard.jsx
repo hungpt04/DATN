@@ -8,11 +8,17 @@ function ProductCard({ product }) {
         navigate(`/san-pham/san-pham-ct/${product.id}`); // Điều hướng đến trang ProductDetail với ID sản phẩm
     };
 
+    // Tìm ảnh có chứa từ "main" trong URL
+    const mainImage = product.hinhAnhUrls.find((url) => url.includes('main')) || product.hinhAnhUrls[0];
+
+    console.log(mainImage); // Xóa dòng này khi không cần thiết
+    console.log('Hình ảnh URLs:', product.hinhAnhUrls[0]);
+
     return (
         <div className="flex flex-wrap">
             <div className="productCard w-[195px] m-3 transition-all cursor-pointer">
                 <div className="h-[15rem]" onClick={handleProductClick}>
-                    <img className="w-full h-full object-cover" src={product.hinhAnhUrls[0]} alt={product.sanPhamTen} />
+                    <img className="w-full h-full object-cover" src={mainImage} alt={product.sanPhamTen} />
                 </div>
 
                 <div className="textPart bg-white p-3">

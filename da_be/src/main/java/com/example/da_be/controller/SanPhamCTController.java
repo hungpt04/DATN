@@ -57,8 +57,6 @@ public class SanPhamCTController {
     }
 
 
-
-
     @GetMapping("/with-images/{id}")
     public ResponseEntity<SanPhamCTWithImagesDTO> getSanPhamCTWithImages(@PathVariable Long id) {
         SanPhamCTWithImagesDTO sanPhamCTWithImages = sanPhamCTService.getSanPhamCTWithImages(id);

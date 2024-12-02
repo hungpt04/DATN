@@ -27,11 +27,16 @@ import OrderSummary from '../pages/users/Checkout/OrderSummary.jsx';
 import OrderHistory from '../pages/admin/Order/OrderHistory.jsx';
 import SearchOrder from '../pages/admin/Return/SearchOrder.jsx';
 import ReturnOrder from '../pages/admin/Return/ReturnOrder.jsx';
+import Analytic from '../pages/admin/Analytics/Analytics.jsx';
+import AddUser from '../pages/admin/User/Add.js';
+import EditUser from '../pages/admin/User/Edit.js';
+import AddCustomer from '../pages/admin/Customer/Add.js';
 
 // Public routes
 const publicRoutes = [
     { path: '/', component: Home },
     { path: '/admin', component: Admin, layout: AdminLayout },
+    { path: '/admin/thong-ke', component: Analytic, layout: AdminLayout },
     { path: '/admin/quan-ly-don-hang', component: Order, layout: AdminLayout },
     { path: '/admin/tra-hang', component: SearchOrder, layout: AdminLayout },
     { path: '/admin/tra-hang/don-hang', component: ReturnOrder, layout: AdminLayout },
@@ -46,7 +51,10 @@ const publicRoutes = [
     { path: '/admin/quan-ly-san-pham/san-pham-ct', component: ProductAdmin, layout: AdminLayout },
     { path: '/admin/quan-ly-san-pham/san-pham-ct/add', component: AddProduct, layout: AdminLayout },
     { path: '/admin/tai-khoan/nhan-vien', component: User, layout: AdminLayout },
+    { path: '/admin/tai-khoan/nhan-vien/add', component: AddUser, layout: AdminLayout },
+    { path: '/admin/tai-khoan/nhan-vien/edit/:id', component: EditUser, layout: AdminLayout },
     { path: '/admin/tai-khoan/khach-hang', component: Customer, layout: AdminLayout },
+    { path: '/admin/tai-khoan/khach-hang/add', component: AddCustomer, layout: AdminLayout },
 
     { path: '/san-pham', component: Product },
     { path: '/san-pham/san-pham-ct/:id', component: ProductDetail },

@@ -58,7 +58,7 @@
 		MatKhau NVARCHAR(255),
 		GioiTinh BIT,
 		VaiTro NVARCHAR(255),
-		Avatar NVARCHAR(255),
+		Avatar NVARCHAR(MAX),
 		NgaySinh DATE,
 		CCCD VARCHAR(50),
 		TrangThai INT
@@ -94,6 +94,7 @@
 		IdChatLieu INT,
 		IdTrongLuong INT,
 		IdDiemCanBang INT,
+		IdDoCung INT,
 		Ma NVARCHAR(255),
 		SoLuong INT,
 		DonGia DECIMAL(10,2),
@@ -313,15 +314,15 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc, TrangThai) VALUES
 	('SP008', 'Yonex Astrox Bkek', 0);
 
 
-	INSERT INTO SanPhamCT (IdSanPham, IdThuongHieu, IdMauSac, IdChatLieu, IdTrongLuong, IdDiemCanBang, Ma, SoLuong, DonGia, MoTa, TrangThai) VALUES
-	(1, 1, 1, 1, 1, 1, 'SPCT001', 10, 3000000,N'Vợt cầu lông đẹp và đẳng cấp nhất thế giới', 1),
-	(2, 1, 2, 2, 2, 2, 'SPCT002', 20, 2500000,N'Vợt cầu lông đẹp và đẳng cấp nhất việt nam', 1),
-	(3, 1, 3, 3, 3, 3, 'SPCT003', 15, 2800000,N'Vợt cầu lông đẹp và đẳng cấp nhất vũ trụ', 0),
-	(4, 3, 4, 4, 4, 4, 'SPCT004', 5, 2700000,N'Vợt cầu lông đẹp và đẳng cấp nhất thiên hà', 0),
-	(5, 1, 5, 5, 5, 5, 'SPCT005', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất hành tinh', 1),
-	(6, 3, 5, 5, 5, 5, 'SPCT006', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất hệ mặt trời', 1),
-	(7, 3, 5, 5, 5, 5, 'SPCT007', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất xóm', 1),
-	(8, 1, 5, 5, 5, 5, 'SPCT008', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất nhà', 1);
+	INSERT INTO SanPhamCT (IdSanPham, IdThuongHieu, IdMauSac, IdChatLieu, IdTrongLuong, IdDiemCanBang,IdDoCung, Ma, SoLuong, DonGia, MoTa, TrangThai) VALUES
+	(1, 1, 1, 1, 1, 1,2, 'SPCT001', 10, 3000000,N'Vợt cầu lông đẹp và đẳng cấp nhất thế giới', 1),
+	(2, 1, 2, 2, 2, 2,3, 'SPCT002', 20, 2500000,N'Vợt cầu lông đẹp và đẳng cấp nhất việt nam', 1),
+	(3, 1, 3, 3, 3, 3,2, 'SPCT003', 15, 2800000,N'Vợt cầu lông đẹp và đẳng cấp nhất vũ trụ', 0),
+	(4, 3, 4, 4, 4, 4,1, 'SPCT004', 5, 2700000,N'Vợt cầu lông đẹp và đẳng cấp nhất thiên hà', 0),
+	(5, 1, 5, 5, 5, 5,5, 'SPCT005', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất hành tinh', 1),
+	(6, 3, 5, 5, 5, 5,4, 'SPCT006', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất hệ mặt trời', 1),
+	(7, 3, 5, 5, 5, 5,5, 'SPCT007', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất xóm', 1),
+	(8, 1, 5, 5, 5, 5,1, 'SPCT008', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất nhà', 1);
 
 
 	INSERT INTO HinhAnh (IdSanPhamCT, Link, TrangThai) VALUES

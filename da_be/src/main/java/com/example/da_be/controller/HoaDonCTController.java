@@ -1,6 +1,9 @@
 package com.example.da_be.controller;
 
 import com.example.da_be.dto.ConfirmPurchaseRequestDTO;
+import com.example.da_be.dto.UpdateHoaDonCTStatusRequest;
+import com.example.da_be.dto.UpdateHoaDonStatusRequest;
+import com.example.da_be.entity.HoaDon;
 import com.example.da_be.entity.HoaDonCT;
 import com.example.da_be.dto.HoaDonCTWithImageDTO;
 import com.example.da_be.repository.HoaDonCTRepository;
@@ -71,5 +74,14 @@ public class HoaDonCTController {
     public ResponseEntity<String> confirmPurchase(@RequestBody ConfirmPurchaseRequestDTO request) {
         hoaDonCTService.confirmPurchase(request);
         return ResponseEntity.ok("Xác nhận mua hàng thành công");
+    }
+
+    @PutMapping("/update-status")
+    public ResponseEntity<HoaDonCT> updateHoaDonCTStatus(@RequestBody UpdateHoaDonCTStatusRequest request) {
+        HoaDonCT updatedHoaDonCT = hoaDonCTService.updateHoaDonCTStatus(request.getHoaDonCTId(), request.getStatus());
+        if (updatedHoaDonCT == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(updatedHoaDonCT, HttpStatus.OK);
     }
 }

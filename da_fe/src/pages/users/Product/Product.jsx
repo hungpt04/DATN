@@ -38,6 +38,7 @@ export default function Product() {
     const [stiffs, setStiffs] = useState([]);
     const [weights, setWeights] = useState([]);
     const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true); // Thêm state loading
 
     const loadBrands = async () => {
         try {
@@ -95,21 +96,43 @@ export default function Product() {
 
     const loadProducts = async () => {
         try {
+            setLoading(true); // Bắt đầu loading
             const response = await axios.get('http://localhost:8080/api/san-pham-ct/with-images');
-            setProducts(response.data);
+            // Group products by name and take first variant of each product
+            const uniqueProducts = Object.values(
+                response.data.reduce((acc, product) => {
+                    if (!acc[product.sanPhamTen]) {
+                        acc[product.sanPhamTen] = product;
+                    }
+                    return acc;
+                }, {}),
+            );
+            setProducts(uniqueProducts);
         } catch (error) {
             console.error('Failed to fetch Products', error);
+        } finally {
+            setLoading(false); // Kết thúc loading
         }
     };
 
     useEffect(() => {
-        loadBalances();
-        loadBrands();
-        loadColors();
-        loadMaterials();
-        loadStiffs();
-        loadWeights();
-        loadProducts();
+        const fetchData = async () => {
+            try {
+                await Promise.all([
+                    loadBalances(),
+                    loadBrands(),
+                    loadColors(),
+                    loadMaterials(),
+                    loadStiffs(),
+                    loadWeights(),
+                    loadProducts(),
+                ]);
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        };
+
+        fetchData();
     }, []);
 
     const filters = [
@@ -349,9 +372,11 @@ export default function Product() {
                             {/* Product grid */}
                             <div className="lg:col-span-4 w-full">
                                 <div className="flex flex-wrap justify-center bg-white py-5">
-                                    {products.map((product) => (
-                                        <ProductCard key={product.id} product={product} />
-                                    ))}
+                                    {loading ? (
+                                        <div>Loading...</div>
+                                    ) : (
+                                        products.map((product) => <ProductCard key={product.id} product={product} />)
+                                    )}
                                 </div>
                             </div>
                         </div>
