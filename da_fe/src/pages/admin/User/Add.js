@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import swal from 'sweetalert';
+import { useNavigate } from 'react-router-dom';
 
 function AddUser() {
+    const navigate = useNavigate();
     const [provinces, setProvinces] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
@@ -94,55 +97,121 @@ function AddUser() {
         }
     };
 
-    const handleAddUser = async (e) => {
-        e.preventDefault();
+const handleAddUser = async (e) => {
+    e.preventDefault();
+    try {
+        // Tạo tài khoản trước
+        const taiKhoanResponse = await fetch('http://localhost:8080/api/tai-khoan/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        });
 
-        try {
-            // First, create the user account
-            const taiKhoanResponse = await fetch('http://localhost:8080/api/tai-khoan/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (!taiKhoanResponse.ok) {
-                throw new Error('Failed to create user account');
-            }
-
-            const taiKhoan = await taiKhoanResponse.json();
-
-            // Then create the address using the new user's ID
-            const diaChiPayload = {
-                taiKhoan: { id: taiKhoan.id },
-                ten: formData.hoTen,
-                sdt: formData.sdt,
-                idTinh: diaChiData.idTinh,
-                idHuyen: diaChiData.idHuyen,
-                idXa: selectedWard,
-                diaChiCuThe: diaChiData.diaChiCuThe,
-            };
-
-            const diaChiResponse = await fetch('http://localhost:8080/api/dia-chi/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(diaChiPayload),
-            });
-
-            if (!diaChiResponse.ok) {
-                throw new Error('Failed to create address');
-            }
-
-            alert('Thêm nhân viên thành công!');
-            // Reset form or redirect as needed
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Có lỗi xảy ra khi thêm nhân viên!');
+        if (!taiKhoanResponse.ok) {
+            throw new Error('Failed to create user account');
         }
-    };
+
+        const taiKhoan = await taiKhoanResponse.json();
+
+        // Sau đó tạo địa chỉ với ID tài khoản vừa tạo
+        const diaChiPayload = {
+            taiKhoan: { id: taiKhoan.id },
+            ten: formData.hoTen,
+            sdt: formData.sdt,
+            idTinh: diaChiData.idTinh,
+            idHuyen: diaChiData.idHuyen,
+            idXa: selectedWard,
+            diaChiCuThe: diaChiData.diaChiCuThe,
+        };
+
+        const diaChiResponse = await fetch('http://localhost:8080/api/dia-chi/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(diaChiPayload),
+        });
+
+        if (!diaChiResponse.ok) {
+            throw new Error('Failed to create address');
+        }
+
+        // Hiển thị thông báo thành công và điều hướng về trang khác
+        swal({
+            title: "Thành công!",
+            text: "Thêm nhân viên thành công!",
+            icon: "success",
+            buttons: false,
+            timer: 2000, // Tự động đóng sau 2 giây
+        }).then(() => {
+            navigate('/admin/tai-khoan/nhan-vien'); // Điều hướng về trang quản lý nhân viên
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+
+        // Hiển thị thông báo lỗi
+        swal({
+            title: "Lỗi!",
+            text: "Có lỗi xảy ra khi thêm nhân viên!",
+            icon: "error",
+            button: "OK",
+        });
+    }
+};
+
+
+    // const handleAddUser = async (e) => {
+    //     e.preventDefault();
+
+    //     try {
+    //         // First, create the user account
+    //         const taiKhoanResponse = await fetch('http://localhost:8080/api/tai-khoan/add', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify(formData),
+    //         });
+
+    //         if (!taiKhoanResponse.ok) {
+    //             throw new Error('Failed to create user account');
+    //         }
+
+    //         const taiKhoan = await taiKhoanResponse.json();
+
+    //         // Then create the address using the new user's ID
+    //         const diaChiPayload = {
+    //             taiKhoan: { id: taiKhoan.id },
+    //             ten: formData.hoTen,
+    //             sdt: formData.sdt,
+    //             idTinh: diaChiData.idTinh,
+    //             idHuyen: diaChiData.idHuyen,
+    //             idXa: selectedWard,
+    //             diaChiCuThe: diaChiData.diaChiCuThe,
+    //         };
+
+    //         const diaChiResponse = await fetch('http://localhost:8080/api/dia-chi/add', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify(diaChiPayload),
+    //         });
+
+    //         if (!diaChiResponse.ok) {
+    //             throw new Error('Failed to create address');
+    //         }
+
+    //         alert('Thêm nhân viên thành công!');
+    //         // Reset form or redirect as needed
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         alert('Có lỗi xảy ra khi thêm nhân viên!');
+    //     }
+    // };
 
     return (
         <div className="p-8 flex justify-center items-center min-h-screen bg-gray-100">

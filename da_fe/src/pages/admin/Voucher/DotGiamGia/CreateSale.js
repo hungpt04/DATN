@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from "react-router-dom";
 import axios from "axios";
-import Swal from "sweetalert2";
-import {toast} from "react-toastify";
+import swal from 'sweetalert';
 
 const CreateSale = () => {
     const navigate = useNavigate();
@@ -124,40 +123,41 @@ const CreateSale = () => {
 
     const onSubmit = () => {
         const title = 'Xác nhận thêm mới đợt giảm giá?';
-        const text = '';
-
+    
         // Kiểm tra nếu không có sản phẩm được chọn thì set loại là false
         const finalKhuyenMai = {
             ...addKhuyenMai,
             loai: selectedRows.length === 0 ? false : true,
             idProductDetail: selectedRows
         };
-
-
-        Swal.fire({
+    
+        swal({
             title: title,
-            text: text,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Xác nhận',
-            cancelButtonText: 'Hủy',
-        }).then((result) => {
-            if (result.isConfirmed) {
+            text: 'Bạn có chắc chắn muốn thêm mới đợt giảm giá không?',
+            icon: "warning",
+            buttons: {
+                cancel: "Hủy",
+                confirm: "Xác nhận",
+            },
+        }).then((willConfirm) => {
+            if (willConfirm) {
                 axios.post('http://localhost:8080/api/khuyen-mai/add', finalKhuyenMai, {
                     headers: {
                         'Content-Type': 'application/json',
                     },
                 })
                     .then(() => {
-                        toast.success('Thêm mới đợt giảm giá thành công');
+                        swal("Thành công!", "Thêm mới đợt giảm giá thành công!", "success");
                         navigate('/admin/giam-gia/dot-giam-gia');
                     })
-                    .catch(() => {
-                        toast.error('Thêm mới đợt giảm giá thất bại');
+                    .catch((error) => {
+                        console.error("Lỗi cập nhật:", error);
+                        swal("Thất bại!", "Thêm mới đợt giảm giá thất bại!", "error");
                     });
             }
         });
-    }
+    };
+    
 
     return (
         <div>

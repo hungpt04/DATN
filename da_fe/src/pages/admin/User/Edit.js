@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import axios from "axios";
+import {useNavigate} from "react-router-dom";
 
 function EditUser() {
+    const navigate = useNavigate();
     const [provinces, setProvinces] = useState([]);
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
@@ -258,147 +260,37 @@ function EditUser() {
         }
     };
 
-    // const handleUpdateUser = async (e) => {
-    //     e.preventDefault();
-    //     setError('');
-    //
-    //     try {
-    //         // Update user account
-    //         const userResponse = await fetch(`http://localhost:8080/api/tai-khoan/${id}`, {
-    //             method: 'PUT',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify(formData),
-    //         });
-    //
-    //         if (!userResponse.ok) {
-    //             const errorText = await userResponse.text();
-    //             throw new Error(`Failed to update user account: ${errorText}`);
-    //         }
-    //
-    //         // Update address
-    //         const diaChiPayload = {
-    //             taiKhoan: { id: id },
-    //             ten: formData.hoTen,
-    //             sdt: formData.sdt,
-    //             idTinh: diaChiData.idTinh,
-    //             idHuyen: diaChiData.idHuyen,
-    //             idXa: selectedWard,
-    //             diaChiCuThe: diaChiData.diaChiCuThe,
-    //         };
-    //
-    //         const addressResponse = await fetch(`http://localhost:8080/api/dia-chi/tai-khoan/${id}`, {
-    //             method: 'PUT',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify(diaChiPayload),
-    //         });
-    //
-    //         if (!addressResponse.ok) {
-    //             const errorText = await addressResponse.text();
-    //             throw new Error(`Failed to update address: ${errorText}`);
-    //         }
-    //
-    //         // Chỉ hiển thị thông báo thành công nếu cả hai request đều thành công
-    //         await Promise.all([userResponse, addressResponse]);
-    //
-    //         Swal.fire({
-    //             icon: 'success',
-    //             title: 'Thành công!',
-    //             text: 'Cập nhật nhân viên thành công!',
-    //         });
-    //     } catch (error) {
-    //         console.error('Error:', error);
-    //         Swal.fire({
-    //             icon: 'error',
-    //             title: 'Lỗi!',
-    //             text: 'Có lỗi xảy ra khi cập nhật nhân viên! Vui lòng kiểm tra lại thông tin.',
-    //         });
-    //     }
-    // };
-
-    // const handleUpdateUser = async (e) => {
-    //     e.preventDefault();
-    //     setError('');
-    //
-    //     try {
-    //         // Update user account
-    //         const userResponse = await fetch(`http://localhost:8080/api/tai-khoan/update/${id}`, {
-    //             method: 'PUT',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify(formData),
-    //         });
-    //
-    //         if (!userResponse.ok) {
-    //             const errorText = await userResponse.text();
-    //             throw new Error(`Failed to update user account: ${errorText}`);
-    //         }
-    //
-    //         // Update address
-    //         const diaChiPayload = {
-    //             taiKhoan: { id: id },
-    //             ten: formData.hoTen,
-    //             sdt: formData.sdt,
-    //             idTinh: diaChiData.idTinh,
-    //             idHuyen: diaChiData.idHuyen,
-    //             idXa: selectedWard,
-    //             diaChiCuThe: diaChiData.diaChiCuThe,
-    //         };
-    //
-    //         const addressResponse = await fetch(`http://localhost:8080/api/dia-chi/update/${id}`, {
-    //             method: 'PUT',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify(diaChiPayload),
-    //         });
-    //
-    //         if (!addressResponse.ok) {
-    //             const errorText = await addressResponse.text();
-    //             throw new Error(`Failed to update address: ${errorText}`);
-    //         }
-    //
-    //         // Chỉ hiển thị thông báo thành công nếu cả hai request đều thành công
-    //         await Promise.all([userResponse, addressResponse]);
-    //
-    //         Swal.fire({
-    //             icon: 'success',
-    //             title: 'Thành công!',
-    //             text: 'Cập nhật nhân viên thành công!',
-    //         });
-    //     } catch (error) {
-    //         console.error('Error:', error);
-    //         Swal.fire({
-    //             icon: 'error',
-    //             title: 'Lỗi!',
-    //             text: 'Có lỗi xảy ra khi cập nhật nhân viên! Vui lòng kiểm tra lại thông tin.',
-    //         });
-    //     }
-    // };
-
     const handleUpdateUser = async (e) => {
         e.preventDefault();
         setError('');
-
+    
         try {
+            // Lấy ID địa chỉ trước tiên
+        const getAddressIdResponse = await fetch(`http://localhost:8080/api/dia-chi/get-id-dia-chi-by-id-tai-khoan/${id}`);
+        
+        if (!getAddressIdResponse.ok) {
+            throw new Error('Không thể lấy ID địa chỉ');
+        }
+        
+        const addressId = await getAddressIdResponse.json(); // Lấy ID địa chỉ
+    
             // Update user account
             const userResponse = await fetch(`http://localhost:8080/api/tai-khoan/update/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
-
+    
             if (!userResponse.ok) {
                 const errorText = await userResponse.text();
                 throw new Error(`Failed to update user account: ${errorText}`);
             }
-
+    
             // Update address
             const diaChiPayload = {
+                id: addressId, // Sử dụng ID địa chỉ đã lấy được
                 taiKhoan: {
-                    id: id  // Đảm bảo truyền đúng ID tài khoản
+                    id: id  // This should be the user/customer account ID
                 },
                 ten: formData.hoTen,
                 sdt: formData.sdt,
@@ -407,30 +299,32 @@ function EditUser() {
                 idXa: selectedWard,
                 diaChiCuThe: diaChiData.diaChiCuThe,
             };
-
+    
             console.log('DiaChi Payload:', diaChiPayload); // Log payload để kiểm tra
-
-            const addressResponse = await fetch(`http://localhost:8080/api/dia-chi/update/${id}`, {
+    
+            const addressResponse = await fetch(`http://localhost:8080/api/dia-chi/update/${addressId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(diaChiPayload),
             });
-
+    
             if (!addressResponse.ok) {
                 const errorText = await addressResponse.text();
                 throw new Error(`Failed to update address: ${errorText}`);
             }
-
+    
             // Kiểm tra response
             const responseData = await addressResponse.json();
             console.log('Address Update Response:', responseData);
-
+    
             Swal.fire({
                 icon: 'success',
                 title: 'Thành công!',
                 text: 'Cập nhật nhân viên thành công!',
+            }).then(() => {
+                navigate('/admin/tai-khoan/nhan-vien');
             });
         } catch (error) {
             console.error('Error:', error);

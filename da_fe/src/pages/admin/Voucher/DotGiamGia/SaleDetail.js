@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate, useParams} from "react-router-dom";
 import axios from "axios";
-import Swal from "sweetalert2";
-import {toast} from "react-toastify";
+import swal from "sweetalert";
 
 const SaleDetail = () => {
     const {id} = useParams();
@@ -71,14 +70,6 @@ const SaleDetail = () => {
     useEffect(() => {
         getListProductDetailByIdKhuyenMai(id);
     }, []);
-
-    // useEffect(() => {
-    //     // Thêm một effect để tự động chọn các chi tiết sản phẩm
-    //     if (getProductDetailByProduct.length > 0) {
-    //         const selectedProductDetailIds = getProductDetailByProduct.map(detail => detail.id);
-    //         setSelectedRows(selectedProductDetailIds);
-    //     }
-    // }, [getProductDetailByProduct]);
 
     const handleNavigateToSale = () => {
         navigate('/admin/giam-gia/dot-giam-gia');
@@ -158,20 +149,6 @@ const SaleDetail = () => {
     }
 
     const handleCheckboxChange2 = (event, productDetailId) => {
-        // const selectedIndex = selectedRows.indexOf(productDetailId)
-        // let newSelected = []
-        //
-        // if (selectedIndex === -1) {
-        //     newSelected = [...selectedRows, productDetailId]
-        // } else {
-        //     newSelected = [
-        //         ...selectedRows.slice(0, selectedIndex),
-        //         ...selectedRows.slice(selectedIndex + 1),
-        //     ]
-        // }
-        //
-        // setSelectedRows(newSelected)
-        // setSelectAllProductDetail(newSelected.length === getProductDetailByProduct.length)
         const selectedIndex = selectedRows.indexOf(productDetailId)
         let newSelected = []
 
@@ -198,39 +175,41 @@ const SaleDetail = () => {
     const onSubmit = () => {
         const title = 'Xác nhận cập nhật đợt giảm giá?';
         console.log('Selected Rows:', selectedRows);
-
-        Swal.fire({
+    
+        swal({
             title: title,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Xác nhận',
-            cancelButtonText: 'Hủy',
-        }).then((result) => {
-            if (result.isConfirmed) {
+            text: "Bạn có chắc chắn muốn cập nhật đợt giảm giá không?",
+            icon: "question",
+            buttons: {
+                cancel: "Hủy",
+                confirm: "Xác nhận",
+            },
+        }).then((willConfirm) => {
+            if (willConfirm) {
                 // Sử dụng trực tiếp updateKhuyenMai và id từ scope
                 const dataToUpdate = {
                     ...updateKhuyenMai,
                     loai: selectedRows.length === 0 ? false : true,
                     idProductDetail: selectedRows
                 };
-
+    
                 axios.put(`http://localhost:8080/api/khuyen-mai/update/${id}`, dataToUpdate, {
                     headers: {
                         'Content-Type': 'application/json',
                     },
                 })
                     .then(() => {
-                        toast.success('Cập nhật đợt giảm giá thành công');
+                        swal("Thành công!", "Cập nhật đợt giảm giá thành công!", "success");
                         navigate('/admin/giam-gia/dot-giam-gia');
                     })
                     .catch((error) => {
-                        console.error('Lỗi cập nhật:', error);
-                        toast.error('Cập nhật đợt giảm giá thất bại');
+                        console.error("Lỗi cập nhật:", error);
+                        swal("Thất bại!", "Cập nhật đợt giảm giá thất bại!", "error");
                     });
             }
         });
-    }
-
+    };
+    
     return (
         <div>
             <div className="font-bold text-sm">
@@ -471,6 +450,6 @@ const SaleDetail = () => {
             }
         </div>
     );
-};
+}
 
 export default SaleDetail;

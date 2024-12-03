@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { toast } from 'react-toastify';
+import swal from 'sweetalert';
 import { AiOutlineDollar, AiOutlinePercentage } from "react-icons/ai";
-import Swal from "sweetalert2";
+
 
 const VoucherDetail = () => {
     const initialVoucher = {
@@ -74,18 +74,19 @@ const VoucherDetail = () => {
 
     const handleVoucherUpdate = (idUpdate, voucherDetail) => {
         const title = 'Xác nhận cập nhật phiếu giảm giá?';
-        const text = '';
+        const text = 'Bạn có chắc chắn muốn cập nhật phiếu giảm giá không?';
 
         // Hiển thị SweetAlert để xác nhận
-        Swal.fire({
+        swal({
             title: title,
             text: text,
             icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Xác nhận',
-            cancelButtonText: 'Hủy',
-        }).then((result) => {
-            if (result.isConfirmed) {
+            buttons: {
+                cancel: "Hủy",
+                confirm: "Xác nhận",
+            },
+        }).then((willConfirm) => {
+            if (willConfirm) {
                 const updatedVoucher = {
                     ...voucherDetail,
                     listIdCustomer: selectedCustomerIds // Gửi danh sách ID khách hàng
@@ -97,11 +98,12 @@ const VoucherDetail = () => {
                     },
                 })
                     .then(() => {
-                        toast.success('Cập nhật phiếu giảm giá thành công');
+                        swal("Thành công!", "Cập nhật phiếu giảm giá thành công!", "success");
                         navigate('/admin/giam-gia/phieu-giam-gia');
                     })
-                    .catch(() => {
-                        toast.error('Cập nhật phiếu giảm giá thất bại');
+                    .catch((error) => {
+                        console.error("Lỗi cập nhật:", error);
+                        swal("Thất bại!", "Cập nhật phiếu giảm giá thất bại!", "error");
                     });
             }
         });

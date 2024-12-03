@@ -39,4 +39,14 @@ public class DiaChi {
 
     @Column(name = "DiaChiCuThe")
     private String diaChiCuThe;
+
+    public DiaChi newDiaChi(DiaChi diaChi) {
+        diaChi.setTen(this.ten);
+        diaChi.setSdt(this.sdt);
+        diaChi.setIdTinh(this.idTinh);
+        diaChi.setIdHuyen(this.idHuyen);
+        diaChi.setIdXa(this.idXa);
+        diaChi.setDiaChiCuThe(this.diaChiCuThe);
+        return diaChi;
+    }
 }

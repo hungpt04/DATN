@@ -3,8 +3,7 @@ import { IoAdd } from "react-icons/io5";
 import { TbEyeEdit } from "react-icons/tb";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
-import Swal from "sweetalert2";
-import { toast } from 'react-toastify';
+import swal from 'sweetalert';
 import ReactPaginate from "react-paginate";
 
 const DiscountVoucher = () => {
@@ -29,14 +28,6 @@ const DiscountVoucher = () => {
 
     const [inputValue, setInputValue] = useState('');
 
-    // useEffect(() => {
-    //     setSearchVoucher({
-    //         ...searchVoucher,
-    //         tenSearch: inputValue
-    //     })
-    // },[])
-
-    // Theo dõi sự thay đổi của inputValue
     useEffect(() => {
         // Kiểm tra giá trị nhập vào có hợp lệ không
         if (validateSearchInput(inputValue)) {
@@ -61,10 +52,6 @@ const DiscountVoucher = () => {
         navigate(`/admin/giam-gia/phieu-giam-gia/${id}/detail`);
     }
 
-    // useEffect(() => {
-    //     loadVoucherPhanTrang(0);
-    // }, []);
-
     const loadVoucher = () => {
         axios.get("http://localhost:8080/api/voucher/hien-thi")
             .then((response) => {
@@ -74,28 +61,6 @@ const DiscountVoucher = () => {
                 console.error('Error:', error);
             });
     }
-
-    // const loadVoucherPhanTrang = (currentPage) => {
-    //     axios.get(`http://localhost:8080/api/voucher/phan-trang?currentPage=${currentPage}&size=${size}`)
-    //         .then((response) => {
-    //             setListVoucher(response.data.content);
-    //             setPageCount(response.data.totalPages);
-    //         })
-    //         .catch((error) => {
-    //             console.error('Error:', error);
-    //         });
-    // }
-
-    // const loadVoucherSearch = (currentPage, searchVoucher) => {
-    //     axios.get(`http://localhost:8080/api/voucher/search?currentPage=${currentPage}&size=${size}`, searchVoucher)
-    //         .then((response) => {
-    //             setListVoucher(response.data);
-    //             setPageCount(response.data.totalPages);
-    //         })
-    //         .catch((error) => {
-    //             console.error('Error:', error);
-    //         });
-    // }
 
     const loadVoucherSearch = (searchVoucher, currentPage) => {
         const params = new URLSearchParams({
@@ -129,15 +94,16 @@ const DiscountVoucher = () => {
         const text = 'Bạn chắc chắn muốn xóa phiếu giảm giá này?';
 
         // Hiển thị SweetAlert để xác nhận
-        Swal.fire({
+        swal({
             title: title,
             text: text,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Xác nhận',
-            cancelButtonText: 'Hủy',
-        }).then((result) => {
-            if (result.isConfirmed) {
+            icon: 'warning',
+            buttons: {
+                cancel: "Hủy",
+                confirm: "Xác nhận",
+            },
+        }).then((willConfirm) => {
+            if (willConfirm) {
                 // Thực hiện gọi API với axios
                 axios.delete(`http://localhost:8080/api/voucher/delete/${id}`, {
                     headers: {
@@ -145,20 +111,17 @@ const DiscountVoucher = () => {
                     },
                 })
                     .then(() => {
-                        toast.success('Hủy phiếu giảm giá thành công');
+                        swal('Thành công!','Hủy phiếu giảm giá thành công', 'success');
                         loadVoucher(); // Gọi lại hàm loadVoucher để làm mới danh sách
                     })
-                    .catch(() => {
-                        toast.error('Hủy phiếu giảm giá thất bại');
+                    .catch((error) => {
+                        console.error("Lỗi cập nhật:", error);
+                        swal('Thất bại!','Hủy phiếu giảm giá thất bại', 'error');
                     });
             }
         });
     }
 
-    // const handlePageClick = (event) => {
-    //     loadVoucherPhanTrang(event.selected);
-    //     console.log(`User requested page number ${event.selected + 1}`);
-    // };
     const handlePageClick = (event) => {
         const selectedPage = event.selected;
         loadVoucherSearch(searchVoucher, selectedPage); // Gọi hàm tìm kiếm với trang mới
@@ -184,7 +147,7 @@ const DiscountVoucher = () => {
                                 setInputValue(valueNhap);
                             }else {
                                 setInputValue('');
-                                toast.warning('Không được nhập ký tự đặc biệt');
+                                swal('Lỗi!', 'Không được nhập ký tự đặc biệt', 'warning');
                             }
                         }}
                     />

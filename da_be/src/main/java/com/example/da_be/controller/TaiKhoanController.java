@@ -48,10 +48,16 @@ public class TaiKhoanController {
         return new ResponseEntity<>(updatedTaiKhoan, HttpStatus.OK);
     }
 
-    // Xóa tài khoản
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteTaiKhoan(@PathVariable int id) {
-        taiKhoanService.deleteTaiKhoanById(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//    // Xóa tài khoản
+//    @DeleteMapping("/delete/{id}")
+//    public ResponseEntity<Void> deleteTaiKhoan(@PathVariable int id) {
+//        taiKhoanService.deleteTaiKhoanById(id);
+//        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//    }
+
+    @PutMapping("/delete/{id}")
+    public ResponseEntity<TaiKhoan> deleteTaiKhoan(@PathVariable int id) {
+        TaiKhoan taiKhoan = taiKhoanService.deleteTaiKhoanById(id);
+        return new ResponseEntity<>(taiKhoan, HttpStatus.OK);
     }
 }

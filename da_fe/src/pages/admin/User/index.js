@@ -4,6 +4,7 @@ import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import swal from 'sweetalert';
 
 function User() {
     const [users, setUsers] = useState([]);
@@ -23,16 +24,47 @@ function User() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) {
-            try {
-                await axios.delete(`http://localhost:8080/api/tai-khoan/${id}`);
-                alert('Xóa nhân viên thành công!');
-                loadUsers(); // Reload the users list after deletion
-            } catch (error) {
-                console.error('Failed to delete user', error);
-                alert('Có lỗi xảy ra khi xóa nhân viên!');
+        // if (window.confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) {
+        //     try {
+        //         await axios.delete(`http://localhost:8080/api/tai-khoan/${id}`);
+        //         alert('Xóa nhân viên thành công!');
+        //         loadUsers(); // Reload the users list after deletion
+        //     } catch (error) {
+        //         console.error('Failed to delete user', error);
+        //         alert('Có lỗi xảy ra khi xóa nhân viên!');
+        //     }
+        // }
+
+        const title = 'Xác nhận thay đổi trạng thái hoạt động?'
+        const text = 'Bạn có chắc chắn muốn thay đổi trạng thái hoạt động?'
+
+        swal({
+            title: title,
+            text: text,
+            icon: 'question',
+            buttons: {
+                cancel: "Hủy",
+                confirm: "Xác nhận",
+            },
+        }).then((willConfirm) => {
+            if (willConfirm) {
+                // Thực hiện gọi API với axios
+                axios.put(`http://localhost:8080/api/tai-khoan/delete/${id}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                    .then(() => {
+                        swal("Thành công!", "Thay đổi trạng thái thành công", "success")
+                        loadUsers() // Gọi lại hàm loadVoucher để làm mới danh sách
+                    })
+                    .catch((error) => {
+                        console.error("Lỗi cập nhật:", error);
+                        swal("Thất bại!", "Thay đổi trạng thái thất bại!", "error");
+                    });
             }
-        }
+        });
+
     };
 
     const handleEdit = (id) => {

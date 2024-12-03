@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
-import {IoAdd, IoCalendar} from "react-icons/io5";
+import {IoAdd} from "react-icons/io5";
 import {useNavigate} from "react-router-dom";
 import {TbEyeEdit} from "react-icons/tb";
 import axios from "axios";
-import Swal from "sweetalert2";
+import swal from 'sweetalert';
 import {toast} from "react-toastify";
 
 const Sale = () => {
@@ -37,22 +37,21 @@ const Sale = () => {
 
     const handelDeleteSale = async (id) => {
         const title = 'Xác nhận xóa phiếu giảm giá?';
-        const text = 'Bạn chắc chắn muốn xóa phiếu giảm giá này?';
 
         if (listKhuyenMai.trangThai === 2) {
             toast.success('Đợt giảm giá đã kết thúc');
         }
 
-        // Hiển thị SweetAlert để xác nhận
-        Swal.fire({
+        swal({
             title: title,
-            text: text,
+            text: 'Bạn chắc chắn muốn xóa phiếu giảm giá này?',
             icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Xác nhận',
-            cancelButtonText: 'Hủy',
-        }).then((result) => {
-            if (result.isConfirmed) {
+            buttons: {
+                cancel: "Hủy",
+                confirm: "Xác nhận",
+            },
+        }).then((willConfirm) => {
+            if (willConfirm) {
                 // Thực hiện gọi API với axios
                 axios.put(`http://localhost:8080/api/khuyen-mai/delete/${id}`, {
                     headers: {
@@ -60,11 +59,12 @@ const Sale = () => {
                     },
                 })
                     .then(() => {
-                        toast.success('Hủy đợt giảm giá thành công');
+                        swal("Thành công!", "Hủy đợt giảm giá thành công", "success")
                         fetchListKhuyenMai() // Gọi lại hàm loadVoucher để làm mới danh sách
                     })
-                    .catch(() => {
-                        toast.error('Hủy phiếu đợt giá thất bại');
+                    .catch((error) => {
+                        console.error("Lỗi cập nhật:", error);
+                        swal("Thất bại!", "Hủy đợt giảm giá thất bại!", "error");
                     });
             }
         });

@@ -27,11 +27,15 @@ public class DiaChiController {
     // Lấy thông tin địa chỉ theo id
     @GetMapping("/{id}")
     public ResponseEntity<DiaChi> getDiaChiById(@PathVariable Long id) {
-        DiaChi diaChi = diaChiService.getDiaChiById(id);
-        if (diaChi.getId() == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            DiaChi diaChi = diaChiService.getDiaChiById(id);
+            if (diaChi == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(diaChi);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return new ResponseEntity<>(diaChi, HttpStatus.OK);
     }
 
     // Lấy danh sách địa chỉ theo IdTaiKhoan
@@ -57,9 +61,22 @@ public class DiaChiController {
 
     // Cập nhật thông tin địa chỉ
     @PutMapping("/update/{id}")
-    public ResponseEntity<DiaChi> updateDiaChi(@PathVariable Long id, @RequestBody DiaChi diaChi) {
-        diaChi.setId(id);  // Đảm bảo ID trong body và path là giống nhau
-        DiaChi updatedDiaChi = diaChiService.saveOrUpdateDiaChi(diaChi);
-        return new ResponseEntity<>(updatedDiaChi, HttpStatus.OK);
+    public ResponseEntity<?> updateDiaChi(@PathVariable Long id, @RequestBody DiaChi diaChi) {
+        try {
+            // Ensure the ID in the path is set in the body
+            diaChi.setId(id);
+
+            // This will either update existing or create new
+            DiaChi updatedDiaChi = diaChiService.saveOrUpdateDiaChi(diaChi);
+            return new ResponseEntity<>(updatedDiaChi, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
+
+    @GetMapping("/get-id-dia-chi-by-id-tai-khoan/{idTaiKhoan}")
+    public Long getIdDiaChiByIdTaiKhoan(@PathVariable Integer idTaiKhoan) {
+        return diaChiService.getIdDiaChiByIdTaiKhoan(idTaiKhoan);
+    }
+
 }

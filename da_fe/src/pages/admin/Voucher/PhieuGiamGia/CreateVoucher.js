@@ -2,8 +2,7 @@ import React, {useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import {useState} from "react";
 import axios from "axios";
-import { toast } from 'react-toastify';
-import Swal from "sweetalert2";
+import swal from 'sweetalert';
 import {AiOutlineDollar, AiOutlinePercentage} from "react-icons/ai";
 
 const CreateVoucher = () => {
@@ -52,17 +51,17 @@ const CreateVoucher = () => {
 
     const handleVoucherAdd = () => {
         const title = 'Xác nhận thêm mới phiếu giảm giá?';
-        const text = '';
 
-        Swal.fire({
+        swal({
             title: title,
-            text: text,
+            text: 'Bạn có chắc chắn muốn thêm phiếu giảm giá không?',
             icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Xác nhận',
-            cancelButtonText: 'Hủy',
-        }).then((result) => {
-            if (result.isConfirmed) {
+            buttons: {
+                cancel: "Hủy",
+                confirm: "Xác nhận",
+            },
+        }).then((willConfirm) => {
+            if (willConfirm) {
                 const updatedVoucherAdd = { ...voucherAdd, listIdCustomer: selectedCustomerIds };
 
                 axios.post('http://localhost:8080/api/voucher/add', updatedVoucherAdd, {
@@ -71,11 +70,12 @@ const CreateVoucher = () => {
                     },
                 })
                     .then(() => {
-                        toast.success('Thêm mới phiếu giảm giá thành công');
+                        swal("Thành công!", "Thêm mới phiếu giảm giá thành công!", "success");
                         navigate('/admin/giam-gia/phieu-giam-gia');
                     })
-                    .catch(() => {
-                        toast.error('Thêm mới phiếu giảm giá thất bại');
+                    .catch((error) => {
+                        console.error("Lỗi cập nhật:", error);
+                        swal("Thất bại!", "Thêm mới phiếu giảm giá thất bại!", "error");
                     });
             }
         });

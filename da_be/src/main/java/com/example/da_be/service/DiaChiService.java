@@ -2,6 +2,7 @@ package com.example.da_be.service;
 
 import com.example.da_be.entity.DiaChi;
 import com.example.da_be.repository.DiaChiRepository;
+import com.example.da_be.repository.KhachHangRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,43 +16,38 @@ public class DiaChiService {
     @Autowired
     private DiaChiRepository diaChiRepository;
 
+    @Autowired
+    KhachHangRepository khachHangRepository;
+
     public List<DiaChi> getAllDiaChi() {
         return diaChiRepository.findAll();
     }
 
     public DiaChi getDiaChiById(Long id) {
-        Optional<DiaChi> diaChi = diaChiRepository.findById(id);
-        return diaChi.orElseGet(DiaChi::new);
+        return diaChiRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Address not found with ID: " + id));
     }
 
     public DiaChi saveOrUpdateDiaChi(DiaChi diaChi) {
-        // In ra log để kiểm tra dữ liệu đầu vào
-        System.out.println("Received DiaChi: " + diaChi);
+        try {
+            DiaChi diaChi1;
 
-        // Tìm địa chỉ theo tài khoản ID
-        List<DiaChi> existingDiaChiList = diaChiRepository.findByTaiKhoan_Id(Long.valueOf(diaChi.getTaiKhoan().getId()));
+            if (diaChi.getId() != null) {
+                Optional<DiaChi> diaChi2 = diaChiRepository.findById(diaChi.getId());
+                if (diaChi2.isPresent()) {
+                    diaChi1 = diaChi.newDiaChi(diaChi2.get());
+                }else {
+                    throw new RuntimeException("Address with ID " + diaChi.getId() + " not found for update.");
+                }
+            }else {
+                diaChi1 = diaChi.newDiaChi(new DiaChi());
+                diaChi1.setTaiKhoan(khachHangRepository.findById(diaChi.getTaiKhoan().getId()).orElseThrow(() -> new RuntimeException("Customer not found.")));
+            }
 
-        DiaChi diaChiToSave;
-        if (!existingDiaChiList.isEmpty()) {
-            // Nếu đã có địa chỉ, cập nhật địa chỉ đầu tiên
-            diaChiToSave = existingDiaChiList.get(0);
-
-            // Cập nhật từng trường
-            diaChiToSave.setTen(diaChi.getTen());
-            diaChiToSave.setSdt(diaChi.getSdt());
-            diaChiToSave.setIdTinh(diaChi.getIdTinh());
-            diaChiToSave.setIdHuyen(diaChi.getIdHuyen());
-            diaChiToSave.setIdXa(diaChi.getIdXa());
-            diaChiToSave.setDiaChiCuThe(diaChi.getDiaChiCuThe());
-        } else {
-            // Nếu chưa có địa chỉ, tạo mới
-            diaChiToSave = diaChi;
+            return diaChiRepository.save(diaChi1);
+        }catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        // In ra log trước khi lưu
-        System.out.println("DiaChi to save: " + diaChiToSave);
-
-        return diaChiRepository.save(diaChiToSave);
     }
 
     public void deleteDiaChiById(Long id) {
@@ -61,5 +57,9 @@ public class DiaChiService {
     // Thêm phương thức để lấy địa chỉ theo IdTaiKhoan
     public List<DiaChi> getDiaChiByTaiKhoanId(Long idTaiKhoan) {
         return diaChiRepository.findByTaiKhoan_Id(idTaiKhoan);
+    }
+
+    public Long getIdDiaChiByIdTaiKhoan(Integer idTaiKhoan) {
+        return diaChiRepository.getIdDiaChiByIdTaiKhoan(idTaiKhoan);
     }
 }

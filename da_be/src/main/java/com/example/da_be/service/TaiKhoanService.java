@@ -26,8 +26,15 @@ public class TaiKhoanService {
         return taiKhoanRepository.save(taiKhoan);
     }
 
-    public void deleteTaiKhoanById(int id) {
-        taiKhoanRepository.deleteById(id);
+    public TaiKhoan deleteTaiKhoanById(int id) {
+        TaiKhoan taiKhoan = taiKhoanRepository.findById(id).orElse(null);
+        assert taiKhoan != null;
+        if (taiKhoan.getTrangThai() == 0) {
+            taiKhoan.setTrangThai(1);
+        } else {
+            taiKhoan.setTrangThai(0);
+        }
+        return taiKhoanRepository.save(taiKhoan);
     }
 
 
