@@ -10,6 +10,7 @@ const DiscountVoucher = () => {
     const [listVoucher, setListVoucher] = useState([]);
     const navigate = useNavigate();
     const [pageCount, setPageCount] = useState(0);
+    const [currentPage, setCurrentPage] = useState(0);
     const size = 5;
 
     const [searchVoucher, setSearchVoucher] = useState({
@@ -52,15 +53,15 @@ const DiscountVoucher = () => {
         navigate(`/admin/giam-gia/phieu-giam-gia/${id}/detail`);
     }
 
-    const loadVoucher = () => {
-        axios.get("http://localhost:8080/api/voucher/hien-thi")
-            .then((response) => {
-                setListVoucher(response.data);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-    }
+    // const loadVoucher = () => {
+    //     axios.get("http://localhost:8080/api/voucher/hien-thi")
+    //         .then((response) => {
+    //             setListVoucher(response.data);
+    //         })
+    //         .catch((error) => {
+    //             console.error('Error:', error);
+    //         });
+    // }
 
     const loadVoucherSearch = (searchVoucher, currentPage) => {
         const params = new URLSearchParams({
@@ -78,6 +79,7 @@ const DiscountVoucher = () => {
             .then((response) => {
                 setListVoucher(response.data.content);
                 setPageCount(response.data.totalPages);
+                setCurrentPage(response.data.currentPage)
             })
             .catch((error) => {
                 console.error('Error:', error);
@@ -86,7 +88,7 @@ const DiscountVoucher = () => {
 
     useEffect(() => {
         loadVoucherSearch(searchVoucher, 0);
-    }   ,[])
+    }   ,[searchVoucher])
 
 
     const handelDeleteVoucher = (id) => {
@@ -112,7 +114,7 @@ const DiscountVoucher = () => {
                 })
                     .then(() => {
                         swal('Thành công!','Hủy phiếu giảm giá thành công', 'success');
-                        loadVoucher(); // Gọi lại hàm loadVoucher để làm mới danh sách
+                        loadVoucherSearch(searchVoucher, currentPage); // Gọi lại hàm loadVoucher để làm mới danh sách
                     })
                     .catch((error) => {
                         console.error("Lỗi cập nhật:", error);
@@ -132,7 +134,7 @@ const DiscountVoucher = () => {
 
         <div>
             <div className="font-bold text-sm">
-                Discount Voucher
+                Phiếu giảm giá
             </div>
             <div className="bg-white p-4 rounded-md shadow-lg">
                 <div className="flex">
@@ -293,9 +295,10 @@ const DiscountVoucher = () => {
                     <tbody>
                     {
                         listVoucher && listVoucher.length > 0 && listVoucher.map((item, index) => {
+                            const stt = (currentPage * 5) + index + 1;
                             return (
                                 <tr key={`${index}`} className="hover:bg-gray-100">
-                                    <td className="py-2 px-4 border-b">{index + 1}</td>
+                                    <td className="py-2 px-4 border-b">{stt}</td>
                                     <td className="py-2 px-4 border-b">{item.ma}</td>
                                     <td className="py-2 px-4 border-b">{item.ten}</td>
                                     <td className="py-2 px-4 border-b">

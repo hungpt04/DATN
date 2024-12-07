@@ -1,6 +1,7 @@
 package com.example.da_be.controller;
 
 import com.example.da_be.entity.Voucher;
+import com.example.da_be.request.KhachHangSearch;
 import com.example.da_be.request.VoucherRequest;
 import com.example.da_be.request.VoucherSearch;
 import com.example.da_be.response.KhachHangResponse;
@@ -97,6 +98,32 @@ public class VoucherController {
 
         // Lấy kết quả từ service
         Page<VoucherResponse> pageResult = voucherService.getSearchVoucher(searchCriteria, pageable);
+
+        // Tạo response trả về cho client
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", pageResult.getContent());
+        response.put("totalPages", pageResult.getTotalPages());
+        response.put("totalElements", pageResult.getTotalElements());
+        response.put("currentPage", pageResult.getNumber());
+        response.put("size", pageResult.getSize());
+
+        return response;
+    }
+
+    @GetMapping("/searchKhachHang")
+    public Map<String, Object> searchKhachHang(
+            @RequestParam(required = false) String tenSearch,       // Tìm kiếm theo mã hoặc tên
+            @RequestParam(value = "currentPage", defaultValue = "0") Integer currentPage,  // Trang hiện tại
+            @RequestParam(value = "size", defaultValue = "5") Integer size) {  // Kích thước mỗi trang
+
+        KhachHangSearch khachHangSearch = new KhachHangSearch();
+        khachHangSearch.setTenSearch(tenSearch);
+
+        // Khởi tạo Pageable cho phân trang
+        Pageable pageable = PageRequest.of(currentPage, size);
+
+        // Lấy kết quả từ service
+        Page<KhachHangResponse> pageResult = voucherService.getSearchKhachHang(khachHangSearch, pageable);
 
         // Tạo response trả về cho client
         Map<String, Object> response = new HashMap<>();

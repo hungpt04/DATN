@@ -51,16 +51,17 @@ public interface VoucherRepository extends JpaRepository<Voucher, Integer> {
 
     @Query(
             """
-        SELECT new com.example.da_be.response.VoucherResponse(v.id, v.ma, v.ten, v.giaTri, v.giaTriMax, v.dieuKienNhoNhat, v.kieu, v.soLuong, v.ngayBatDau, v.ngayKetThuc, v.trangThai,  v.kieuGiaTri)
-        from Voucher v
-        where 
-        (:#{#search.tenSearch} is null or v.ma like %:#{#search.tenSearch}% or v.ten like %:#{#search.tenSearch}%)
-        AND (:#{#search.ngayBatDauSearch} IS NULL OR v.ngayBatDau >= :#{#search.ngayBatDauSearch})
-        AND (:#{#search.ngayKetThucSearch} IS NULL OR v.ngayKetThuc <= :#{#search.ngayKetThucSearch})
-        AND (:#{#search.kieuSearch} IS NULL OR v.kieu = :#{#search.kieuSearch})
-        AND (:#{#search.kieuGiaTriSearch} IS NULL OR v.kieuGiaTri = :#{#search.kieuGiaTriSearch})
-        AND (:#{#search.trangThaiSearch} IS NULL OR v.trangThai = :#{#search.trangThaiSearch})
-"""
+            SELECT new com.example.da_be.response.VoucherResponse(v.id, v.ma, v.ten, v.giaTri, v.giaTriMax, v.dieuKienNhoNhat, v.kieu, v.soLuong, v.ngayBatDau, v.ngayKetThuc, v.trangThai,  v.kieuGiaTri)
+            from Voucher v
+            where 
+            (:#{#search.tenSearch} is null or v.ma like %:#{#search.tenSearch}% or v.ten like %:#{#search.tenSearch}%)
+            AND (:#{#search.ngayBatDauSearch} IS NULL OR v.ngayBatDau >= :#{#search.ngayBatDauSearch})
+            AND (:#{#search.ngayKetThucSearch} IS NULL OR v.ngayKetThuc <= :#{#search.ngayKetThucSearch})
+            AND (:#{#search.kieuSearch} IS NULL OR v.kieu = :#{#search.kieuSearch})
+            AND (:#{#search.kieuGiaTriSearch} IS NULL OR v.kieuGiaTri = :#{#search.kieuGiaTriSearch})
+            AND (:#{#search.trangThaiSearch} IS NULL OR v.trangThai = :#{#search.trangThaiSearch})
+            ORDER BY v.id DESC
+            """
     )
     Page<VoucherResponse> getSearchVoucher(@Param("search") VoucherSearch search, Pageable pageable);
 }

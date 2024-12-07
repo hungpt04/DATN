@@ -1,10 +1,7 @@
 package com.example.da_be.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -13,6 +10,7 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "TaiKhoan")
 public class TaiKhoan {
@@ -20,6 +18,9 @@ public class TaiKhoan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Id")
     private Integer id;
+
+    @Column(name = "Ma")
+    private String ma;
 
     @Column(name = "HoTen", nullable = false)
     private String hoTen;

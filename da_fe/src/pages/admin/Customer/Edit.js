@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-function EditUser() {
+function EditCustomer() {
     const navigate = useNavigate();
     const [provinces, setProvinces] = useState([]);
     const [districts, setDistricts] = useState([]);
@@ -21,7 +21,7 @@ function EditUser() {
         sdt: '',
         email: '',
         gioiTinh: 0,
-        vaiTro: 'User',
+        vaiTro: 'Customer',
         avatar: null,
         ngaySinh: '',
         cccd: '',
@@ -337,22 +337,22 @@ function EditUser() {
             Swal.fire({
                 icon: 'success',
                 title: 'Thành công!',
-                text: 'Cập nhật nhân viên thành công!',
+                text: 'Cập nhật khách hàng thành công!',
             }).then(() => {
-                navigate('/admin/tai-khoan/nhan-vien');
+                navigate('/admin/tai-khoan/khach-hang');
             });
         } catch (error) {
             console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi!',
-                text: error.message || 'Có lỗi xảy ra khi cập nhật nhân viên!',
+                text: error.message || 'Có lỗi xảy ra khi cập nhật khách hàng!',
             });
         }
     };
 
     const handleNavigateToSale = () => {
-        navigate('/admin/tai-khoan/nhan-vien');
+        navigate('/admin/tai-khoan/khach-hang');
     };
 
     return (
@@ -362,14 +362,14 @@ function EditUser() {
                     className="cursor-pointer"
                     onClick={handleNavigateToSale}
                 >
-                    Nhân viên
+                    Khách hàng
                 </span>
-                <span className="text-gray-400 ml-2">/ Chỉnh sửa nhân viên</span>
+                <span className="text-gray-400 ml-2">/ Chỉnh sửa khách hàng</span>
             </div>
             <div className="bg-white p-4 rounded-md shadow-lg">
                 <div className='flex'>
                     <div className="w-1/4 pr-4">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-8">Thông tin nhân viên</h2>
+                        <h2 className="text-xl font-semibold text-gray-800 mb-8">Thông tin khách hàng</h2>
                         <hr />
                         {/* Ảnh đại diện */}
                         <div className="flex justify-center items-center mt-4">
@@ -589,4 +589,4 @@ function EditUser() {
     );
 }
 
-export default EditUser;
+export default EditCustomer;

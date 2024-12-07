@@ -4,15 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class KhuyenMaiSearch {
+public class NhanVienSearch {
     public String tenSearch;
-    public LocalDate tgBatDauSearch;
-    public LocalDate tgKetThucSearch;
-    public Integer trangThaiSearch;
 
+    public String emailSearch;
+
+    public String sdtSearch;
+
+    public Integer gioiTinhSearch;
+
+    public Integer  trangThaiSearch;
 }

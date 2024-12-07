@@ -6,6 +6,7 @@ import com.example.da_be.entity.Voucher;
 import com.example.da_be.repository.KhachHangRepository;
 import com.example.da_be.repository.KhachHang_VoucherRepository;
 import com.example.da_be.repository.VoucherRepository;
+import com.example.da_be.request.KhachHangSearch;
 import com.example.da_be.request.KhachHang_VoucherRequest;
 import com.example.da_be.request.VoucherRequest;
 import com.example.da_be.request.VoucherSearch;
@@ -156,5 +157,10 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public Page<VoucherResponse> getSearchVoucher(VoucherSearch voucherSearch, Pageable pageable) {
         return voucherRepository.getSearchVoucher(voucherSearch, pageable);
+    }
+
+    @Override
+    public Page<KhachHangResponse> getSearchKhachHang(KhachHangSearch khachHangSearch, Pageable pageable) {
+        return khachHangRepository.getSearchKhachHang(khachHangSearch, pageable);
     }
 }

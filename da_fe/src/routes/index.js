@@ -37,6 +37,7 @@ import VoucherDetail from "../pages/admin/Voucher/PhieuGiamGia/VoucherDetail";
 import Sale from "../pages/admin/Voucher/DotGiamGia/Sale";
 import CreateSale from "../pages/admin/Voucher/DotGiamGia/CreateSale";
 import SaleDetail from "../pages/admin/Voucher/DotGiamGia/SaleDetail";
+import EditCustomer from '../pages/admin/Customer/Edit.js';
 
 // Public routes
 const publicRoutes = [
@@ -61,6 +62,7 @@ const publicRoutes = [
     { path: '/admin/tai-khoan/nhan-vien/edit/:id', component: EditUser, layout: AdminLayout },
     { path: '/admin/tai-khoan/khach-hang', component: Customer, layout: AdminLayout },
     { path: '/admin/tai-khoan/khach-hang/add', component: AddCustomer, layout: AdminLayout },
+    { path: '/admin/tai-khoan/khach-hang/edit/:id', component: EditCustomer, layout: AdminLayout },
     { path: '/admin/giam-gia/phieu-giam-gia', component: DiscountVoucher, layout: AdminLayout },
     { path: '/admin/giam-gia/phieu-giam-gia/add', component: CreateVoucher, layout: AdminLayout },
     { path: `/admin/giam-gia/phieu-giam-gia/:id/detail`, component: VoucherDetail, layout: AdminLayout },

@@ -217,9 +217,9 @@ const SaleDetail = () => {
                     className="cursor-pointer"
                     onClick={handleNavigateToSale}
                 >
-                    Sale
+                    Đợt giảm giá
                 </span>
-                <span className="text-gray-400 ml-2">/ Detail Sale</span>
+                <span className="text-gray-400 ml-2">/ Chi tiết đợt giảm giá</span>
             </div>
             <div className="bg-white p-4 rounded-md shadow-lg">
                 <div className="flex justify-end mb-4">

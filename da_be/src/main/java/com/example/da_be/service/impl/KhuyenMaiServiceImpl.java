@@ -3,16 +3,19 @@ package com.example.da_be.service.impl;
 import com.example.da_be.entity.KhuyenMai;
 import com.example.da_be.entity.SanPhamCT;
 import com.example.da_be.entity.SanPhamKhuyenMai;
+import com.example.da_be.repository.KhachHangRepository;
 import com.example.da_be.repository.KhuyenMaiRepository;
 import com.example.da_be.repository.SanPhamCTRepository;
 import com.example.da_be.repository.SanPhamKhuyenMaiRepository;
-import com.example.da_be.request.KhuyenMaiRequest;
-import com.example.da_be.request.SanPhamRequest;
+import com.example.da_be.request.*;
+import com.example.da_be.response.KhachHangResponse;
 import com.example.da_be.response.KhuyenMaiResponse;
 import com.example.da_be.response.SanPhamCTResponse;
 import com.example.da_be.response.SanPhamResponse;
 import com.example.da_be.service.KhuyenMaiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -31,6 +34,8 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
 
     @Autowired
     private SanPhamKhuyenMaiRepository sanPhamKhuyenMaiRepository;
+    @Autowired
+    private KhachHangRepository khachHangRepository;
 
     @Override
     public List<KhuyenMaiResponse> getAllKhuyenMai() {
@@ -85,54 +90,6 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
         return khuyenMai;
     }
 
-//    @Override
-//    public KhuyenMai updateKhuyenMai(KhuyenMaiRequest khuyenMaiRequest, Integer id) {
-//        KhuyenMai getOneKhuyenMai = khuyenMaiRepository.findById(id).orElse(null);
-//        List<SanPhamChiTiet> spctList = sanPhamChiTietRepository.findAll();
-//        List<SanPhamKhuyenMai> sanPhamKhuyenMai = sanPhamKhuyenMaiRepository.getListSanPhamKhuyenMaiByIdKhuyenMai(id);
-//
-//        for (SanPhamKhuyenMai spkm : sanPhamKhuyenMai) {
-//            sanPhamKhuyenMaiRepository.deleteById(spkm.getId());
-//        }
-//
-//        KhuyenMai khuyenMaiUpdate = new KhuyenMai();
-//
-//        if (getOneKhuyenMai != null) {
-//            KhuyenMai khuyenMai = getOneKhuyenMai;
-//            khuyenMaiUpdate = khuyenMaiRepository.save(khuyenMaiRequest.newKhuyenMaiAddSanPham(khuyenMai));
-//
-//            List<SanPhamKhuyenMai> sanPhamKhuyenMaiList1 = new ArrayList<>();
-//
-//            // Nếu type == false: Áp dụng cho TẤT CẢ sản phẩm
-//            if (khuyenMaiRequest.getLoai() == false) {
-//                for (SanPhamChiTiet spct : spctList) {
-//                    SanPhamRequest addRequest = new SanPhamRequest();
-//                    addRequest.setKhuyenMai(khuyenMai);
-//                    addRequest.setSanPhamChiTiet(spct);
-//                    SanPhamKhuyenMai sanPhamKhuyenMai1 = addRequest.newSanPhamKhuyenMai(new SanPhamKhuyenMai());
-//                    sanPhamKhuyenMaiList1.add(sanPhamKhuyenMai1);
-//                }
-//            }
-//            // Nếu type == true: Áp dụng cho các sản phẩm ĐƯỢC CHỌN
-//            else {
-//                for (Integer idProductDetail : khuyenMaiRequest.getIdProductDetail()) {
-//                    SanPhamChiTiet spct = sanPhamChiTietRepository.findById(idProductDetail).get();
-//                    SanPhamRequest addRequest = new SanPhamRequest();
-//                    addRequest.setKhuyenMai(khuyenMai);
-//                    addRequest.setSanPhamChiTiet(spct);
-//                    SanPhamKhuyenMai sanPhamKhuyenMai1 = addRequest.newSanPhamKhuyenMai(new SanPhamKhuyenMai());
-//                    sanPhamKhuyenMaiList1.add(sanPhamKhuyenMai1);
-//                }
-//            }
-//            sanPhamKhuyenMaiRepository.saveAll(sanPhamKhuyenMaiList1);
-//
-//            List<KhuyenMai> khuyenMaiList = new ArrayList<>();
-//            khuyenMaiList.add(khuyenMaiUpdate);
-//
-//            return khuyenMai;
-//        }
-//        return null;
-//    }
 
     @Override
     public KhuyenMai updateKhuyenMai(KhuyenMaiRequest khuyenMaiRequest, Integer id) {
@@ -207,5 +164,30 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
             return null;
         }
 
+    }
+
+    @Override
+    public Page<KhuyenMaiResponse> getSearchKhuyenMai(KhuyenMaiSearch khuyenMaiSearch, Pageable pageable) {
+        return khuyenMaiRepository.getSearchKhuyenMai(khuyenMaiSearch, pageable);
+    }
+
+    @Override
+    public Page<SanPhamResponse> getSearchSanPham(SanPhamSearch sanPhamSearch, Pageable pageable) {
+        return khuyenMaiRepository.getSearchSanPham(sanPhamSearch, pageable);
+    }
+
+    @Override
+    public Page<SanPhamCTResponse> phanTrangSanPhamCT(Pageable pageable) {
+        return khuyenMaiRepository.phanTrangSanPhamCT(pageable);
+    }
+
+    @Override
+    public List<SanPhamCTResponse> fillterSanPhamCT(SanPhamCTSearch sanPhamCTSearch) {
+        return khuyenMaiRepository.fillterSanPhamCT(sanPhamCTSearch);
+    }
+
+    @Override
+    public Page<SanPhamCTResponse> getSanPhamChiTietBySanPham(SanPhamCTSearch search, List<Integer> id, Pageable pageable) {
+        return khuyenMaiRepository.getSanPhamChiTietBySanPham(search, id, pageable);
     }
 }

@@ -1,11 +1,61 @@
-import React, {useEffect} from 'react';
-import {useNavigate} from "react-router-dom";
-import {useState} from "react";
+import React, { useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import axios from "axios";
 import swal from 'sweetalert';
-import {AiOutlineDollar, AiOutlinePercentage} from "react-icons/ai";
+import { AiOutlineDollar, AiOutlinePercentage } from "react-icons/ai";
+import ReactPaginate from 'react-paginate';
 
 const CreateVoucher = () => {
+    const [pageCount, setPageCount] = useState(0);
+    // const [currentPage, setCurrentPage] = useState(0);
+    const size = 5;
+
+    const [searchKhachHang, setSearchKhachHang] = useState({
+        tenSearch: "",
+    })
+
+    const validateSearchInput = (value) => {
+        const specialCharsRegex = /[!@#\$%\^&*\(\),.?":{}|<>[\]]/
+        return !specialCharsRegex.test(value);
+    }
+
+    const [inputValue, setInputValue] = useState('');
+
+    useEffect(() => {
+        // Kiểm tra giá trị nhập vào có hợp lệ không
+        if (validateSearchInput(inputValue)) {
+            setSearchKhachHang((prev) => ({
+                ...prev,
+                tenSearch: inputValue
+            }));
+
+            // Gọi hàm tìm kiếm mỗi khi có sự thay đổi
+            loadKhachHangSearch({
+                ...searchKhachHang,
+                tenSearch: inputValue
+            }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
+        }
+    }, [inputValue]); // Chạy khi inputValue thay đổi
+
+    const loadKhachHangSearch = (searchKhachHang, currentPage) => {
+        const params = new URLSearchParams({
+            tenSearch: searchKhachHang.tenSearch,
+            currentPage: currentPage, // Thêm tham số cho trang
+            size: size // Kích thước trang cũng có thể được truyền vào nếu cần
+        });
+
+        axios.get(`http://localhost:8080/api/voucher/searchKhachHang?${params.toString()}`)
+            .then((response) => {
+                setAllCustomer(response.data.content);
+                setPageCount(response.data.totalPages);
+                // setCurrentPage(response.data.currentPage)
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+
     const initialVoucher = {
         ma: '',
         ten: '',
@@ -26,7 +76,7 @@ const CreateVoucher = () => {
     const [selectAllCustomer, setSelectAllCustomer] = useState(false);
     const [selectedCustomerIds, setSelectedCustomerIds] = useState([]);
     const [voucherAdd, setVoucherAdd] = useState(initialVoucher);
-    const [errorValue, setErrorValue] = useState('');
+
     const [allCustomer, setAllCustomer] = useState([]);
     const [isSelectVisible, setIsSelectVisible] = useState(false);
 
@@ -106,6 +156,10 @@ const CreateVoucher = () => {
         setSelectAllCustomer(newSelectedIds.length === allCustomer.length)
     }
 
+    const formatCurrency = (value) => {
+        return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    };
+
     const handleSetValue = (value, type) => {
         const numericValue = parseInt(value.replace(/\D/g, ''));
 
@@ -124,6 +178,12 @@ const CreateVoucher = () => {
         }
     };
 
+    const handlePageClick = (event) => {
+        const selectedPage = event.selected;
+        loadKhachHangSearch(searchKhachHang, selectedPage); // Gọi hàm tìm kiếm với trang mới
+        console.log(`User  requested page number ${selectedPage + 1}`);
+    };
+
     return (
         <div>
             <div className="font-bold text-sm">
@@ -131,9 +191,9 @@ const CreateVoucher = () => {
                     className="cursor-pointer"
                     onClick={handleNavigateToDiscountVoucher}
                 >
-                    Discount Voucher
+                    Phiếu giảm giá
                 </span>
-                <span className="text-gray-400 ml-2">/ Create Voucher</span>
+                <span className="text-gray-400 ml-2">/ Tạo phiếu giảm giá</span>
             </div>
 
 
@@ -149,7 +209,7 @@ const CreateVoucher = () => {
                                     className="w-full border border-gray-300 rounded-md p-2"
                                     placeholder="Nhập mã"
                                     value={voucherAdd.ma}
-                                    onChange={(e) => setVoucherAdd({...voucherAdd, ma: e.target.value})}
+                                    onChange={(e) => setVoucherAdd({ ...voucherAdd, ma: e.target.value })}
                                 />
                             </div>
 
@@ -160,7 +220,7 @@ const CreateVoucher = () => {
                                     className="w-full border border-gray-300 rounded-md p-2"
                                     placeholder="Nhập tên"
                                     value={voucherAdd.ten}
-                                    onChange={(e) => setVoucherAdd({...voucherAdd, ten: e.target.value})}
+                                    onChange={(e) => setVoucherAdd({ ...voucherAdd, ten: e.target.value })}
                                 />
                             </div>
 
@@ -171,7 +231,7 @@ const CreateVoucher = () => {
                                         type="text"
                                         className="w-full border border-gray-300 rounded-l-md p-2"
                                         placeholder="Nhập giá trị"
-                                        value={voucherAdd.giaTri}
+                                        value={formatCurrency(voucherAdd.giaTri)}
                                         onChange={(e) => handleSetValue(e.target.value, 'giaTri')}
                                     />
                                     <div className="flex items-center px-2 bg-gray-200 rounded-r-md">
@@ -179,7 +239,7 @@ const CreateVoucher = () => {
                                             color={voucherAdd.kieuGiaTri === 0 ? '#fc7c27' : ''}
                                             className="cursor-pointer"
                                             onClick={() => {
-                                                setVoucherAdd({...voucherAdd, kieuGiaTri: 0, giaTri: 0});
+                                                setVoucherAdd({ ...voucherAdd, kieuGiaTri: 0, giaTri: 0 });
 
                                             }}
                                         />
@@ -187,13 +247,13 @@ const CreateVoucher = () => {
                                             color={voucherAdd.kieuGiaTri === 1 ? '#fc7c27' : ''}
                                             className="cursor-pointer ml-2"
                                             onClick={() => {
-                                                setVoucherAdd({...voucherAdd, kieuGiaTri: 1, giaTri: 0});
+                                                setVoucherAdd({ ...voucherAdd, kieuGiaTri: 1, giaTri: 0 });
 
                                             }}
                                         />
                                     </div>
                                 </div>
-                                {errorValue && <p className="text-red-500 text-sm mt-1">{errorValue}</p>}
+
                             </div>
 
                             <div>
@@ -203,7 +263,7 @@ const CreateVoucher = () => {
                                         type="text"
                                         className="w-full border border-gray-300 rounded-l-md p-2"
                                         placeholder="Nhập giá trị tối đa"
-                                        value={voucherAdd.giaTriMax}
+                                        value={formatCurrency(voucherAdd.giaTriMax)}
                                         onChange={(e) => handleSetValue(e.target.value, 'giaTriMax')}
                                     />
                                     <span className="flex items-center px-4 bg-gray-200 rounded-r-md">đ</span>
@@ -217,7 +277,7 @@ const CreateVoucher = () => {
                                     className="w-full border border-gray-300 rounded-md p-2"
                                     placeholder="Nhập số lượng"
                                     value={voucherAdd.soLuong}
-                                    onChange={(e) => setVoucherAdd({...voucherAdd, soLuong: e.target.value})}
+                                    onChange={(e) => setVoucherAdd({ ...voucherAdd, soLuong: e.target.value })}
                                 />
                             </div>
 
@@ -228,11 +288,14 @@ const CreateVoucher = () => {
                                         type="text"
                                         className="w-full border border-gray-300 rounded-l-md p-2"
                                         placeholder="Nhập điều kiện"
-                                        value={voucherAdd.dieuKienNhoNhat}
-                                        onChange={(e) => setVoucherAdd({
-                                            ...voucherAdd,
-                                            dieuKienNhoNhat: e.target.value
-                                        })}
+                                        value={formatCurrency(voucherAdd.dieuKienNhoNhat)}
+                                        onChange={(e) => {
+                                            const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                                            setVoucherAdd({
+                                                ...voucherAdd,
+                                                dieuKienNhoNhat: numericValue
+                                            });
+                                        }}
                                     />
                                     <span className="flex items-center px-4 bg-gray-200 rounded-r-md">đ</span>
                                 </div>
@@ -244,7 +307,7 @@ const CreateVoucher = () => {
                                     type="date"
                                     className="w-full border border-gray-300 rounded-md p-2"
                                     value={voucherAdd.ngayBatDau}
-                                    onChange={(e) => setVoucherAdd({...voucherAdd, ngayBatDau: e.target.value})}
+                                    onChange={(e) => setVoucherAdd({ ...voucherAdd, ngayBatDau: e.target.value })}
                                 />
                             </div>
 
@@ -254,7 +317,7 @@ const CreateVoucher = () => {
                                     type="date"
                                     className="w-full border border-gray-300 rounded-md p-2"
                                     value={voucherAdd.ngayKetThuc}
-                                    onChange={(e) => setVoucherAdd({...voucherAdd, ngayKetThuc: e.target.value})}
+                                    onChange={(e) => setVoucherAdd({ ...voucherAdd, ngayKetThuc: e.target.value })}
                                 />
                             </div>
 
@@ -269,7 +332,7 @@ const CreateVoucher = () => {
                                             checked={isSelectVisible === false}
                                             onChange={(e) => {
                                                 setIsSelectVisible(false);
-                                                setVoucherAdd({...voucherAdd, kieu: 0});
+                                                setVoucherAdd({ ...voucherAdd, kieu: 0 });
                                             }}
                                             className="mr-2"
                                         />
@@ -283,7 +346,7 @@ const CreateVoucher = () => {
                                             checked={isSelectVisible === true}
                                             onChange={() => {
                                                 setIsSelectVisible(true);
-                                                setVoucherAdd({...voucherAdd, kieu: 1});
+                                                setVoucherAdd({ ...voucherAdd, kieu: 1 });
                                                 setSelectAllCustomer(false);
                                             }}
                                             className="mr-2"
@@ -305,53 +368,86 @@ const CreateVoucher = () => {
                                 type="text"
                                 className="w-full border border-gray-300 rounded-md p-2"
                                 placeholder="Tìm kiếm khách hàng"
+                                onChange={(e) => {
+                                    const valueNhap = e.target.value;
+                                    if (validateSearchInput(valueNhap)) {
+                                        setInputValue(valueNhap);
+                                    }else {
+                                        setInputValue('');
+                                        swal('Lỗi!', 'Không được nhập ký tự đặc biệt', 'warning');
+                                    }
+                                }}
                             />
                         </div>
 
                         {/* Table */}
                         <table className="min-w-full border border-gray-200">
                             <thead>
-                            <tr className="bg-gray-100 text-gray-700">
-                                <th className="py-2 px-4 border-b text-center">
-                                    <input
-                                        disabled={voucherAdd.kieu === 0}
-                                        type="checkbox"
-                                        checked={selectAllCustomer}
-                                        onChange={handleSelectAllCustomer}
-                                        className="align-middle"
-                                    />
-                                </th>
-                                <th className="py-2 px-4 border-b text-center">Tên</th>
-                                <th className="py-2 px-4 border-b text-center">Số điện thoại</th>
-                                <th className="py-2 px-4 border-b text-center">Email</th>
-                                <th className="py-2 px-4 border-b text-center">Ngày sinh</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {allCustomer.map((customer) => (
-                                <tr key={customer.id} className="border-b text-center">
-                                    <td className="py-2 px-4 border-b text-center">
+                                <tr className="bg-gray-100 text-gray-700">
+                                    <th className="py-2 px-4 border-b text-center">
                                         <input
                                             disabled={voucherAdd.kieu === 0}
                                             type="checkbox"
-                                            checked={selectedCustomerIds.indexOf(customer.id) !== -1}
-                                            onChange={(event) => handleCheckboxChange(event, customer.id)}
+                                            checked={selectAllCustomer}
+                                            onChange={handleSelectAllCustomer}
                                             className="align-middle"
                                         />
-                                    </td>
-                                    <td className="py-2 px-4 border-b text-center">{customer.hoTen}</td>
-                                    <td className="py-2 px-4 border-b text-center">{customer.sdt}</td>
-                                    <td className="py-2 px-4 border-b text-center">{customer.email}</td>
-                                    <td className="py-2 px-4 border-b text-center">{new Date(customer.ngaySinh).toLocaleDateString('vi-VN', {
-                                        year: 'numeric',
-                                        month: '2-digit',
-                                        day: '2-digit',
-                                    })}
-                                    </td>
+                                    </th>
+                                    <th className="py-2 px-4 border-b text-center">Tên</th>
+                                    <th className="py-2 px-4 border-b text-center">Số điện thoại</th>
+                                    <th className="py-2 px-4 border-b text-center">Email</th>
+                                    <th className="py-2 px-4 border-b text-center">Ngày sinh</th>
                                 </tr>
-                            ))}
+                            </thead>
+                            <tbody>
+                                {allCustomer.map((customer) => (
+                                    <tr key={customer.id} className="border-b text-center">
+                                        
+                                        <td className="py-2 px-4 border-b text-center">
+                                            <input
+                                                disabled={voucherAdd.kieu === 0}
+                                                type="checkbox"
+                                                checked={selectedCustomerIds.indexOf(customer.id) !== -1}
+                                                onChange={(event) => handleCheckboxChange(event, customer.id)}
+                                                className="align-middle"
+                                            />
+                                        </td>
+                                        <td className="py-2 px-4 border-b text-center">{customer.hoTen}</td>
+                                        <td className="py-2 px-4 border-b text-center">{customer.sdt}</td>
+                                        <td className="py-2 px-4 border-b text-center">{customer.email}</td>
+                                        <td className="py-2 px-4 border-b text-center">{new Date(customer.ngaySinh).toLocaleDateString('vi-VN', {
+                                            year: 'numeric',
+                                            month: '2-digit',
+                                            day: '2-digit',
+                                        })}
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
+                        {/* Pagination */}
+                        <div className="flex justify-end mt-4">
+                            <ReactPaginate
+                                previousLabel={"<"}
+                                nextLabel={">"}
+                                onPageChange={handlePageClick}
+                                pageRangeDisplayed={3}
+                                marginPagesDisplayed={2}
+                                pageCount={pageCount}
+                                breakLabel="..."
+                                containerClassName="pagination flex justify-center items-center space-x-2 mt-6 text-xs"
+                                pageClassName="page-item"
+                                pageLinkClassName="page-link px-3 py-1 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-indigo-500 hover:text-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50"
+                                previousClassName="page-item"
+                                previousLinkClassName="page-link px-3 py-1 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-indigo-500 hover:text-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50"
+                                nextClassName="page-item"
+                                nextLinkClassName="page-link px-3 py-1 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-indigo-500 hover:text-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50"
+                                breakClassName="page-item"
+                                breakLinkClassName="page-link px-3 py-1 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-indigo-500 hover:text-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50"
+                                activeClassName="active bg-indigo-600 text-white border-indigo-600"
+                                disabledClassName="disabled bg-gray-100 text-gray-400 cursor-not-allowed"
+                            />
+                        </div>
                     </div>
                 </div>
                 <div className="pt-4">

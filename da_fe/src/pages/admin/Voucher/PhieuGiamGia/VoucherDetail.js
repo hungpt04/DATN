@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import swal from 'sweetalert';
 import { AiOutlineDollar, AiOutlinePercentage } from "react-icons/ai";
+import ReactPaginate from 'react-paginate';
 
 
 const VoucherDetail = () => {
@@ -20,6 +21,61 @@ const VoucherDetail = () => {
         trangThai: 0,
         listIdCustomer: []
     }
+
+    const [pageCount, setPageCount] = useState(0);
+    // const [currentPage, setCurrentPage] = useState(0);
+    const size = 5;
+
+    const [searchKhachHang, setSearchKhachHang] = useState({
+        tenSearch: "",
+    })
+
+    const validateSearchInput = (value) => {
+        const specialCharsRegex = /[!@#\$%\^&*\(\),.?":{}|<>[\]]/
+        return !specialCharsRegex.test(value);
+    }
+
+    const [inputValue, setInputValue] = useState('');
+
+    useEffect(() => {
+        // Kiểm tra giá trị nhập vào có hợp lệ không
+        if (validateSearchInput(inputValue)) {
+            setSearchKhachHang((prev) => ({
+                ...prev,
+                tenSearch: inputValue
+            }));
+
+            // Gọi hàm tìm kiếm mỗi khi có sự thay đổi
+            loadKhachHangSearch({
+                ...searchKhachHang,
+                tenSearch: inputValue
+            }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
+        }
+    }, [inputValue]); // Chạy khi inputValue thay đổi
+
+    const loadKhachHangSearch = (searchKhachHang, currentPage) => {
+        const params = new URLSearchParams({
+            tenSearch: searchKhachHang.tenSearch,
+            currentPage: currentPage, // Thêm tham số cho trang
+            size: size // Kích thước trang cũng có thể được truyền vào nếu cần
+        });
+
+        axios.get(`http://localhost:8080/api/voucher/searchKhachHang?${params.toString()}`)
+            .then((response) => {
+                setAllCustomer(response.data.content);
+                setPageCount(response.data.totalPages);
+                // setCurrentPage(response.data.currentPage)
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+
+    const handlePageClick = (event) => {
+        const selectedPage = event.selected;
+        loadKhachHangSearch(searchKhachHang, selectedPage); // Gọi hàm tìm kiếm với trang mới
+        console.log(`User  requested page number ${selectedPage + 1}`);
+    };
 
     const { id } = useParams();
     const navigate = useNavigate();
@@ -165,9 +221,9 @@ const VoucherDetail = () => {
                     className="cursor-pointer"
                     onClick={handleNavigateToDiscountVoucher}
                 >
-                    Discount Voucher
+                    Phiếu giảm giá
                 </span>
-                <span className="text-gray-400 ml-2">/ Voucher Detail</span>
+                <span className="text-gray-400 ml-2">/ Chi tiết phiếu giảm giá</span>
             </div>
 
             <div className="p-4 bg-white rounded-md shadow-lg">
@@ -338,6 +394,15 @@ const VoucherDetail = () => {
                                 type="text"
                                 className="w-full border border-gray-300 rounded-md p-2"
                                 placeholder="Tìm kiếm khách hàng"
+                                onChange={(e) => {
+                                    const valueNhap = e.target.value;
+                                    if (validateSearchInput(valueNhap)) {
+                                        setInputValue(valueNhap);
+                                    }else {
+                                        setInputValue('');
+                                        swal('Lỗi!', 'Không được nhập ký tự đặc biệt', 'warning');
+                                    }
+                                }}
                             />
                         </div>
 
@@ -385,6 +450,29 @@ const VoucherDetail = () => {
                             ))}
                             </tbody>
                         </table>
+                        {/* Pagination */}
+                        <div className="flex justify-end mt-4">
+                            <ReactPaginate
+                                previousLabel={"<"}
+                                nextLabel={">"}
+                                onPageChange={handlePageClick}
+                                pageRangeDisplayed={3}
+                                marginPagesDisplayed={2}
+                                pageCount={pageCount}
+                                breakLabel="..."
+                                containerClassName="pagination flex justify-center items-center space-x-2 mt-6 text-xs"
+                                pageClassName="page-item"
+                                pageLinkClassName="page-link px-3 py-1 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-indigo-500 hover:text-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50"
+                                previousClassName="page-item"
+                                previousLinkClassName="page-link px-3 py-1 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-indigo-500 hover:text-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50"
+                                nextClassName="page-item"
+                                nextLinkClassName="page-link px-3 py-1 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-indigo-500 hover:text-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50"
+                                breakClassName="page-item"
+                                breakLinkClassName="page-link px-3 py-1 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-indigo-500 hover:text-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50"
+                                activeClassName="active bg-indigo-600 text-white border-indigo-600"
+                                disabledClassName="disabled bg-gray-100 text-gray-400 cursor-not-allowed"
+                            />
+                        </div>
                     </div>
                 </div>
                 <div className="pt-4">

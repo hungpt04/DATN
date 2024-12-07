@@ -1,6 +1,7 @@
 package com.example.da_be.service;
 
 import com.example.da_be.entity.Voucher;
+import com.example.da_be.request.KhachHangSearch;
 import com.example.da_be.request.VoucherRequest;
 import com.example.da_be.request.VoucherSearch;
 import com.example.da_be.response.KhachHangResponse;
@@ -20,4 +21,5 @@ public interface VoucherService {
     Boolean deleteVoucher(Integer id);
     Page<VoucherResponse> phanTrangVoucher(Pageable pageable);
     Page<VoucherResponse>getSearchVoucher(VoucherSearch voucherSearch, Pageable pageable);
+    Page<KhachHangResponse> getSearchKhachHang(KhachHangSearch khachHangSearch, Pageable pageable);
 }
