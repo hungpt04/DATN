@@ -100,13 +100,13 @@ function Customer() {
         navigate(`/admin/tai-khoan/khach-hang/edit/${id}`);
     };
 
-    // Lọc ra những tài khoản có vai trò là "User"
-    const filteredUsers = customer.filter((user) => user.vaiTro === 'Customer');
+    // Lọc ra những tài khoản có vai trò là "Customer"
+    const fillterCustomer = customer.filter((customer) => customer.vaiTro === 'Customer');
 
     const handlePageClick = (event) => {
         const selectedPage = event.selected;
         loadKhachHangSearch(searchKhachHang, selectedPage); // Gọi hàm tìm kiếm với trang mới
-        console.log(`User  requested page number ${selectedPage + 1}`);
+        console.log(`customer  requested page number ${selectedPage + 1}`);
     };
 
     return (
@@ -209,49 +209,49 @@ function Customer() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredUsers.map((user, index) => (
-                            <tr key={user.id} className="hover:bg-gray-100">
-                                <td className="py-2 px-4 border-b">{index + 1}</td>
+                        {fillterCustomer.map((customer, index) => (
+                            <tr key={customer.id} className="hover:bg-gray-100">
+                                <td className="py-2 px-4 border-b">{(currentPage * 5) + index + 1}</td>
                                 <td className="py-4 px-4 border-b">
-                                    {user.avatar != null ? (
-                                        <img className="w-10 h-10 rounded-full" src={user.avatar} alt="avatar" />
+                                    {customer.avatar != null ? (
+                                        <img className="w-10 h-10 rounded-full" src={customer.avatar} alt="avatar" />
                                     ) : (
                                         <Avatar />
                                     )}
                                 </td>
 
-                                <td className="py-2 px-4 border-b">{user.hoTen}</td>
-                                <td className="py-2 px-4 border-b">{user.email}</td>
-                                <td className="py-2 px-4 border-b">{user.sdt}</td>
-                                <td className="py-2 px-4 border-b">{new Date(user.ngaySinh).toLocaleDateString('vi-VN', {
+                                <td className="py-2 px-4 border-b">{customer.hoTen}</td>
+                                <td className="py-2 px-4 border-b">{customer.email}</td>
+                                <td className="py-2 px-4 border-b">{customer.sdt}</td>
+                                <td className="py-2 px-4 border-b">{new Date(customer.ngaySinh).toLocaleDateString('vi-VN', {
                                     day: '2-digit',
                                     month: '2-digit',
                                     year: 'numeric',
                                 })}
                                 </td>
-                                <td className="py-2 px-4 border-b">{user.gioiTinh === 0 ? 'Nam' : 'Nữ'}</td>
+                                <td className="py-2 px-4 border-b">{customer.gioiTinh === 0 ? 'Nam' : 'Nữ'}</td>
                                 <td className="py-2 px-4 border-b">
                                     <span
-                                        className={`py-1 px-3 rounded-full text-xs whitespace-nowrap ${user.trangThai === 0
+                                        className={`py-1 px-3 rounded-full text-xs whitespace-nowrap ${customer.trangThai === 0
                                             ? 'bg-red-200 text-red-700 border border-red-800'
-                                            : user.trangThai === 1
+                                            : customer.trangThai === 1
                                                 ? 'bg-green-200 text-green-700 border border-green-800'
                                                 : 'bg-gray-200 text-gray-700 border border-gray-800'
                                             }`}
                                     >
-                                        {user.trangThai === 1 ? 'Hoạt động' : 'Không hoạt động'}
+                                        {customer.trangThai === 1 ? 'Hoạt động' : 'Không hoạt động'}
                                     </span>
                                 </td>
                                 <td className="py-2 px-4 border-b">
                                     <div className="flex">
                                         <button
-                                            onClick={() => handleEdit(user.id)}
+                                            onClick={() => handleEdit(customer.id)}
                                             className="hover:bg-gray-400 font-medium py-2 px-4 rounded"
                                         >
                                             <PencilIcon className="h-5 w-5" />
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(user.id)}
+                                            onClick={() => handleDelete(customer.id)}
                                             className="hover:bg-gray-400 font-medium py-2 px-4 rounded"
                                         >
                                             <TrashIcon className="w-5" />

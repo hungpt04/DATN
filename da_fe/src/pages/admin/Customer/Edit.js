@@ -13,7 +13,6 @@ function EditCustomer() {
     const [selectedDistrict, setSelectedDistrict] = useState('');
     const [selectedWard, setSelectedWard] = useState('');
     const [previewImage, setPreviewImage] = useState(null);
-    const [error, setError] = useState('');
     const { id } = useParams();
 
     const [formData, setFormData] = useState({
@@ -257,10 +256,8 @@ function EditCustomer() {
         }
     };
 
-    const handleUpdateUser = async (e) => {
+    const handleUpdateCustomer = async (e) => {
         e.preventDefault();
-        setError('');
-
         try {
             // Lấy ID địa chỉ trước tiên
             const getAddressIdResponse = await fetch(`http://localhost:8080/api/dia-chi/get-id-dia-chi-by-id-tai-khoan/${id}`);
@@ -578,7 +575,7 @@ function EditCustomer() {
                 {/* Nút Cập Nhật */}
                 <div className="mt-8 flex justify-end">
                     <button
-                        onClick={handleUpdateUser}
+                        onClick={handleUpdateCustomer}
                         className="bg-[#2f19ae] text-white px-8 py-4 rounded-md shadow-md hover:bg-blue-700 transition duration-300"
                     >
                         Cập nhật
