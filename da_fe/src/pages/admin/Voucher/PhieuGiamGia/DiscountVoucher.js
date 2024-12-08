@@ -5,6 +5,7 @@ import axios from "axios";
 import {useNavigate} from "react-router-dom";
 import swal from 'sweetalert';
 import ReactPaginate from "react-paginate";
+import numeral from 'numeral';
 
 const DiscountVoucher = () => {
     const [listVoucher, setListVoucher] = useState([]);
@@ -52,16 +53,6 @@ const DiscountVoucher = () => {
     const handleDetail = (id) => {
         navigate(`/admin/giam-gia/phieu-giam-gia/${id}/detail`);
     }
-
-    // const loadVoucher = () => {
-    //     axios.get("http://localhost:8080/api/voucher/hien-thi")
-    //         .then((response) => {
-    //             setListVoucher(response.data);
-    //         })
-    //         .catch((error) => {
-    //             console.error('Error:', error);
-    //         });
-    // }
 
     const loadVoucherSearch = (searchVoucher, currentPage) => {
         const params = new URLSearchParams({
@@ -129,6 +120,10 @@ const DiscountVoucher = () => {
         loadVoucherSearch(searchVoucher, selectedPage); // Gọi hàm tìm kiếm với trang mới
         console.log(`User  requested page number ${selectedPage + 1}`);
     };
+
+    const formatCurrency = (money) => {
+        return numeral(money).format('0,0') + ' ₫'
+    }
 
     return (
 
@@ -314,7 +309,7 @@ const DiscountVoucher = () => {
                                         </span>
                                     </td>
                                     <td className="py-2 px-4 border-b">
-                                        {item.kieuGiaTri === 0 ? item.giaTri + "%" : item.giaTri + " đ"}
+                                        {item.kieuGiaTri === 0 ? item.giaTri + "%" : formatCurrency(item.giaTri)}
                                     </td>
                                     <td className="py-2 px-4 border-b">{item.soLuong}</td>
                                     <td className="py-2 px-4 border-b">{new Date(item.ngayBatDau).toLocaleDateString('vi-VN', {

@@ -163,4 +163,14 @@ public class VoucherServiceImpl implements VoucherService {
     public Page<KhachHangResponse> getSearchKhachHang(KhachHangSearch khachHangSearch, Pageable pageable) {
         return khachHangRepository.getSearchKhachHang(khachHangSearch, pageable);
     }
+
+    @Override
+    public List<String> getAllMaVoucher() {
+        return voucherRepository.getAllMaVoucher();
+    }
+
+    @Override
+    public List<String> getAllTenVoucher() {
+        return voucherRepository.getAllTenVoucher();
+    }
 }

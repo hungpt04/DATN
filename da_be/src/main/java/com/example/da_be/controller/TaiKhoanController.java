@@ -97,16 +97,16 @@ public class TaiKhoanController {
     @PutMapping("/updateTaiKhoan/{id}")
     public ResponseEntity<?> updateUser(
             @PathVariable Integer id,
-            @RequestParam("hoTen") String hoTen,
-            @RequestParam("sdt") String sdt,
-            @RequestParam("email") String email,
-            @RequestParam(value = "matKhau", required = false) String matKhau,
-            @RequestParam("gioiTinh") Integer gioiTinh,
-            @RequestParam("vaiTro") String vaiTro,
+            @RequestParam(value = "hoTen", required = false) String hoTen,
+            @RequestParam(value = "sdt", required = false) String sdt,
+            @RequestParam(value = "email", required = false) String email,
+//            @RequestParam(value = "matKhau", required = false) String matKhau,
+            @RequestParam(value = "gioiTinh", required = false) Integer gioiTinh,
+            @RequestParam(value = "vaiTro", required = false) String vaiTro,
             @RequestParam(value = "avatar", required = false) MultipartFile avatar,
-            @RequestParam("ngaySinh") LocalDate ngaySinh,
-            @RequestParam("cccd") String cccd,
-            @RequestParam("trangThai") Integer trangThai
+            @RequestParam(value = "ngaySinh", required = false) LocalDate ngaySinh,
+            @RequestParam(value = "cccd", required = false) String cccd,
+            @RequestParam(value = "trangThai", required = false) Integer trangThai
     ) throws ParseException, IOException {
         // Tìm tài khoản cần update
         TaiKhoan existingTaiKhoan = taiKhoanRepository.findById(id)
@@ -117,10 +117,10 @@ public class TaiKhoanController {
         existingTaiKhoan.setSdt(sdt);
         existingTaiKhoan.setEmail(email);
 
-        // Kiểm tra và cập nhật mật khẩu nếu được cung cấp
-        if (matKhau != null && !matKhau.isEmpty()) {
-            existingTaiKhoan.setMatKhau(matKhau);
-        }
+//        // Kiểm tra và cập nhật mật khẩu nếu được cung cấp
+//        if (matKhau != null && !matKhau.isEmpty()) {
+//            existingTaiKhoan.setMatKhau(matKhau);
+//        }
 
         existingTaiKhoan.setGioiTinh(gioiTinh);
         existingTaiKhoan.setVaiTro(vaiTro);

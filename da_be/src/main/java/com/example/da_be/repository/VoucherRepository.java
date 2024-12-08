@@ -64,4 +64,20 @@ public interface VoucherRepository extends JpaRepository<Voucher, Integer> {
             """
     )
     Page<VoucherResponse> getSearchVoucher(@Param("search") VoucherSearch search, Pageable pageable);
+
+    @Query(
+            """
+            SELECT distinct v.ma
+            FROM Voucher v
+"""
+    )
+    List<String> getAllMaVoucher();
+
+    @Query(
+            """
+            SELECT distinct v.ten
+            FROM Voucher v
+"""
+    )
+    List<String> getAllTenVoucher();
 }

@@ -9,6 +9,7 @@ import com.example.da_be.response.SanPhamCTResponse;
 import com.example.da_be.response.SanPhamResponse;
 import com.example.da_be.response.VoucherResponse;
 import com.example.da_be.service.KhuyenMaiService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -48,12 +49,12 @@ public class KhuyenMaiController {
     }
 
     @PostMapping("/add")
-    public void addKhuyenMaiOnProduct(@RequestBody KhuyenMaiRequest khuyenMaiRequest) {
+    public void addKhuyenMaiOnProduct(@RequestBody @Valid KhuyenMaiRequest khuyenMaiRequest) {
         khuyenMaiService.addKhuyenMaiOnProduct(khuyenMaiRequest);
     }
 
     @PutMapping("/update/{id}")
-    public void updateKhuyenMai(@RequestBody KhuyenMaiRequest khuyenMaiRequest, @PathVariable Integer id) {
+    public void updateKhuyenMai(@RequestBody @Valid KhuyenMaiRequest khuyenMaiRequest, @PathVariable Integer id) {
         khuyenMaiService.updateKhuyenMai(khuyenMaiRequest, id);
     }
 
@@ -197,5 +198,10 @@ public class KhuyenMaiController {
         search.setIdDoCungSearch(idDoCung);
 
         return khuyenMaiService.fillterSanPhamCT(search);
+    }
+
+    @GetMapping("/list-ten-khuyen-mai")
+    public List<String> getAllTenKhuyenMai() {
+        return khuyenMaiService.getAllTenKhuyenMai();
     }
 }

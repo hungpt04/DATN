@@ -7,6 +7,7 @@ import com.example.da_be.request.VoucherSearch;
 import com.example.da_be.response.KhachHangResponse;
 import com.example.da_be.response.VoucherResponse;
 import com.example.da_be.service.VoucherService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -59,12 +60,12 @@ public class VoucherController {
     }
 
     @PostMapping("/add")
-    public Voucher addVoucher(@RequestBody VoucherRequest voucherRequest) {
+    public Voucher addVoucher(@RequestBody @Valid VoucherRequest voucherRequest) {
         return voucherService.addVoucher(voucherRequest);
     }
 
     @PutMapping("/update/{id}")
-    public Voucher updateVoucher(@PathVariable Integer id, @RequestBody VoucherRequest voucherRequest) throws ParseException {
+    public Voucher updateVoucher(@PathVariable Integer id, @RequestBody @Valid VoucherRequest voucherRequest) throws ParseException {
         return voucherService.updateVoucher(id, voucherRequest);
     }
 
@@ -134,5 +135,15 @@ public class VoucherController {
         response.put("size", pageResult.getSize());
 
         return response;
+    }
+
+    @GetMapping("/list-ma-voucher")
+    public List<String> getAllMaVoucher() {
+        return voucherService.getAllMaVoucher();
+    }
+
+    @GetMapping("/list-ten-voucher")
+    public List<String> getAllTenVoucher() {
+        return voucherService.getAllTenVoucher();
     }
 }

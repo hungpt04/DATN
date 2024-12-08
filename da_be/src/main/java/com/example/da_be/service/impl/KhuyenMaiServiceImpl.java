@@ -190,4 +190,9 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
     public Page<SanPhamCTResponse> getSanPhamChiTietBySanPham(SanPhamCTSearch search, List<Integer> id, Pageable pageable) {
         return khuyenMaiRepository.getSanPhamChiTietBySanPham(search, id, pageable);
     }
+
+    @Override
+    public List<String> getAllTenKhuyenMai() {
+        return khuyenMaiRepository.getAllTenKhuyenMai();
+    }
 }

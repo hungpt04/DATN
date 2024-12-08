@@ -146,4 +146,11 @@ public interface KhuyenMaiRepository extends JpaRepository<KhuyenMai, Integer> {
 """)
     Page<SanPhamCTResponse> getSanPhamChiTietBySanPham(SanPhamCTSearch search, List<Integer> id, Pageable pageable);
 
+    @Query(
+            """
+            SELECT distinct km.ten
+            FROM KhuyenMai km
+"""
+    )
+    List<String> getAllTenKhuyenMai();
 }

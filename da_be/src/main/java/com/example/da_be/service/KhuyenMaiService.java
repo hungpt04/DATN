@@ -28,4 +28,5 @@ public interface KhuyenMaiService {
     Page<SanPhamResponse> getSearchSanPham(SanPhamSearch sanPhamSearch, Pageable pageable);
     Page<SanPhamCTResponse> phanTrangSanPhamCT(Pageable pageable);
     List<SanPhamCTResponse> fillterSanPhamCT(SanPhamCTSearch sanPhamCTSearch);
+    List<String> getAllTenKhuyenMai();
 }

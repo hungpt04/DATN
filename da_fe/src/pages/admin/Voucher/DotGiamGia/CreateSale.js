@@ -14,6 +14,11 @@ const CreateSale = () => {
     const [selectedProductIds, setSelectedProductIds] = useState([])
     const [getProductDetailByProduct, setGetProductDetailByProduct] = useState([])
     const [pageCount, setPageCount] = useState(0);
+    const [errorTen, setErrorTen] = useState('')
+    const [errorGiaTri, setErrorGiaTri] = useState('')
+    const [errorTgBatDau, setErrorTgBatDau] = useState('')
+    const [errorTgKetThuc, setErrorTgKetThuc] = useState('')
+    const [getTenKhuyenMai, setGetTenKhuyenMai] = useState([])
     const size = 5;
 
     const [listThuongHieu, setListThuongHieu] = useState([]);
@@ -38,6 +43,22 @@ const CreateSale = () => {
         currentPage: 0,
         size: 5
     })
+
+    const handleAllTenKhuyenMai = () => {
+        axios.get(`http://localhost:8080/api/khuyen-mai/list-ten-khuyen-mai`)
+            .then((response) => {
+                setGetTenKhuyenMai(response.data)
+            })
+            .catch((error) => {
+                console.error('Error:', error)
+            })
+    }
+
+    useEffect(() => {
+        handleAllTenKhuyenMai()
+    })
+
+    const khuyenMaiTen = getTenKhuyenMai.map((khuyenMai) => khuyenMai.ten)
 
     const validateSearchInput = (value) => {
         const specialCharsRegex = /[!@#\$%\^&*\(\),.?":{}|<>[\]]/
@@ -126,40 +147,22 @@ const CreateSale = () => {
             currentPage: fillterSanPhamChiTiet.currentPage || 0,
             size: size
         });
-    
-        if(selectedProductIds.length > 0) {
+
+        if (selectedProductIds.length > 0) {
             axios.get(`http://localhost:8080/api/khuyen-mai/getSanPhamCTBySanPham?${params.toString()}`)
-            .then((response) => {
-                setGetProductDetailByProduct(response.data.content);
-                setPageCount(response.data.totalPages);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        } 
+                .then((response) => {
+                    setGetProductDetailByProduct(response.data.content);
+                    setPageCount(response.data.totalPages);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
     };
 
     useEffect(() => {
         getProductDetailById(fillterSanPhamChiTiet, selectedProductIds);
     }, [fillterSanPhamChiTiet, selectedProductIds]);
-
-    // const getProductDetailById = (selectedProductIds) => {
-    //     if (selectedProductIds.length > 0) {
-    //         const id = selectedProductIds.join(','); // Chuyển đổi mảng thành chuỗi
-    //         axios.get(`http://localhost:8080/api/khuyen-mai/get-san-pham-chi-tiet-by-san-pham?id=${id}`)
-    //             .then((response) => {
-    //                 setGetProductDetailByProduct(response.data);
-    //                 console.log(response.data)
-    //             })
-    //             .catch((error) => {
-    //                 console.error("There was an error fetching the product details!", error);
-    //             });
-    //     }
-    // }
-
-    // useEffect(() => {
-    //     getProductDetailById(selectedProductIds)
-    // }, [selectedProductIds])
 
     const handleSelectAllChangeProduct = (event) => {
         const selectedIds = event.target.checked ? getProduct.map((row) => row.id) : []
@@ -216,41 +219,120 @@ const CreateSale = () => {
         setSelectAllProductDetail(newSelected.length === getProductDetailByProduct.length)
     }
 
-    const onSubmit = () => {
-        const title = 'Xác nhận thêm mới đợt giảm giá?';
+    const validate = () => {
+        let check = 0
+        const errors = {
+            ten: '',
+            giaTri: '',
+            tgBatDau: '',
+            tgKetThuc: '',
+        }
 
-        // Kiểm tra nếu không có sản phẩm được chọn thì set loại là false
-        const finalKhuyenMai = {
-            ...addKhuyenMai,
-            loai: selectedRows.length === 0 ? false : true,
-            idProductDetail: selectedRows
-        };
+        const minBirthYear = 1900
 
-        swal({
-            title: title,
-            text: 'Bạn có chắc chắn muốn thêm mới đợt giảm giá không?',
-            icon: "warning",
-            buttons: {
-                cancel: "Hủy",
-                confirm: "Xác nhận",
-            },
-        }).then((willConfirm) => {
-            if (willConfirm) {
-                axios.post('http://localhost:8080/api/khuyen-mai/add', finalKhuyenMai, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
-                    .then(() => {
-                        swal("Thành công!", "Thêm mới đợt giảm giá thành công!", "success");
-                        navigate('/admin/giam-gia/dot-giam-gia');
-                    })
-                    .catch((error) => {
-                        console.error("Lỗi cập nhật:", error);
-                        swal("Thất bại!", "Thêm mới đợt giảm giá thất bại!", "error");
-                    });
+        if (addKhuyenMai.ten.trim() === '') {
+            errors.ten = 'Vui lòng nhập tên đợt giảm giá'
+        } else if (!isNaN(addKhuyenMai.ten)) {
+            errors.ten = 'Tên đợt giảm giá phải là chữ'
+        } else if (khuyenMaiTen.includes(addKhuyenMai.ten)) {
+            errors.ten = 'Không được trùng tên đợt giảm giá'
+        } else if (addKhuyenMai.ten.length > 50) {
+            errors.ten = 'Tên không được dài hơn 50 ký tự'
+        } else if (addKhuyenMai.ten.length < 5) {
+            errors.ten = 'Tên không được bé hơn 5 ký tự'
+        }
+
+        if (addKhuyenMai.giaTri === '') {
+            errors.giaTri = 'Vui lòng nhập giá trị'
+        } else if (!Number.isInteger(Number(addKhuyenMai.giaTri))) {
+            errors.giaTri = 'Giá trị phải là số nguyên'
+        } else if (Number(addKhuyenMai.giaTri) <= 0 || Number(addKhuyenMai.giaTri) > 100) {
+            errors.giaTri = 'Giá trị phải lớn hơn 0% và nhở hơn 100%'
+        }
+
+        const minDate = new Date(minBirthYear, 0, 1); // Ngày bắt đầu từ 01-01-minBirthYear
+
+        if (addKhuyenMai.tgBatDau === '') {
+            errors.tgBatDau = 'Vui lòng nhập thời gian bắt đầu'
+        } else {
+            const tgBatDau = new Date(addKhuyenMai.tgBatDau);
+            if (tgBatDau < minDate) {
+                errors.tgBatDau = 'Thời gian bắt đầu không hợp lệ'
             }
-        });
+        }
+
+
+        if (addKhuyenMai.tgKetThuc === '') {
+            errors.tgKetThuc = 'Vui lòng nhập thời gian kết thúc'
+        } else {
+            const tgBatDau = new Date(addKhuyenMai.tgBatDau)
+            const tgKetThuc = new Date(addKhuyenMai.tgKetThuc)
+
+            if (tgKetThuc < minDate) {
+                errors.tgKetThuc = 'Thời gian kết thúc không hợp lệ'
+            }
+
+            if (tgBatDau > tgKetThuc) {
+                errors.tgBatDau = 'Thời gian bắt đầu không được lớn hơn ngày kết thúc'
+            }
+        }
+
+        for (const key in errors) {
+            if (errors[key]) {
+                check++
+            }
+        }
+
+        setErrorTen(errors.ten)
+        setErrorGiaTri(errors.giaTri)
+        setErrorTgBatDau(errors.tgBatDau)
+        setErrorTgKetThuc(errors.tgKetThuc)
+
+        return check
+    }
+
+    const onSubmit = () => {
+        const check = validate()
+
+        if (check < 1) {
+            const title = 'Xác nhận thêm mới đợt giảm giá?';
+
+            // Kiểm tra nếu không có sản phẩm được chọn thì set loại là false
+            const finalKhuyenMai = {
+                ...addKhuyenMai,
+                loai: selectedRows.length === 0 ? false : true,
+                idProductDetail: selectedRows
+            };
+
+            swal({
+                title: title,
+                text: 'Bạn có chắc chắn muốn thêm mới đợt giảm giá không?',
+                icon: "warning",
+                buttons: {
+                    cancel: "Hủy",
+                    confirm: "Xác nhận",
+                },
+            }).then((willConfirm) => {
+                if (willConfirm) {
+                    axios.post('http://localhost:8080/api/khuyen-mai/add', finalKhuyenMai, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                        .then(() => {
+                            swal("Thành công!", "Thêm mới đợt giảm giá thành công!", "success");
+                            navigate('/admin/giam-gia/dot-giam-gia');
+                        })
+                        .catch((error) => {
+                            console.error("Lỗi cập nhật:", error);
+                            swal("Thất bại!", "Thêm mới đợt giảm giá thất bại!", "error");
+                        });
+                }
+            });
+        } else {
+            swal("Thất bại!", "Không thể thêm đợt giảm giá", "error");
+        }
+
     };
 
     const loadThuongHieu = () => {
@@ -330,7 +412,7 @@ const CreateSale = () => {
 
     const handlePageSPCTClick = (event) => {
         const selectedPage = event.selected;
-        // loadSanPhamChiTietSearch(searchSanPhamChiTiet, selectedPage); // Gọi hàm tìm kiếm với trang mới
+        getProductDetailById(fillterSanPhamChiTiet, selectedPage); // Gọi hàm tìm kiếm với trang mới
         console.log(`User  requested page number ${selectedPage + 1}`);
     };
 
@@ -365,38 +447,62 @@ const CreateSale = () => {
                 <div className="flex">
                     {/*/!* Form Section *!/*/}
                     <div className="w-1/2 pr-4">
-                        <label className="block text-gray-600 mb-1">
-                            Tên đợt giảm giá
-                        </label>
-                        <input
-                            type="text"
-                            name="ten"  // Thêm thuộc tính name
-                            id="discount-name"
-                            placeholder="Tên đợt giảm giá"
-                            className="w-full p-2 border rounded mb-4"
-                            onChange={handleInputChange}  // Bỏ arrow function
-                        />
+                        <div>
+                            <label className="block text-gray-600 mb-1">
+                                Tên đợt giảm giá
+                            </label>
+                            <input
+                                type="text"
+                                name="ten"  // Thêm thuộc tính name
+                                id="discount-name"
+                                placeholder="Tên đợt giảm giá"
+                                className="w-full p-2 border rounded mb-4"
+                                // onChange={handleInputChange}  // Bỏ arrow function
+                                onChange={(e) => {
+                                    handleInputChange(e)
+                                    setErrorTen('')
+                                }}
+                                error={errorTen ? 'true' : undefined}
+                            />
+                            <span className='text-red-600'>{errorTen}</span>
+                        </div>
 
-                        <label className="block text-gray-600 mb-1">
-                            Giá trị
-                        </label>
-                        <input
-                            type="number"
-                            name="giaTri"  // Thêm thuộc tính name
-                            id="discount-value"
-                            placeholder="Giá trị"
-                            className="w-full p-2 border rounded mb-4"
-                            onChange={handleInputChange}  // Bỏ arrow function
-                        />
+                        <div>
+                            <label className="block text-gray-600 mb-1">
+                                Giá trị
+                            </label>
+                            <input
+                                type="number"
+                                name="giaTri"  // Thêm thuộc tính name
+                                id="discount-value"
+                                placeholder="Giá trị"
+                                className="w-full p-2 border rounded mb-4"
+                                // onChange={handleInputChange}  // Bỏ arrow function
+                                onChange={(e) => {
+                                    handleInputChange(e)
+                                    setErrorGiaTri('')
+                                }}
+                                error={errorGiaTri ? 'true' : undefined}
+                            />
+                            <span className='text-red-600'>{errorGiaTri}</span>
+                        </div>
 
                         <div>
                             <label className="block text-gray-600 mb-1">Ngày bắt đầu</label>
                             <input
                                 type="date"
                                 className="w-full border border-gray-300 rounded-md p-2"
-                                value={addKhuyenMai.tgBatDau}
-                                onChange={(e) => setAddKhuyenMai({ ...addKhuyenMai, tgBatDau: e.target.value })}
+                                
+                                onChange={(e) => {
+                                    setAddKhuyenMai({ 
+                                        ...addKhuyenMai, 
+                                        tgBatDau: e.target.value 
+                                    })
+                                    setErrorTgBatDau('')
+                                }}
+
                             />
+                            <span className='text-red-600'>{errorTgBatDau}</span>
                         </div>
 
                         <div>
@@ -404,9 +510,16 @@ const CreateSale = () => {
                             <input
                                 type="date"
                                 className="w-full border border-gray-300 rounded-md p-2"
-                                value={addKhuyenMai.tgKetThuc}
-                                onChange={(e) => setAddKhuyenMai({ ...addKhuyenMai, tgKetThuc: e.target.value })}
+                                
+                                onChange={(e) => {
+                                    setAddKhuyenMai({ 
+                                        ...addKhuyenMai, 
+                                        tgKetThuc: e.target.value 
+                                    })
+                                    setErrorTgKetThuc('')
+                                } }
                             />
+                            <span className='text-red-600'>{errorTgKetThuc}</span>
                         </div>
 
                         {selectedRowsProduct.length > 0 ? (
@@ -442,7 +555,7 @@ const CreateSale = () => {
                                             <input
                                                 type="checkbox"
                                                 checked={selectedRowsProduct.indexOf(sanPham.id) !== -1}
-                                                
+
                                                 onChange={(event) => handleCheckboxChange1(event, sanPham.id)}
                                                 className="align-middle"
                                             />
@@ -499,8 +612,8 @@ const CreateSale = () => {
                             value={fillterSanPhamChiTiet.tenSearch}
                             onChange={(e) => {
                                 const newTenSearch = e.target.value;
-                                const updatedFilter = { 
-                                    ...fillterSanPhamChiTiet, 
+                                const updatedFilter = {
+                                    ...fillterSanPhamChiTiet,
                                     tenSearch: newTenSearch,
                                     currentPage: 0 // Reset trang khi tìm kiếm
                                 };
@@ -519,8 +632,8 @@ const CreateSale = () => {
                                 value={fillterSanPhamChiTiet.idThuongHieuSearch || ''}
                                 onChange={(e) => {
                                     const newIdThuongHieuSearch = e.target.value;
-                                    const updatedFilter = { 
-                                        ...fillterSanPhamChiTiet, 
+                                    const updatedFilter = {
+                                        ...fillterSanPhamChiTiet,
                                         idThuongHieuSearch: newIdThuongHieuSearch,
                                         currentPage: 0 // Reset trang khi tìm kiếm
                                     };
@@ -545,8 +658,8 @@ const CreateSale = () => {
                                 value={fillterSanPhamChiTiet.idMauSac}
                                 onChange={(e) => {
                                     const newIdMauSacSearch = e.target.value;
-                                    const updatedFilter = { 
-                                        ...fillterSanPhamChiTiet, 
+                                    const updatedFilter = {
+                                        ...fillterSanPhamChiTiet,
                                         idMauSacSearch: newIdMauSacSearch,
                                         currentPage: 0 // Reset trang khi tìm kiếm
                                     };
@@ -572,8 +685,8 @@ const CreateSale = () => {
                                 value={fillterSanPhamChiTiet.idChatLieu}
                                 onChange={(e) => {
                                     const newIdChatLieuSearch = e.target.value;
-                                    const updatedFilter = { 
-                                        ...fillterSanPhamChiTiet, 
+                                    const updatedFilter = {
+                                        ...fillterSanPhamChiTiet,
                                         idChatLieuSearch: newIdChatLieuSearch,
                                         currentPage: 0 // Reset trang khi tìm kiếm
                                     };
@@ -598,8 +711,8 @@ const CreateSale = () => {
                                 value={fillterSanPhamChiTiet.idTrongLuong}
                                 onChange={(e) => {
                                     const newIdTrongLuongSearch = e.target.value;
-                                    const updatedFilter = { 
-                                        ...fillterSanPhamChiTiet, 
+                                    const updatedFilter = {
+                                        ...fillterSanPhamChiTiet,
                                         idTrongLuongSearch: newIdTrongLuongSearch,
                                         currentPage: 0 // Reset trang khi tìm kiếm
                                     };
@@ -623,8 +736,8 @@ const CreateSale = () => {
                                 value={fillterSanPhamChiTiet.idDiemCanBang}
                                 onChange={(e) => {
                                     const newIdDiemCanBangSearch = e.target.value;
-                                    const updatedFilter = { 
-                                        ...fillterSanPhamChiTiet, 
+                                    const updatedFilter = {
+                                        ...fillterSanPhamChiTiet,
                                         idDiemCanBangSearch: newIdDiemCanBangSearch,
                                         currentPage: 0 // Reset trang khi tìm kiếm
                                     };
@@ -648,8 +761,8 @@ const CreateSale = () => {
                                 value={fillterSanPhamChiTiet.idDoCung}
                                 onChange={(e) => {
                                     const newIdDoCungSearch = e.target.value;
-                                    const updatedFilter = { 
-                                        ...fillterSanPhamChiTiet, 
+                                    const updatedFilter = {
+                                        ...fillterSanPhamChiTiet,
                                         idDoCungSearch: newIdDoCungSearch,
                                         currentPage: 0 // Reset trang khi tìm kiếm
                                     };

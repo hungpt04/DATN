@@ -15,6 +15,8 @@ import java.util.List;
 public interface VoucherService {
     List<VoucherResponse> getAllVoucher();
     List<KhachHangResponse> getAllKhachHang();
+    List<String> getAllMaVoucher();
+    List<String> getAllTenVoucher();
     VoucherResponse getVoucherById(Integer id);
     Voucher addVoucher(VoucherRequest voucherRequest);
     Voucher updateVoucher(Integer id, VoucherRequest voucherRequest) throws ParseException;
