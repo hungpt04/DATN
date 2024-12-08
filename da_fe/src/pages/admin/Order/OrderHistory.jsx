@@ -578,7 +578,7 @@ const OrderHistory = () => {
                                                 <div className="text-gray-800 font-semibold">
                                                     {detail.hoaDonCT.sanPhamCT.sanPham.ten}
                                                 </div>
-                                                <div className="text-gray-400 line-through">
+                                                <div className="text-gray-400 ">
                                                     {detail.hoaDonCT.giaBan.toLocaleString()} VND
                                                 </div>
                                                 <div className="text-gray-600">

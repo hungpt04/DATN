@@ -281,43 +281,47 @@ function ProductVariants() {
                     hinhAnh: finalImageUrls,
                 },
                 thuongHieu: { id: parseInt(formData.brand) },
-                donGia: formData.price,
             };
 
             // Cập nhật từng biến thể
-            for (const variant of variants) {
-                const updatedVariant = {
-                    ...variant,
-                    ...commonUpdateData,
-                    soLuong: variant.id === selectedProduct.id ? formData.quantity : variant.soLuong,
-                    trangThai:
-                        variant.id === selectedProduct.id ? (formData.status === 'Active' ? 1 : 0) : variant.trangThai,
-                    chatLieu:
-                        variant.id === selectedProduct.id ? { id: parseInt(formData.material) } : variant.chatLieu,
-                    diemCanBang:
-                        variant.id === selectedProduct.id
-                            ? { id: parseInt(formData.balancePoint) }
-                            : variant.diemCanBang,
-                    doCung: variant.id === selectedProduct.id ? { id: parseInt(formData.hardness) } : variant.doCung,
-                    mauSac:
-                        variant.id === selectedProduct.id
-                            ? { id: colors.find((c) => c.ten === selectedColors[0])?.id || 1 }
-                            : variant.mauSac,
-                    trongLuong:
-                        variant.id === selectedProduct.id
-                            ? { id: weights.find((w) => w.ten === selectedWeights[0])?.id || 1 }
-                            : variant.trongLuong,
-                    moTa: variant.id === selectedProduct.id ? formData.description : variant.moTa,
-                };
+            const updatedVariants = await Promise.all(
+                variants.map(async (variant) => {
+                    // Kiểm tra xem biến thể này có phải là biến thể đang được chọn không
+                    const isSelectedVariant = variant.id === selectedProduct.id;
 
-                await axios.put(`http://localhost:8080/api/san-pham-ct/${variant.id}`, updatedVariant);
-            }
+                    const updatedVariant = {
+                        ...variant,
+                        ...commonUpdateData,
+                        donGia: isSelectedVariant ? parseFloat(formData.price) : variant.donGia,
+                        soLuong: isSelectedVariant ? formData.quantity : variant.soLuong,
+                        trangThai: isSelectedVariant ? (formData.status === 'Active' ? 1 : 0) : variant.trangThai,
+                        chatLieu: isSelectedVariant ? { id: parseInt(formData.material) } : variant.chatLieu,
+                        diemCanBang: isSelectedVariant ? { id: parseInt(formData.balancePoint) } : variant.diemCanBang,
+                        doCung: isSelectedVariant ? { id: parseInt(formData.hardness) } : variant.doCung,
+                        mauSac: isSelectedVariant
+                            ? { id: colors.find((c) => c.ten === selectedColors[0])?.id || variant.mauSac.id }
+                            : variant.mauSac,
+                        trongLuong: isSelectedVariant
+                            ? { id: weights.find((w) => w.ten === selectedWeights[0])?.id || variant.trongLuong.id }
+                            : variant.trongLuong,
+                        moTa: isSelectedVariant ? formData.description : variant.moTa,
+                    };
+
+                    // Gửi request cập nhật cho từng biến thể
+                    const response = await axios.put(
+                        `http://localhost:8080/api/san-pham-ct/${variant.id}`,
+                        updatedVariant,
+                    );
+                    return response.data;
+                }),
+            );
 
             swal({
                 title: 'Thành công!',
                 text: 'Sản phẩm đã được cập nhật thành công!',
                 button: 'Đóng',
             });
+
             loadVariants();
             handleCloseModal();
         } catch (error) {
@@ -733,16 +737,20 @@ function ProductVariants() {
                             <div className="mb-2 grid grid-cols-2 gap-4 w-[85%] mx-auto">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700" htmlFor="price">
-                                        Giá sản phẩm (áp dụng cho tất cả biến thể)
+                                        Giá sản phẩm
                                     </label>
                                     <input
                                         type="number"
                                         id="price"
                                         {...register('price', {
-                                            required: true,
+                                            required: 'Giá sản phẩm là bắt buộc',
                                             min: {
-                                                value: 0,
-                                                message: 'Giá phải lớn hơn hoặc bằng 0',
+                                                value: 1000, // Giá tối thiểu 1,000 VND
+                                                message: 'Giá sản phẩm phải lớn hơn 1,000 VND',
+                                            },
+                                            max: {
+                                                value: 1000000000, // Giá tối đa 1 tỷ VND
+                                                message: 'Giá sản phẩm không được vượt quá 1 tỷ VND',
                                             },
                                         })}
                                         className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"

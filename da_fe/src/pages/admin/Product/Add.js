@@ -25,7 +25,6 @@ function AddProduct() {
     const [weights, setWeights] = useState([]);
     const [description, setDescription] = useState('');
     const [variants, setVariants] = useState([]);
-    const [commonPrice, setCommonPrice] = useState('');
 
     const [imageList, setImageList] = useState([]);
     const [selectedImages, setSelectedImages] = useState([]);
@@ -283,8 +282,8 @@ function AddProduct() {
                     id: newVariants.length + 1,
                     name: `${productName} - ${color} - ${weight}`,
                     quantity: 0,
+                    price: '', // Để giá trống để người dùng nhập
                     weight: weight,
-                    price: commonPrice,
                     colorId: colors.find((c) => c.ten === color)?.id,
                     weightId: weights.find((w) => w.ten === weight)?.id,
                 });
@@ -299,7 +298,7 @@ function AddProduct() {
         } else {
             setVariants([]);
         }
-    }, [selectedColors, selectedWeights, commonPrice]);
+    }, [selectedColors, selectedWeights]);
 
     const handleAddProduct = async (e) => {
         e.preventDefault();
@@ -324,7 +323,7 @@ function AddProduct() {
                     doCung: { id: hardness },
                     ma: `SPCT${variant.id}`,
                     soLuong: variant.quantity,
-                    donGia: variant.price,
+                    donGia: variant.price, // Sử dụng giá của từng biến thể
                     moTa: description,
                     trangThai: status === 'Active' ? 1 : 0,
                 };
@@ -350,7 +349,6 @@ function AddProduct() {
             setVariants([]);
             setSelectedImages([]);
             setImageList([]);
-            setCommonPrice('');
         } catch (error) {
             console.error('Có lỗi xảy ra khi thêm sản phẩm!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm sản phẩm!', 'error');
@@ -585,20 +583,6 @@ function AddProduct() {
                 </div>
 
                 <div className="mb-4 w-[85%] mx-auto">
-                    <div className="flex space-x-4">
-                        <div className="w-1/2">
-                            <label className="block text-sm font-bold text-gray-700">Giá chung</label>
-                            <input
-                                type="number"
-                                value={commonPrice}
-                                onChange={(e) => setCommonPrice(e.target.value)}
-                                className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mb-4 w-[85%] mx-auto">
                     <label className="block text-sm font-bold text-gray-700">Ảnh sản phẩm</label>
                     <div className="mt-1 flex items-center">
                         {selectedImages.length > 0 && (
@@ -659,9 +643,28 @@ function AddProduct() {
                                         className="w-20 h-8 border border-gray-300 rounded-md p-1 text-sm"
                                     />
                                 </td>
-                                <td className="p-1 text-sm text-center">{variant.price}</td>
                                 <td className="p-1 text-sm text-center">
-                                    <button className="text-red-600 hover:underline">Xóa</button>
+                                    <input
+                                        type="number"
+                                        value={variant.price}
+                                        onChange={(e) => {
+                                            const newVariants = [...variants];
+                                            newVariants[index].price = e.target.value;
+                                            setVariants(newVariants);
+                                        }}
+                                        className="w-20 h-8 border border-gray-300 rounded-md p-1 text-sm"
+                                    />
+                                </td>
+                                <td className="p-1 text-sm text-center">
+                                    <button
+                                        className="text-red-600 hover:underline"
+                                        onClick={() => {
+                                            const newVariants = variants.filter((v) => v.id !== variant.id);
+                                            setVariants(newVariants);
+                                        }}
+                                    >
+                                        Xóa
+                                    </button>
                                 </td>
                             </tr>
                         ))}
