@@ -84,7 +84,6 @@ public class DiaChiController {
         diaChi.setId(id);  // Đảm bảo ID trong body và path là giống nhau
         DiaChi updatedDiaChi = diaChiService.saveOrUpdateDiaChi(diaChi);
         return new ResponseEntity<>(updatedDiaChi, HttpStatus.OK);
-
     }
 
     @GetMapping("/get-id-dia-chi-by-id-tai-khoan/{idTaiKhoan}")

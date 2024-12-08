@@ -1,10 +1,13 @@
 package com.example.da_be.service;
 
+import com.example.da_be.config.JwtTokenProvider;
 import com.example.da_be.entity.TaiKhoan;
+import com.example.da_be.exception.ResourceNotFoundException;
 import com.example.da_be.repository.TaiKhoanRepository;
 import com.example.da_be.request.KhachHangSearch;
 import com.example.da_be.request.NhanVienSearch;
 import com.example.da_be.request.TaiKhoanRequest;
+import com.google.gson.JsonParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +25,8 @@ import java.util.Optional;
 public class TaiKhoanService {
     @Autowired
     private TaiKhoanRepository taiKhoanRepository;
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     public List<TaiKhoan> getAllTaiKhoan() {
         return taiKhoanRepository.findAll();
@@ -93,5 +98,23 @@ public class TaiKhoanService {
 
     public Page<TaiKhoan> searchKhachHang(KhachHangSearch search, Pageable pageable) {
         return taiKhoanRepository.getSearchKhacHangAndPhanTrang(search, pageable);
+    }
+
+    public TaiKhoan getMyInfo(String token) {
+        try {
+            String email = jwtTokenProvider.getEmailFromJwtToken(token);
+            TaiKhoan taiKhoan = taiKhoanRepository.findByEmail(email);
+
+            // Kiểm tra xem tài khoản có tồn tại không
+            if (taiKhoan == null) {
+                throw new ResourceNotFoundException("Tài khoản không tồn tại với email: " + email);
+            }
+
+            return taiKhoan;
+        } catch (JsonParseException e) {
+            throw new RuntimeException("Token không hợp lệ: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("Đã xảy ra lỗi: " + e.getMessage());
+        }
     }
 }

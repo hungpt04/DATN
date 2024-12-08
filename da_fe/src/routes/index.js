@@ -40,6 +40,14 @@ import SaleDetail from "../pages/admin/Voucher/DotGiamGia/SaleDetail";
 import EditCustomer from '../pages/admin/Customer/Edit.js';
 import ProductVariants from '../pages/admin/Product/ProductVariants.js';
 import PaymentSuccessPage from '../pages/users/Checkout/PaymentSuccessPage.js';
+import DefaultLayout from '../components/Layout/DefaultLayout/index.js';
+import Profile from '../pages/users/Profile/Profile.jsx';
+import UserProfile from '../pages/users/Profile/UserProfile.jsx';
+import AddressUser from '../pages/users/Profile/AddressUser.jsx';
+import UserOrder from '../pages/users/Profile/Order.jsx';
+import MyVoucher from '../pages/users/Profile/MyVoucher.jsx';
+import ChangePassword from '../pages/users/Profile/ChangePassword.jsx';
+import ForgotPassword from '../pages/users/Login/ForgotPassword.jsx';
 
 
 // Public routes
@@ -88,6 +96,14 @@ const publicRoutes = [
     { path: '/gio-hang/checkout', component: AddAddress },
     { path: '/gio-hang/checkout/order-summary', component: OrderSummary },
     { path: '/login', component: Login, layout: null },
+    { path: '/forgot-password', component: ForgotPassword, layout: DefaultLayout },
+    { path: '/profile', component: Profile, children: [
+        { path: 'user', component: UserProfile, layout: null},
+        { path: 'address', component: AddressUser, layout: null },
+        { path: 'change-password', component: ChangePassword, layout: null },
+        { path: 'order', component: UserOrder, layout: null },
+        { path: 'my-voucher', component: MyVoucher, layout: null },
+    ]},
 ];
 
 const privateRoutes = [];

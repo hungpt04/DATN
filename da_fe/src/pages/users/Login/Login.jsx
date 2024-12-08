@@ -1,115 +1,394 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+// import React, { useState } from 'react';
+// import axios from 'axios';
+// import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
+// const Login = () => {
+//     const [email, setEmail] = useState('');
+//     const [password, setPassword] = useState('');
+//     const [errorMessage, setErrorMessage] = useState('');
+//     const navigate = useNavigate();
+
+//     const handleLogin = async (event) => {
+//         event.preventDefault();
+
+//         try {
+//             const response = await axios.post('http://localhost:8080/auth/signin', {
+//                 email: email,
+//                 password: password,
+//             });
+//             const token = response.data.jwt;
+
+//             // Lưu token vào localStorage hoặc state để sử dụng trong ứng dụng
+//             localStorage.setItem('token', token);
+//             console.log('Đăng nhập thành công!', response.data);
+//             navigate('/');
+//         } catch (error) {
+//             if (error.response) {
+//                 // Xử lý lỗi từ server
+//                 setErrorMessage('Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin.');
+//             } else {
+//                 setErrorMessage('Đã xảy ra lỗi. Vui lòng thử lại sau.');
+//             }
+//         }
+//     };
+
+//     return (
+//         <div className="bg-gray-100 flex items-center justify-center min-h-screen">
+//             <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+//                 <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">Welcome Back!</h2>
+
+//                 {errorMessage && <div className="mb-4 text-red-600 text-center">{errorMessage}</div>}
+
+//                 <form onSubmit={handleLogin}>
+//                     <div className="mb-4">
+//                         <label className="block text-sm font-semibold text-gray-600">Email</label>
+//                         <input
+//                             type="email"
+//                             id="email"
+//                             name="email"
+//                             value={email}
+//                             onChange={(e) => setEmail(e.target.value)}
+//                             required
+//                             className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+//                         />
+//                     </div>
+
+//                     <div className="mb-6">
+//                         <label className="block text-sm font-semibold text-gray-600">Password</label>
+//                         <input
+//                             type="password"
+//                             id="password"
+//                             name="password"
+//                             value={password}
+//                             onChange={(e) => setPassword(e.target.value)}
+//                             required
+//                             className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+//                         />
+//                     </div>
+
+//                     <div className="flex items-center justify-between mb-6">
+//                         <div className="flex items-center">
+//                             <input
+//                                 id="remember-me"
+//                                 type="checkbox"
+//                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+//                             />
+//                             <label className="ml-2 block text-sm text-gray-600">Remember Me</label>
+//                         </div>
+//                         <a href="https://example.com" className="text-sm text-blue-600 hover:underline">
+//                             Forgot Password?
+//                         </a>
+//                     </div>
+
+//                     <button
+//                         type="submit"
+//                         className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 focus:bg-blue-500 focus:outline-none"
+//                     >
+//                         Log In
+//                     </button>
+//                 </form>
+
+//                 <div className="my-6 flex items-center justify-center">
+//                     <span className="text-sm text-gray-500">or</span>
+//                 </div>
+
+//                 <div className="flex space-x-4 justify-center">
+//                     <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none">
+//                         Login with Facebook
+//                     </button>
+//                     <button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 focus:outline-none">
+//                         Login with Google
+//                     </button>
+//                 </div>
+
+//                 <p className="mt-6 text-sm text-center text-gray-500">
+//                     Don't have an account?{' '}
+//                     <a href="https://example.com" className="text-blue-600 hover:underline">
+//                         Sign Up
+//                     </a>
+//                 </p>
+//             </div>
+//         </div>
+//     );
+// };
+
+// export default Login;
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { EnvelopeIcon, UserCircleIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
+import { jwtDecode } from 'jwt-decode';
+import swal from 'sweetalert';
+const InputForm = ({ value, onChange, placeholder = '' }) => {
+    const [showPassword, setShowPassword] = useState(false);
+    return (
+        <div className="flex items-center border-b border-gray hover:border-black mt-1">
+            <LockClosedIcon className="h-7 w-7" />
+            <input
+                type={showPassword ? 'text' : 'password'}
+                className="flex-1 p-2 outline-none"
+                value={value}
+                onChange={onChange}
+                placeholder={placeholder}
+            />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="focus:outline-none">
+                {showPassword ? (
+                    <EyeSlashIcon className="h-6 w-6 text-500" />
+                ) : (
+                    <EyeIcon className="h-6 w-6 text-500" />
+                )}
+            </button>
+        </div>
+    );
+};
+const LoginPanel = () => {
+    const [user, setUser ] = useState({
+        email: '',
+        matKhau: '',
+    });
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = async (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
         try {
             const response = await axios.post('http://localhost:8080/auth/signin', {
-                email: email,
-                password: password,
+                email: user.email,
+                matKhau: user.matKhau,
             });
-            const token = response.data.jwt;
 
-            // Lưu token vào localStorage hoặc state để sử dụng trong ứng dụng
-            localStorage.setItem('token', token);
-            console.log('Đăng nhập thành công!', response.data);
-            navigate('/');
+            const token = response.data;
+
+                const decodedToken = jwtDecode(token);
+                console.log('Decoded Token:', decodedToken); // Kiểm tra cấu trúc token
+
+                const vaiTro = decodedToken.vaiTro || decodedToken.authorities || decodedToken.role;
+                const email = decodedToken.sub || decodedToken.email;
+                if (!vaiTro) {
+                    swal("Lỗi!", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau!", "error");
+                    setError('*Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau!');
+                }
+
+                // Lưu token vào localStorage hoặc state
+                localStorage.setItem('token', token);
+                localStorage.setItem('vaiTro', vaiTro);
+                localStorage.setItem('email', email);
+
+                // Hiển thị thông báo thành công
+                swal("Thành công!", "Đăng nhập thành công!", "success");
+
+                setError('');
+
+                setTimeout(() => {
+                    navigate(0)
+                }, 2000);
+            
         } catch (error) {
             if (error.response) {
-                // Xử lý lỗi từ server
-                setErrorMessage('Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin.');
+                setError('*Tài khoản hoặc mật khẩu không chính xác!');
             } else {
-                setErrorMessage('Đã xảy ra lỗi. Vui lòng thử lại sau.');
+                // Hiển thị lỗi hệ thống
+                swal("Lỗi!", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau!", "error");
+                setError('*Lỗi hệ thống. Vui lòng thử lại sau!');
             }
         }
     };
 
     return (
-        <div className="bg-gray-100 flex items-center justify-center min-h-screen">
-            <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-                <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">Welcome Back!</h2>
-
-                {errorMessage && <div className="mb-4 text-red-600 text-center">{errorMessage}</div>}
-
-                <form onSubmit={handleLogin}>
-                    <div className="mb-4">
-                        <label className="block text-sm font-semibold text-gray-600">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                        />
-                    </div>
-
-                    <div className="mb-6">
-                        <label className="block text-sm font-semibold text-gray-600">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                        />
-                    </div>
-
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center">
-                            <input
-                                id="remember-me"
-                                type="checkbox"
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <label className="ml-2 block text-sm text-gray-600">Remember Me</label>
-                        </div>
-                        <a href="https://example.com" className="text-sm text-blue-600 hover:underline">
-                            Forgot Password?
-                        </a>
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 focus:bg-blue-500 focus:outline-none"
-                    >
-                        Log In
-                    </button>
-                </form>
-
-                <div className="my-6 flex items-center justify-center">
-                    <span className="text-sm text-gray-500">or</span>
+        <form onSubmit={handleSubmit}>
+            <div className="mb-5">
+                <label className="block text-base font-medium text-gray-700">
+                    Tài khoản
+                </label>
+                <div className="flex items-center border-b border-gray hover:border-black mt-1">
+                    <UserCircleIcon className="h-7 w-7" />
+                    <input type="text"
+                        className="flex-1 p-2 outline-none"
+                        placeholder="Nhập email"
+                        value={user.email}
+                        onChange={(e) => setUser ({ ...user, email: e.target.value })}
+                    />
                 </div>
-
-                <div className="flex space-x-4 justify-center">
-                    <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none">
-                        Login with Facebook
-                    </button>
-                    <button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 focus:outline-none">
-                        Login with Google
-                    </button>
-                </div>
-
-                <p className="mt-6 text-sm text-center text-gray-500">
-                    Don't have an account?{' '}
-                    <a href="https://example.com" className="text-blue-600 hover:underline">
-                        Sign Up
-                    </a>
-                </p>
             </div>
-        </div>
+            <div className="mb-4">
+                <div className="flex justify-between items-center">
+                    <label className="block text-base font-medium text-gray-700">
+                        Mật khẩu
+                    </label>
+                    <div>
+                        <Link to="/forgot-password" className="text-blue-600 text-sm hover:underline">
+                            Quên mật khẩu?
+                        </Link>
+                    </div>
+                </div>
+                <InputForm
+                    value={user.matKhau}
+                    onChange={(e) => setUser ({ ...user, matKhau: e.target.value })}
+                    placeholder="Nhập mật khẩu">
+                </InputForm>
+            </div>
+            {error && <p className="text-sm mb-3" style={{ color: "red" }}>{error}</p>}
+            <div className="items-center w-full mb-3 justify-center">
+                <button type="submit" className="w-full bg-black py-2 mb-3 text-white rounded-md">
+                    ĐĂNG NHẬP
+                </button>
+            </div>
+        </form>
     );
 };
 
-export default Login;
+const RegisterPanel = () => {
+    const [user, setUser] = useState({
+        hoTen: '',
+        email: '',
+        matKhau: '',
+        xacNhanMatKhau: '',
+    });
+    const [error, setError] = useState('')
+    const navigate = useNavigate()
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        try {
+            const response = await axios.post('http://localhost:8080/auth/signup', {
+                hoTen: user.hoTen,
+                email: user.email,
+                matKhau: user.matKhau,
+                xacNhanMatKhau: user.xacNhanMatKhau,
+            });
+            
+            swal("Thành công!", "Đăng ký tài khoản thành công. Đăng nhập ngay nào!", "success");
+            setError('');
+            // reset
+            setUser({
+                hoTen: '',
+                email: '',
+                matKhau: '',
+                xacNhanMatKhau: '',
+            });
+            setTimeout(() => {
+                navigate(0);
+            }, 2000);
+        } catch (err) {
+            if (err.response) {
+                // swal("Thất bại!", "Đăng ký không thành công!", "error");
+                setError('Đăng ký không thành công!');
+            } else {
+                // swal("Lỗi!", "Đã xảy ra lỗi. Vui lòng thử lại sau!", "error");
+                setError('Lỗi hệ thống. Vui lòng thử lại sau.');
+            }
+        }
+    };
+    return (
+        <form onSubmit={handleSubmit}>
+            <div className="mb-5">
+                <label className="block text-base font-medium text-gray-700">Họ và tên</label>
+                <div className="flex items-center border-b border-gray hover:border-black mt-1">
+                    <UserCircleIcon className="h-7 w-7" />
+                    <input
+                        type="text"
+                        className="flex-1 p-2 outline-none"
+                        value={user.hoTen}
+                        onChange={(e) => setUser({ ...user, hoTen: e.target.value })}
+                    />
+                </div>
+            </div>
+            <div className="mb-5">
+                <label className="block text-base font-medium text-gray-700">Địa chỉ email</label>
+                <div className="flex items-center border-b border-gray hover:border-black mt-1">
+                    <EnvelopeIcon className="h-7 w-7" />
+                    <input
+                        type="text"
+                        className="flex-1 p-2 outline-none"
+                        value={user.email}
+                        onChange={(e) => setUser({ ...user, email: e.target.value })}
+                    />
+                </div>
+            </div>
+            <div className="mb-5">
+                <div className="flex justify-between items-center">
+                    <label className="block text-base font-medium text-gray-700">Mật khẩu</label>
+                </div>
+                <InputForm
+                    value={user.matKhau}
+                    onChange={(e) => setUser({ ...user, matKhau: e.target.value })}
+                ></InputForm>
+            </div>
+            <div className="mb-5">
+                <div className="flex justify-between items-center">
+                    <label className="block text-base font-medium text-gray-700">Xác nhận mật khẩu</label>
+                </div>
+                <InputForm
+                    value={user.xacNhanMatKhau}
+                    onChange={(e) => setUser({ ...user, xacNhanMatKhau: e.target.value })}
+                ></InputForm>
+            </div>
+            {error && <p className="text-sm mb-3 text-red-600">{error}</p>}
+            <div className="w-full mb-2 justify-center">
+                <button type="submit" className="w-full bg-black py-2 mb-3 text-white rounded-md">
+                    ĐĂNG KÝ
+                </button>
+            </div>
+        </form>
+    );
+};
+
+export default function Login() {
+    const token = localStorage.getItem('token');
+    // const vaiTro = localStorage.getItem('vaiTro');
+    const [isLogin, setIsLogin] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const vaiTro = localStorage.getItem('vaiTro');
+        setIsAuthenticated(!!token && !!vaiTro);
+        // setIsAuthenticated(!!token);
+    }, []);
+
+    const switchToLogin = () => setIsLogin(true);
+    const switchToRegister = () => setIsLogin(false);
+
+    // if (isAuthenticated) {
+    //     if (vaiTro === 'CUSTOMER') {
+    //         return <Navigate to="/" replace={true} />;
+    //     }
+    //     return <Navigate to="/admin" replace={true} />;
+
+    if (isAuthenticated) {
+        return <Navigate to="/" replace={true} />;
+    }
+    return token ? (
+        <Navigate to="/" />
+    ) : (
+        <div className="flex justify-center items-center bg-gray-100" style={{ padding: '40px' }}>
+            <div className="bg-white p-8 rounded-md shadow-md w-full max-w-prose">
+                <div className="text-center mb-6">
+                    <div className="mb-2 text-2xl font-semibold uppercase">{isLogin ? 'Đăng nhập' : 'Đăng ký'}</div>
+                    <div className="mb-4">
+                        {isLogin ? (
+                            <p className="text-base font-normal text-gray-700">
+                                Bạn chưa có tài khoản?{' '}
+                                <button className="text-blue-600 hover:text-blue-700" onClick={switchToRegister}>
+                                    Đăng ký ngay
+                                </button>
+                            </p>
+                        ) : (
+                            <p className="text-base font-normal text-gray-700">
+                                Đã có tài khoản, đăng nhập{' '}
+                                <button className="text-blue-600 hover:text-blue-700" onClick={switchToLogin}>
+                                    tại đây
+                                </button>
+                            </p>
+                        )}
+                    </div>
+                </div>
+                {isLogin ? <LoginPanel /> : <RegisterPanel />}
+            </div>
+        </div>
+    );
+}

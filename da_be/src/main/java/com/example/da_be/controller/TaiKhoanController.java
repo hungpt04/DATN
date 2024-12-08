@@ -212,4 +212,20 @@ public class TaiKhoanController {
 
         return response;
     }
+
+    @GetMapping("/my-info")
+    public ResponseEntity<TaiKhoan> getInfo(@RequestHeader("Authorization") String token) {
+        String jwtToken = token.startsWith("Bearer ") ? token.substring(7) : token;
+
+        try {
+            TaiKhoan taiKhoan = taiKhoanService.getMyInfo(jwtToken);
+            return ResponseEntity.ok(taiKhoan);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }

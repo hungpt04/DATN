@@ -1,0 +1,11 @@
+select:invalid {
+  color: gray;
+}
+
+option[value=""][disabled] {
+  display: none;
+}
+
+option:hover {
+  background-color: red !important;
+}

@@ -12,6 +12,7 @@ export const SidebarData = [
         title: 'Thống kê',
         icon: <AssessmentIcon />,
         link: '/admin/thong-ke',
+        vaiTro: 'Admin'
     },
     {
         title: 'Bán hàng tại quầy',
@@ -56,7 +57,7 @@ export const SidebarData = [
         icon: <AccountCircleIcon />,
         link: '/admin/tai-khoan',
         subItems: [
-            { title: 'Nhân viên', link: '/admin/tai-khoan/nhan-vien' },
+            { title: 'Nhân viên', link: '/admin/tai-khoan/nhan-vien', vaiTro: 'Admin' },
             { title: 'Khách hàng', link: '/admin/tai-khoan/khach-hang' },
         ],
     },
