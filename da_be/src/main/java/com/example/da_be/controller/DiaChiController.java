@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -48,6 +47,12 @@ public class DiaChiController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @PostMapping
+    public ResponseEntity<DiaChi> addDiaChii(@RequestBody DiaChi diaChi) {
+        DiaChi createdDiaChi = diaChiService.saveOrUpdateDiaChii(diaChi);
+        return new ResponseEntity<>(createdDiaChi, HttpStatus.CREATED);
+    }
+
     // Thêm địa chỉ mới
     @PostMapping("/add")
     public ResponseEntity<DiaChi> addDiaChi(@RequestBody DiaChi diaChi) {
@@ -56,7 +61,7 @@ public class DiaChiController {
     }
 
     // Cập nhật thông tin địa chỉ
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<DiaChi> updateDiaChi(@PathVariable Long id, @RequestBody DiaChi diaChi) {
         diaChi.setId(id);  // Đảm bảo ID trong body và path là giống nhau
         DiaChi updatedDiaChi = diaChiService.saveOrUpdateDiaChi(diaChi);

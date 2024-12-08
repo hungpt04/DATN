@@ -12,6 +12,7 @@ import com.example.da_be.request.VoucherSearch;
 import com.example.da_be.response.KhachHangResponse;
 import com.example.da_be.response.VoucherResponse;
 import com.example.da_be.service.VoucherService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -156,5 +157,22 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public Page<VoucherResponse> getSearchVoucher(VoucherSearch voucherSearch, Pageable pageable) {
         return voucherRepository.getSearchVoucher(voucherSearch, pageable);
+    }
+
+
+    @Override
+    @Transactional
+    public Voucher giamSoLuongVoucher(Integer id) {
+        Voucher voucher = voucherRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy voucher"));
+
+        // Kiểm tra số lượng voucher
+        if (voucher.getSoLuong() <= 0) {
+            throw new RuntimeException("Voucher đã hết");
+        }
+
+        // Giảm số lượng voucher
+        voucher.setSoLuong(voucher.getSoLuong() - 1);
+        return voucherRepository.save(voucher);
     }
 }

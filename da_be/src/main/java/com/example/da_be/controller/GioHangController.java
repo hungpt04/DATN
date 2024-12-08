@@ -77,7 +77,7 @@ public class GioHangController {
     }
 
     @DeleteMapping("/tai-khoan/{taiKhoanId}")
-    public ResponseEntity<Void> deleteCartByAccountId(@PathVariable Long taiKhoanId) {
+    public ResponseEntity<Void> deleteCartByAccountId(@PathVariable Integer taiKhoanId) {
         gioHangService.deleteCartByAccountId(taiKhoanId);
         return ResponseEntity.noContent().build();
     }

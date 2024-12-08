@@ -13,4 +13,5 @@ import java.util.Optional;
 public interface SanPhamCTRepository extends JpaRepository<SanPhamCT, Integer> {
     Optional<SanPhamCT> findById(Long id);
 
+    List<SanPhamCT> findBySanPham_Id(Integer productId);
 }

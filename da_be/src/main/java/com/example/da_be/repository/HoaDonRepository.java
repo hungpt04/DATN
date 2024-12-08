@@ -7,9 +7,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
     @Query("SELECT h FROM HoaDon h WHERE h.trangThai = :trangThai")
     List<HoaDon> findByTrangThai(@Param("trangThai") int trangThai);
+
+    Optional<HoaDon> findTopByOrderByIdDesc();
 }

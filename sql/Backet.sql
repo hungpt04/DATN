@@ -46,6 +46,8 @@
 		Ten NVARCHAR(255),
 		TG_BatDau DATETIME,
 		TG_KetThuc DATETIME,
+		GiaTri INT,
+		Loai BIT,
 		TrangThai INT
 	);
 
@@ -70,10 +72,10 @@
 		Ten NVARCHAR(255),
 		GiaTri INT,
 		GiaTriMax INT,
-		LoaiVoucher NVARCHAR(255),
-		GiaTriVoucher INT,
+		DieuKienNhoNhat INT,
+		Kieu INT,
+		KieuGiaTri INT,
 		SoLuong INT,
-		SoLuongToiThieu INT,
 		NgayBatDau DATETIME,
 		NgayKetThuc DATETIME,
 		TrangThai INT
@@ -274,12 +276,12 @@ INSERT INTO DoCung (Ten, TrangThai) VALUES
 ('Siêu cứng', 0);
 
 	-- KhuyenMai
-INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc, TrangThai) VALUES
-('Khuyen mai 10%', '2024-01-01', '2024-01-10', 1),
-('Khuyen mai 20%', '2024-02-01', '2024-02-15', 1),
-('Khuyen mai 30%', '2024-03-01', '2024-03-10', 0),
-('Khuyen mai 40%', '2024-04-01', '2024-04-15', 0),
-('Khuyen mai 50%', '2024-05-01', '2024-05-10', 0);
+INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc,GiaTri, Loai, TrangThai) VALUES
+('Khuyen mai 10%', '2024-01-01', '2024-01-10',10,1, 1),
+('Khuyen mai 20%', '2024-02-01', '2024-02-15',20,0, 1),
+('Khuyen mai 30%', '2024-03-01', '2024-03-10',50,0, 0),
+('Khuyen mai 40%', '2024-04-01', '2024-04-15',30,1, 0),
+('Khuyen mai 50%', '2024-05-01', '2024-05-10',40,0, 0);
 
 
 
@@ -294,12 +296,7 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc, TrangThai) VALUES
 
 
 
-	INSERT INTO Voucher (Ma, Ten, GiaTri, GiaTriMax, LoaiVoucher, GiaTriVoucher, SoLuong, SoLuongToiThieu, NgayBatDau, NgayKetThuc, TrangThai) VALUES
-	('V001', 'Voucher 10%', 10, 100000, 'Percent', 10, 50, 1, '2024-01-01', '2024-01-10', 1),
-	('V002', 'Voucher 20%', 20, 200000, 'Percent', 20, 100, 1, '2024-02-01', '2024-02-15', 1),
-	('V003', 'Voucher 50k', 50000, 50000, 'Fixed', 50000, 200, 1, '2024-03-01', '2024-03-10', 0),
-	('V004', 'Voucher 100k', 100000, 100000, 'Fixed', 100000, 300, 1, '2024-04-01', '2024-04-05', 0),
-	('V005', 'Voucher 5%', 5, 50000, 'Percent', 5, 150, 1, '2024-05-01', '2024-05-07', 1);
+	
 
 
 
@@ -315,14 +312,14 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc, TrangThai) VALUES
 
 
 	INSERT INTO SanPhamCT (IdSanPham, IdThuongHieu, IdMauSac, IdChatLieu, IdTrongLuong, IdDiemCanBang,IdDoCung, Ma, SoLuong, DonGia, MoTa, TrangThai) VALUES
-	(1, 1, 1, 1, 1, 1,2, 'SPCT001', 10, 3000000,N'Vợt cầu lông đẹp và đẳng cấp nhất thế giới', 1),
-	(2, 1, 2, 2, 2, 2,3, 'SPCT002', 20, 2500000,N'Vợt cầu lông đẹp và đẳng cấp nhất việt nam', 1),
-	(3, 1, 3, 3, 3, 3,2, 'SPCT003', 15, 2800000,N'Vợt cầu lông đẹp và đẳng cấp nhất vũ trụ', 0),
-	(4, 3, 4, 4, 4, 4,1, 'SPCT004', 5, 2700000,N'Vợt cầu lông đẹp và đẳng cấp nhất thiên hà', 0),
-	(5, 1, 5, 5, 5, 5,5, 'SPCT005', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất hành tinh', 1),
-	(6, 3, 5, 5, 5, 5,4, 'SPCT006', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất hệ mặt trời', 1),
-	(7, 3, 5, 5, 5, 5,5, 'SPCT007', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất xóm', 1),
-	(8, 1, 5, 5, 5, 5,1, 'SPCT008', 8, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất nhà', 1);
+	(1, 1, 1, 1, 1, 1,2, 'SPCT001', 100, 3000000,N'Vợt cầu lông đẹp và đẳng cấp nhất thế giới', 1),
+	(2, 1, 2, 2, 2, 2,3, 'SPCT002', 200, 2500000,N'Vợt cầu lông đẹp và đẳng cấp nhất việt nam', 1),
+	(3, 1, 3, 3, 3, 3,2, 'SPCT003', 150, 2800000,N'Vợt cầu lông đẹp và đẳng cấp nhất vũ trụ', 0),
+	(4, 3, 4, 4, 4, 4,1, 'SPCT004', 50, 2700000,N'Vợt cầu lông đẹp và đẳng cấp nhất thiên hà', 0),
+	(5, 1, 5, 5, 5, 5,5, 'SPCT005', 80, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất hành tinh', 1),
+	(6, 3, 5, 5, 5, 5,4, 'SPCT006', 80, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất hệ mặt trời', 1),
+	(7, 3, 5, 5, 5, 5,5, 'SPCT007', 80, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất xóm', 1),
+	(8, 1, 5, 5, 5, 5,1, 'SPCT008', 80, 2200000,N'Vợt cầu lông đẹp và đẳng cấp nhất nhà', 1);
 
 
 	INSERT INTO HinhAnh (IdSanPhamCT, Link, TrangThai) VALUES

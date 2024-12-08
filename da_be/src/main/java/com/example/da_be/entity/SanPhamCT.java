@@ -58,11 +58,18 @@ public class SanPhamCT {
     @Column(name = "DonGia")
     private Double donGia;
 
+    @Column(name = "MoTa")
+    private String moTa;
+
     @Column(name = "TrangThai")
     private Integer trangThai;
 
     @OneToMany(mappedBy = "sanPhamCT")
     @JsonIgnore
     private List<HinhAnh> hinhAnh;
+
+    public SanPhamCT(int id) {
+        this.id = id;
+    }
 
 }

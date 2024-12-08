@@ -1,6 +1,7 @@
 package com.example.da_be.service;
 
 import com.example.da_be.entity.DiaChi;
+import com.example.da_be.entity.DiemCanBang;
 import com.example.da_be.repository.DiaChiRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,10 @@ public class DiaChiService {
     public DiaChi getDiaChiById(Long id) {
         Optional<DiaChi> diaChi = diaChiRepository.findById(id);
         return diaChi.orElseGet(DiaChi::new);
+    }
+
+    public DiaChi saveOrUpdateDiaChii(DiaChi diaChi) {
+        return this.diaChiRepository.save(diaChi);
     }
 
     public DiaChi saveOrUpdateDiaChi(DiaChi diaChi) {

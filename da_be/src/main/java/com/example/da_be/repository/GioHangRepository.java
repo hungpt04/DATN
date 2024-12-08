@@ -20,6 +20,6 @@ public interface GioHangRepository extends JpaRepository<GioHang, Integer> {
     List<GioHangWithImagesDTO> findGioHangCTWithImages(@Param("taiKhoanId") Long taiKhoanId);
 
     @Transactional
-    void deleteByTaiKhoanId(Long taiKhoanId);
+    void deleteByTaiKhoanId(Integer taiKhoanId);
 
 }

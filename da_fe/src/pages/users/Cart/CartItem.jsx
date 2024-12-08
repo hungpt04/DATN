@@ -32,8 +32,8 @@ const CartItem = ({ showButton, cart, onQuantityChange, onDeleteCart }) => {
                     <p className="opacity-70 mt-2">Thương hiệu: {cart.gioHang.sanPhamCT.thuongHieu.ten}</p>
                     <div className="flex space-x-2 items-center pt-3">
                         <p className="font-semibold text-lg">{cart.gioHang.sanPhamCT.donGia.toLocaleString()} ₫</p>
-                        <p className="opacity-50 line-through">37000000 ₫</p>
-                        <p className="text-green-600 font-semibold">3% off</p>
+                        {/* <p className="opacity-50 line-through">37000000 ₫</p>
+                        <p className="text-green-600 font-semibold">3% off</p> */}
                     </div>
                 </div>
             </div>

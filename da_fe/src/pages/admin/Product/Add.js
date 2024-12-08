@@ -24,14 +24,12 @@ function AddProduct() {
     const [colors, setColors] = useState([]);
     const [weights, setWeights] = useState([]);
     const [description, setDescription] = useState('');
-    const [variants, setVariants] = useState([
-        { id: 1, name: '', quantity: '', weight: '', price: '', selected: false },
-    ]);
+    const [variants, setVariants] = useState([]);
+    const [commonPrice, setCommonPrice] = useState('');
 
     const [imageList, setImageList] = useState([]);
     const [selectedImages, setSelectedImages] = useState([]);
     const [showImageModal, setShowImageModal] = useState(false);
-    const [currentVariantIndex, setCurrentVariantIndex] = useState(null);
 
     const {
         register,
@@ -107,26 +105,6 @@ function AddProduct() {
         }
     };
 
-    const handleVariantChange = (index, field, value) => {
-        const newVariants = [...variants];
-        newVariants[index][field] = value;
-        setVariants(newVariants);
-    };
-
-    const handleAddVariant = () => {
-        setVariants([
-            ...variants,
-            { id: variants.length + 1, name: '', quantity: '', weight: '', price: '', selected: false },
-        ]);
-    };
-
-    const handleFileChange = (e, index) => {
-        const file = e.target.files[0]; // Lấy file đầu tiên từ input
-        const newVariants = [...variants];
-        newVariants[index].file = file; // Cập nhật file đã chọn vào variant tương ứng
-        setVariants(newVariants); // Cập nhật state variants
-    };
-
     useEffect(() => {
         loadBrands();
         loadMaterials();
@@ -147,7 +125,7 @@ function AddProduct() {
             swal('Thành công!', 'Thương hiệu đã được thêm!', 'success');
             setShowBrandModal(false);
             loadBrands();
-            reset(); // Reset form values after adding
+            reset();
         } catch (error) {
             console.error('Có lỗi xảy ra khi thêm thương hiệu!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm thương hiệu!', 'error');
@@ -164,7 +142,7 @@ function AddProduct() {
             swal('Thành công!', 'Chất liệu đã được thêm!', 'success');
             setShowMaterialModal(false);
             loadMaterials();
-            reset(); // Reset form values after adding
+            reset();
         } catch (error) {
             console.error('Có lỗi xảy ra khi thêm chất liệu!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm chất liệu!', 'error');
@@ -181,7 +159,7 @@ function AddProduct() {
             swal('Thành công!', 'Điểm cân bằng đã được thêm!', 'success');
             setShowBalanceModal(false);
             loadBalances();
-            reset(); // Reset form values after adding
+            reset();
         } catch (error) {
             console.error('Có lỗi xảy ra khi thêm Điểm cân bằng!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm Điểm cân bằng!', 'error');
@@ -198,7 +176,7 @@ function AddProduct() {
             swal('Thành công!', 'Độ cứng đã được thêm!', 'success');
             setShowStiffModal(false);
             loadStiffs();
-            reset(); // Reset form values after adding
+            reset();
         } catch (error) {
             console.error('Có lỗi xảy ra khi thêm Độ cứng!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm Độ cứng!', 'error');
@@ -215,7 +193,7 @@ function AddProduct() {
             swal('Thành công!', 'Màu sắc đã được thêm!', 'success');
             setShowAddColorModal(false);
             loadColors();
-            reset(); // Reset form values after adding
+            reset();
         } catch (error) {
             console.error('Có lỗi xảy ra khi thêm Màu sắc!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm Màu sắc!', 'error');
@@ -232,7 +210,7 @@ function AddProduct() {
             swal('Thành công!', 'Trọng lượng đã được thêm!', 'success');
             setShowAddWeightModal(false);
             loadWeights();
-            reset(); // Reset form values after adding
+            reset();
         } catch (error) {
             console.error('Có lỗi xảy ra khi thêm Trọng lượng!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm Trọng lượng!', 'error');
@@ -240,49 +218,43 @@ function AddProduct() {
     };
 
     const handleAddBrandModal = () => {
-        reset(); // Reset the form values and errors
+        reset();
         setShowBrandModal(true);
     };
 
     const handleAddMaterialModal = () => {
-        reset(); // Reset the form values and errors
+        reset();
         setShowMaterialModal(true);
     };
 
     const handleAddBalanceModal = () => {
-        reset(); // Reset the form values and errors
+        reset();
         setShowBalanceModal(true);
     };
 
     const handleAddStiffModal = () => {
-        reset(); // Reset the form values and errors
+        reset();
         setShowStiffModal(true);
     };
 
     const handleColorModal = () => {
-        reset(); // Reset the form values and errors
+        reset();
         setShowColorModal(true);
     };
 
     const handleWeightModal = () => {
-        reset(); // Reset the form values and errors
+        reset();
         setShowWeightModal(true);
     };
 
     const handleAddColorModal = () => {
-        reset(); // Reset the form values and errors
+        reset();
         setShowAddColorModal(true);
     };
 
     const handleAddWeightModal = () => {
-        reset(); // Reset the form values and errors
+        reset();
         setShowAddWeightModal(true);
-    };
-
-    const handleImageModal = (index) => {
-        setCurrentVariantIndex(index); // Lưu chỉ số biến thể hiện tại
-        setShowImageModal(true);
-        setSelectedImages(variants[index].images || []);
     };
 
     const handleAddImage = (e) => {
@@ -299,22 +271,8 @@ function AddProduct() {
         }
     };
 
-    const handleSaveImages = async () => {
-        if (currentVariantIndex !== null) {
-            const newVariants = [...variants];
-            const variant = newVariants[currentVariantIndex];
-
-            // Chỉ cập nhật hình ảnh vào biến thể hiện tại, không gửi API request
-            variant.images = selectedImages;
-
-            // Đảm bảo ảnh đầu tiên được chọn sẽ là ảnh đầu tiên hiển thị
-            if (variant.images.length > 0) {
-                variant.selectedImage = variant.images[0];
-            }
-
-            setVariants(newVariants);
-            setShowImageModal(false);
-        }
+    const handleSaveImages = () => {
+        setShowImageModal(false);
     };
 
     const createVariants = () => {
@@ -324,13 +282,11 @@ function AddProduct() {
                 newVariants.push({
                     id: newVariants.length + 1,
                     name: `${productName} - ${color} - ${weight}`,
-                    quantity: '',
+                    quantity: 0,
                     weight: weight,
-                    price: '',
-                    selected: false,
+                    price: commonPrice,
                     colorId: colors.find((c) => c.ten === color)?.id,
                     weightId: weights.find((w) => w.ten === weight)?.id,
-                    images: [], // Thêm mảng images rỗng cho mỗi variant mới
                 });
             });
         });
@@ -343,7 +299,7 @@ function AddProduct() {
         } else {
             setVariants([]);
         }
-    }, [selectedColors, selectedWeights]);
+    }, [selectedColors, selectedWeights, commonPrice]);
 
     const handleAddProduct = async (e) => {
         e.preventDefault();
@@ -354,11 +310,9 @@ function AddProduct() {
         };
 
         try {
-            // Bước 1: Thêm sản phẩm vào bảng SanPham
             const productResponse = await axios.post('http://localhost:8080/api/san-pham', newProduct);
             const newProductId = productResponse.data.id;
 
-            // Bước 2: Lặp qua từng biến thể và tạo SanPhamCT
             for (const variant of variants) {
                 const newSanPhamCT = {
                     sanPham: { id: newProductId },
@@ -375,13 +329,12 @@ function AddProduct() {
                     trangThai: status === 'Active' ? 1 : 0,
                 };
 
-                // Thêm SanPhamCT và lấy response
                 const sanPhamCTResponse = await axios.post('http://localhost:8080/api/san-pham-ct', newSanPhamCT);
                 const sanPhamCTId = sanPhamCTResponse.data.id;
 
-                // Bước 3: Thêm hình ảnh cho SanPhamCT hiện tại
-                if (variant.images && variant.images.length > 0) {
-                    for (const image of variant.images) {
+                // Thêm hình ảnh chung cho tất cả biến thể
+                if (selectedImages.length > 0) {
+                    for (const image of selectedImages) {
                         const hinhAnhData = {
                             sanPhamCT: { id: sanPhamCTId },
                             link: image,
@@ -392,22 +345,12 @@ function AddProduct() {
                 }
             }
 
-            // Hiển thị thông báo thành công
             swal('Thành công!', 'Sản phẩm đã được thêm!', 'success');
-
-            // Reset form
             reset();
-            setVariants([
-                {
-                    id: 1,
-                    name: '',
-                    quantity: '',
-                    weight: '',
-                    price: '',
-                    selected: false,
-                    images: [], // Thêm mảng images rỗng
-                },
-            ]);
+            setVariants([]);
+            setSelectedImages([]);
+            setImageList([]);
+            setCommonPrice('');
         } catch (error) {
             console.error('Có lỗi xảy ra khi thêm sản phẩm!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm sản phẩm!', 'error');
@@ -596,9 +539,9 @@ function AddProduct() {
                                 key={index}
                                 className="border font-medium py-1 px-1 rounded ml-2 w-9 h-9"
                                 style={{
-                                    backgroundColor: color, // Màu nền là màu được chọn
-                                    color: '#fff', // Chữ trắng để dễ đọc
-                                    borderColor: color === 'white' ? '#000' : 'transparent', // Nếu là màu trắng, thêm viền đen
+                                    backgroundColor: color,
+                                    color: '#fff',
+                                    borderColor: color === 'white' ? '#000' : 'transparent',
                                 }}
                             ></button>
                         ))}
@@ -622,9 +565,9 @@ function AddProduct() {
                                 key={index}
                                 className="border font-medium py-1 px-1 rounded ml-2 w-9 h-9"
                                 style={{
-                                    backgroundColor: 'black', // Màu nền là màu được chọn
-                                    color: 'white', // Chữ trắng để dễ đọc
-                                    borderColor: 'black', // Nếu là màu trắng, thêm viền đen
+                                    backgroundColor: 'black',
+                                    color: 'white',
+                                    borderColor: 'black',
                                 }}
                             >
                                 {weight}
@@ -641,7 +584,42 @@ function AddProduct() {
                     </div>
                 </div>
 
-                <h3 className="text-lg font-semibold mb-2 mt-[120px]">Biến thể sản phẩm</h3>
+                <div className="mb-4 w-[85%] mx-auto">
+                    <div className="flex space-x-4">
+                        <div className="w-1/2">
+                            <label className="block text-sm font-bold text-gray-700">Giá chung</label>
+                            <input
+                                type="number"
+                                value={commonPrice}
+                                onChange={(e) => setCommonPrice(e.target.value)}
+                                className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mb-4 w-[85%] mx-auto">
+                    <label className="block text-sm font-bold text-gray-700">Ảnh sản phẩm</label>
+                    <div className="mt-1 flex items-center">
+                        {selectedImages.length > 0 && (
+                            <div className="flex space-x-2 overflow-x-auto">
+                                {selectedImages.map((img, index) => (
+                                    <img key={index} src={img} alt="product" className="w-20 h-20 object-cover" />
+                                ))}
+                            </div>
+                        )}
+                        <button
+                            onClick={() => setShowImageModal(true)}
+                            type="button"
+                            className="ml-2 flex flex-col items-center justify-center w-20 h-20 border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium rounded"
+                        >
+                            <AddIcon />
+                            <span className="text-xs">Upload</span>
+                        </button>
+                    </div>
+                </div>
+
+                <h3 className="text-lg font-semibold mb-2 mt-[40px]">Biến thể sản phẩm</h3>
                 <table className="table-auto bg-white rounded-lg shadow-md w-[950px]">
                     <thead>
                         <tr className="bg-gray-200 text-gray-700">
@@ -651,7 +629,6 @@ function AddProduct() {
                             <th className="p-4 text-sm w-[100px]">Số lượng</th>
                             <th className="p-1 text-sm w-[100px]">Giá</th>
                             <th className="p-1 text-sm">Hành động</th>
-                            <th className="p-1 text-sm w-[150px]">Ảnh</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -674,56 +651,17 @@ function AddProduct() {
                                     <input
                                         type="number"
                                         value={variant.quantity}
-                                        onChange={(e) => handleVariantChange(index, 'quantity', e.target.value)}
-                                        className="border border-gray-300 rounded-md p-0.5 text-xs w-[60px]"
+                                        onChange={(e) => {
+                                            const newVariants = [...variants];
+                                            newVariants[index].quantity = e.target.value;
+                                            setVariants(newVariants);
+                                        }}
+                                        className="w-20 h-8 border border-gray-300 rounded-md p-1 text-sm"
                                     />
                                 </td>
-                                <td className="p-1 text-sm text-center">
-                                    <input
-                                        type="number"
-                                        value={variant.price}
-                                        onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
-                                        className="border border-gray-300 rounded-md p-0.5 text-xs w-[80px]"
-                                    />
-                                </td>
+                                <td className="p-1 text-sm text-center">{variant.price}</td>
                                 <td className="p-1 text-sm text-center">
                                     <button className="text-red-600 hover:underline">Xóa</button>
-                                </td>
-                                <td className="p-1 text-sm text-center">
-                                    {variant.images && variant.images.length > 0 ? (
-                                        // Nếu đã có ảnh, hiển thị ảnh
-                                        <div className="flex space-x-2 overflow-x-auto">
-                                            {' '}
-                                            {/* Sử dụng flex để sắp xếp ảnh theo chiều ngang */}
-                                            {variant.images.map((img, imgIndex) => (
-                                                <img
-                                                    key={imgIndex}
-                                                    src={img}
-                                                    alt="variant"
-                                                    className="w-20 h-20 object-cover" // Thay đổi kích thước ảnh ở đây
-                                                />
-                                            ))}
-                                            {/* Nút "Chọn ảnh" sẽ được hiển thị bên cạnh ảnh cuối cùng */}
-                                            <button
-                                                onClick={() => handleImageModal(index)}
-                                                type="button"
-                                                className="flex flex-col items-center justify-center w-20 h-20 border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium rounded"
-                                            >
-                                                <AddIcon />
-                                                <span className="text-xs">Upload</span>
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        // Nếu chưa có ảnh, hiển thị nút "Chọn ảnh"
-                                        <button
-                                            onClick={() => handleImageModal(index)}
-                                            type="button"
-                                            className="flex flex-col items-center justify-center w-20 h-20 border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium rounded"
-                                        >
-                                            <AddIcon />
-                                            <span className="text-xs">Upload</span>
-                                        </button>
-                                    )}
                                 </td>
                             </tr>
                         ))}
@@ -733,7 +671,10 @@ function AddProduct() {
                 <div className="mt-6">
                     <button
                         type="button"
-                        onClick={handleAddProduct}
+                        onClick={async (e) => {
+                            await handleAddProduct(e);
+                            window.location.href = 'http://localhost:3000/admin/quan-ly-san-pham/san-pham-ct';
+                        }}
                         className="bg-blue-600 text-white rounded-md px-4 py-2"
                     >
                         Thêm sản phẩm
@@ -1024,7 +965,6 @@ function AddProduct() {
                             </button>
                             <button
                                 onClick={handleAddColorModal}
-                                type="submit"
                                 className="bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded-lg"
                             >
                                 Thêm

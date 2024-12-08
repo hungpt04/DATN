@@ -92,5 +92,9 @@ public class SanPhamCTService {
         }).collect(Collectors.toList()); // Trả về danh sách DTO
     }
 
+    public List<SanPhamCT> getSanPhamCTByProductId(Integer productId) {
+        return sanPhamCTRepository.findBySanPham_Id(productId);
+    }
+
 
 }

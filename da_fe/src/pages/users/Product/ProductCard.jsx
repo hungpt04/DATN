@@ -11,9 +11,6 @@ function ProductCard({ product }) {
     // Tìm ảnh có chứa từ "main" trong URL
     const mainImage = product.hinhAnhUrls.find((url) => url.includes('main')) || product.hinhAnhUrls[0];
 
-    console.log(mainImage); // Xóa dòng này khi không cần thiết
-    console.log('Hình ảnh URLs:', product.hinhAnhUrls[0]);
-
     return (
         <div className="flex flex-wrap">
             <div className="productCard w-[195px] m-3 transition-all cursor-pointer">

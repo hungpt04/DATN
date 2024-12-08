@@ -1,0 +1,26 @@
+spring:
+  application:
+    api-prefix: /api/v1  # Đặt giá trị trực tiếp thay vì sử dụng biến môi trường
+    name: spring-boot-rest-api
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+server:
+  port: 8080  # Đặt giá trị trực tiếp thay vì sử dụng biến môi trường
+
+payment:
+  vnPay:
+    url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html  # Đặt giá trị trực tiếp
+    tmnCode: B0PRSWKE  # Đặt giá trị trực tiếp
+    secretKey: O0J9Y3J2FJ6MRC814UDBY7QUWK7KVNU6  # Đặt giá trị trực tiếp
+    returnUrl: http://localhost:8080/api/v1/payment/vn-pay-callback  # Đặt giá trị trực tiếp
+    version: 2.1.0  # Đặt giá trị trực tiếp
+    command: pay  # Đặt giá trị trực tiếp
+    orderType: other  # Đặt giá trị trực tiếp
+
+# API
+API_PREFIX: /api/v1  # Đặt giá trị trực tiếp
+API_NAME: api  # Đặt giá trị trực tiếp
+API_PORT: 8080  # Đặt giá trị trực tiếp
