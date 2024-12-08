@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -145,5 +146,16 @@ public class VoucherController {
     @GetMapping("/list-ten-voucher")
     public List<String> getAllTenVoucher() {
         return voucherService.getAllTenVoucher();
+    }
+
+    @PutMapping("/giam-so-luong/{id}")
+    public ResponseEntity<?> giamSoLuongVoucher(@PathVariable Integer id) {
+        try {
+            Voucher updatedVoucher = voucherService.giamSoLuongVoucher(id);
+            return ResponseEntity.ok(updatedVoucher);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
     }
 }

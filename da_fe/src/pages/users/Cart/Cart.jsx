@@ -54,7 +54,7 @@ const Cart = () => {
             const firstCartItems = getFirstCartItemPerProduct(carts);
             const total = calculateTotalPrice(firstCartItems);
             setTotalPrice(total);
-            const totalAmount = total - discount + shippingFee;
+            const totalAmount = total;
             setTotalAmount(totalAmount);
         }
     }, [carts]);
@@ -120,11 +120,11 @@ const Cart = () => {
                         <p className="font-bold opacity-60 pb-4">PRICE DETAILS</p>
                         <hr />
                         <div className="space-y-3 font-semibold">
-                            <div className="flex justify-between pt-3 text-black ">
+                            {/* <div className="flex justify-between pt-3 text-black ">
                                 <span>Tiền hàng</span>
                                 <span>{totalPrice.toLocaleString()} ₫</span>
-                            </div>
-                            <div className="flex justify-between">
+                            </div> */}
+                            {/* <div className="flex justify-between">
                                 <span>Giảm giá</span>
                                 <span className="text-green-700">-{discount.toLocaleString()} đ</span>
                             </div>
@@ -133,7 +133,7 @@ const Cart = () => {
                                 <span className="text-green-700">
                                     {shippingFee === 0 ? 'Free' : `${shippingFee} ₫`}
                                 </span>
-                            </div>
+                            </div> */}
                             <hr />
                             <div className="flex justify-between font-bold text-lg">
                                 <span>Tổng tiền</span>

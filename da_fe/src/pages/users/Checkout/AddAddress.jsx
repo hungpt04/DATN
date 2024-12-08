@@ -35,8 +35,12 @@ const AddAddress = () => {
 
     const loadProvinces = async () => {
         try {
-            const response = await axios.get('https://provinces.open-api.vn/api/p/');
-            setProvinces(response.data);
+            const response = await axios.get('https://online-gateway.ghn.vn/shiip/public-api/master-data/province', {
+                headers: {
+                    Token: '04ae91c9-b3a5-11ef-b074-aece61c107bd',
+                },
+            });
+            setProvinces(response.data.data); // Giả sử dữ liệu tỉnh nằm trong response.data.data
         } catch (error) {
             console.error('Failed to fetch provinces', error);
         }
@@ -44,8 +48,15 @@ const AddAddress = () => {
 
     const loadDistricts = async (provinceCode) => {
         try {
-            const response = await axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
-            setDistricts(response.data.districts);
+            const response = await axios.get(
+                `https://online-gateway.ghn.vn/shiip/public-api/master-data/district?province_id=${provinceCode}`,
+                {
+                    headers: {
+                        Token: '04ae91c9-b3a5-11ef-b074-aece61c107bd',
+                    },
+                },
+            );
+            setDistricts(response.data.data); // Giả sử dữ liệu quận/huyện nằm trong response.data.data
         } catch (error) {
             console.error('Failed to fetch districts', error);
         }
@@ -53,8 +64,15 @@ const AddAddress = () => {
 
     const loadWards = async (districtCode) => {
         try {
-            const response = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
-            setWards(response.data.wards);
+            const response = await axios.get(
+                `https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=${districtCode}`,
+                {
+                    headers: {
+                        Token: '04ae91c9-b3a5-11ef-b074-aece61c107bd',
+                    },
+                },
+            );
+            setWards(response.data.data); // Giả sử dữ liệu xã/phường nằm trong response.data.data
         } catch (error) {
             console.error('Failed to fetch wards', error);
         }
@@ -70,10 +88,19 @@ const AddAddress = () => {
     };
 
     const handleAddAddress = async (values) => {
+        console.log('Form Values:', values);
+        console.log('Provinces:', provinces);
+        console.log('Districts:', districts);
+        console.log('Wards:', wards);
+
         // Kiểm tra xem các giá trị có tồn tại không
-        const selectedProvince = provinces.find((province) => province.code === parseInt(values.province));
-        const selectedDistrict = districts.find((district) => district.code === parseInt(values.district));
-        const selectedWard = wards.find((ward) => ward.code === parseInt(values.ward));
+        const selectedProvince = provinces.find((province) => province.ProvinceID === parseInt(values.province));
+        const selectedDistrict = districts.find((district) => district.DistrictID === parseInt(values.district));
+        const selectedWard = wards.find((ward) => ward.WardCode === values.ward);
+
+        console.log('Selected Province:', selectedProvince);
+        console.log('Selected District:', selectedDistrict);
+        console.log('Selected Ward:', selectedWard);
 
         if (!selectedProvince || !selectedDistrict || !selectedWard) {
             swal('Lỗi!', 'Vui lòng chọn đầy đủ thông tin địa chỉ', 'error');
@@ -84,19 +111,38 @@ const AddAddress = () => {
             ten: values.addressName,
             taiKhoan: { id: 1 },
             sdt: values.mobile,
-            idTinh: selectedProvince.name,
-            idHuyen: selectedDistrict.name,
-            idXa: selectedWard.name,
+            idTinh: selectedProvince.ProvinceName,
+            idHuyen: selectedDistrict.DistrictName,
+            idXa: selectedWard.WardName,
             diaChiCuThe: values.addressDetail,
         };
 
+        console.log('New Address:', newAddress);
+
         try {
-            await axios.post('http://localhost:8080/api/dia-chi', newAddress);
+            const response = await axios.post('http://localhost:8080/api/dia-chi', newAddress);
+            console.log('Response:', response);
+
             swal('Thành công!', 'Địa chỉ đã được lưu!', 'success');
             loadAddress(1); // Tải lại danh sách địa chỉ
             reset();
         } catch (error) {
             console.error('Có lỗi xảy ra khi lưu địa chỉ!', error.response?.data || error.message);
+
+            // Log chi tiết lỗi
+            if (error.response) {
+                // Lỗi từ phía server
+                console.error('Server Error Data:', error.response.data);
+                console.error('Server Error Status:', error.response.status);
+                console.error('Server Error Headers:', error.response.headers);
+            } else if (error.request) {
+                // Lỗi không nhận được response
+                console.error('Request Error:', error.request);
+            } else {
+                // Lỗi khác
+                console.error('Error Message:', error.message);
+            }
+
             swal('Thất bại!', 'Có lỗi xảy ra khi lưu địa chỉ!', 'error');
         }
     };
@@ -167,8 +213,8 @@ const AddAddress = () => {
                                         >
                                             <option value="">Chọn tỉnh/thành phố</option>
                                             {provinces.map((province) => (
-                                                <option key={province.code} value={province.code}>
-                                                    {province.name}
+                                                <option key={province.ProvinceID} value={province.ProvinceID}>
+                                                    {province.ProvinceName}
                                                 </option>
                                             ))}
                                         </select>
@@ -185,8 +231,8 @@ const AddAddress = () => {
                                         >
                                             <option value="">Chọn quận/huyện</option>
                                             {districts.map((district) => (
-                                                <option key={district.code} value={district.code}>
-                                                    {district.name}
+                                                <option key={district.DistrictID} value={district.DistrictID}>
+                                                    {district.DistrictName}
                                                 </option>
                                             ))}
                                         </select>
@@ -202,8 +248,8 @@ const AddAddress = () => {
                                         >
                                             <option value="">Chọn xã/phường</option>
                                             {wards.map((ward) => (
-                                                <option key={ward.code} value={ward.code}>
-                                                    {ward.name}
+                                                <option key={ward.WardCode} value={ward.WardCode}>
+                                                    {ward.WardName}
                                                 </option>
                                             ))}
                                         </select>

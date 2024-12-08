@@ -1,6 +1,7 @@
 package com.example.da_be.service;
 
 import com.example.da_be.entity.DiaChi;
+import com.example.da_be.entity.DiemCanBang;
 import com.example.da_be.repository.DiaChiRepository;
 import com.example.da_be.repository.KhachHangRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -26,6 +27,10 @@ public class DiaChiService {
     public DiaChi getDiaChiById(Long id) {
         return diaChiRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Address not found with ID: " + id));
+    }
+
+    public DiaChi saveOrUpdateDiaChii(DiaChi diaChi) {
+        return this.diaChiRepository.save(diaChi);
     }
 
     public DiaChi saveOrUpdateDiaChi(DiaChi diaChi) {

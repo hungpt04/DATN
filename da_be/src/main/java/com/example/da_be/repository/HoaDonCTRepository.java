@@ -1,5 +1,6 @@
 package com.example.da_be.repository;
 
+import com.example.da_be.entity.HoaDon;
 import com.example.da_be.entity.HoaDonCT;
 import com.example.da_be.dto.HoaDonCTWithImageDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +21,6 @@ public interface HoaDonCTRepository extends JpaRepository<HoaDonCT, Integer> {
     List<HoaDonCTWithImageDTO> findHoaDonCTWithImages(@Param("hoaDonId") Long hoaDonId);
 
     List<HoaDonCT> findByHoaDonId(Long hoaDonId);
+
+    List<HoaDonCT> findByHoaDon(HoaDon hoaDon);
 }

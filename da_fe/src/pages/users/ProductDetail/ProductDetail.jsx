@@ -6,6 +6,9 @@ import axios from 'axios';
 import classNames from 'classnames';
 import { useParams } from 'react-router-dom';
 import { CartContext } from '../Cart/CartContext';
+import { Button, IconButton } from '@mui/material';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 
 export default function ProductDetail() {
     const [product, setProduct] = useState(null);
@@ -15,7 +18,40 @@ export default function ProductDetail() {
     const [selectedWeight, setSelectedWeight] = useState(null);
     const { setCartItemCount } = useContext(CartContext);
 
+    const [currentPrice, setCurrentPrice] = useState(null);
+
+    const [quantity, setQuantity] = useState(1);
+
     const { id } = useParams();
+
+    useEffect(() => {
+        if (product && selectedColor && selectedWeight) {
+            const selectedVariant = product.variants.find(
+                (v) => v.mauSacTen === selectedColor && v.trongLuongTen === selectedWeight,
+            );
+
+            if (selectedVariant) {
+                setCurrentPrice(selectedVariant.donGia);
+                // Reset số lượng về 1 khi chọn biến thể mới
+                setQuantity(1);
+            }
+        }
+    }, [selectedColor, selectedWeight, product]);
+
+    const handleIncrease = () => {
+        const selectedVariant = product.variants.find(
+            (v) => v.mauSacTen === selectedColor && v.trongLuongTen === selectedWeight,
+        );
+        if (selectedVariant && quantity < selectedVariant.soLuong) {
+            setQuantity(quantity + 1);
+        }
+    };
+
+    const handleDecrease = () => {
+        if (quantity > 1) {
+            setQuantity(quantity - 1);
+        }
+    };
 
     const loadProductsWithImages = async (sanPhamId) => {
         try {
@@ -43,6 +79,11 @@ export default function ProductDetail() {
             setProduct(mergedProduct);
             setSelectedColor(productData.mauSacTen);
             setSelectedWeight(productData.trongLuongTen);
+            // Đặt giá ban đầu là giá của biến thể đầu tiên
+            const initialVariant = sameNameProducts.find(
+                (p) => p.mauSacTen === productData.mauSacTen && p.trongLuongTen === productData.trongLuongTen,
+            );
+            setCurrentPrice(initialVariant ? initialVariant.donGia : productData.donGia);
             setLoading(false);
         } catch (error) {
             console.error('Failed to fetch Products with images', error);
@@ -62,6 +103,11 @@ export default function ProductDetail() {
             return;
         }
 
+        if (quantity > selectedVariant.soLuong) {
+            swal('Thất bại!', 'Số lượng vượt quá số lượng trong kho!', 'error');
+            return;
+        }
+
         const newCart = {
             sanPhamCT: {
                 id: selectedVariant.id,
@@ -69,10 +115,10 @@ export default function ProductDetail() {
             taiKhoan: {
                 id: values.taiKhoanId,
             },
-            soLuong: values.soLuong,
+            soLuong: quantity,
             trangThai: values.trangThai === '1' ? 1 : 0,
-            ngayTao: values.ngayTao,
-            ngaySua: values.ngaySua,
+            ngayTao: new Date(),
+            ngaySua: new Date(),
         };
 
         try {
@@ -129,15 +175,20 @@ export default function ProductDetail() {
                             </h1>
                             <div className="flex justify-between text-sm">
                                 <p>
-                                    Mã: <span className="text-[#2f19ae]">{product.sanPhamMa}</span>
-                                </p>
-                                <p>
                                     Thương hiệu: <span className="text-[#2f19ae]">{product.thuongHieuTen}</span>
                                 </p>
                                 <p>
                                     Tình trạng:{' '}
                                     <span className="text-[#2f19ae]">
                                         {product.soLuong > 0 ? 'Còn hàng' : 'Hết hàng'}
+                                    </span>
+                                </p>
+                                <p>
+                                    Số lượng trong kho:{' '}
+                                    <span className="text-[#2f19ae]">
+                                        {product.variants.find(
+                                            (v) => v.mauSacTen === selectedColor && v.trongLuongTen === selectedWeight,
+                                        )?.soLuong || 0}
                                     </span>
                                 </p>
                             </div>
@@ -147,9 +198,9 @@ export default function ProductDetail() {
                         <div className="mt-4 lg:row-span-3 lg:mt-0">
                             <h2 className="sr-only">Product information</h2>
                             <div className="flex space-x-5 items-center text-lg lg:text-xl text-gray-900 mt-6">
-                                <p className="font-semibold text-red-600">{product.donGia.toLocaleString()} ₫</p>
-                                <p className="opacity-50 line-through ">Giá cũ: 3,972,000 ₫</p>
-                                <p className="text-green-600 font-semibold">7% Off</p>
+                                <p className="font-semibold text-red-600">
+                                    {currentPrice ? currentPrice.toLocaleString() : product.donGia.toLocaleString()} ₫
+                                </p>
                             </div>
 
                             {/* Reviews */}
@@ -189,14 +240,57 @@ export default function ProductDetail() {
                                             onChange={setSelectedColor}
                                             className="flex items-center space-x-3"
                                         >
-                                            {product.colors.map((color) => (
-                                                <Radio key={color} value={color} className="cursor-pointer">
-                                                    <span
-                                                        className="h-8 w-8 rounded-full border border-black border-opacity-10"
-                                                        style={{ backgroundColor: color, display: 'block' }}
-                                                    />
-                                                </Radio>
-                                            ))}
+                                            {product.colors.map((color) => {
+                                                const variant = product.variants.find(
+                                                    (v) => v.mauSacTen === color && v.trongLuongTen === selectedWeight,
+                                                );
+                                                const inStock = variant && variant.soLuong > 0;
+
+                                                return (
+                                                    <Radio
+                                                        key={color}
+                                                        value={color}
+                                                        disabled={!inStock}
+                                                        className={classNames(
+                                                            inStock
+                                                                ? 'cursor-pointer'
+                                                                : 'cursor-not-allowed opacity-50',
+                                                            'group relative flex items-center justify-center rounded-full',
+                                                        )}
+                                                    >
+                                                        <span
+                                                            className={classNames(
+                                                                'h-8 w-8 rounded-full border',
+                                                                inStock
+                                                                    ? 'border-black border-opacity-20 group-data-[checked]:border-indigo-500 group-data-[checked]:border-4'
+                                                                    : 'border-gray-200 line-through',
+                                                            )}
+                                                            style={{
+                                                                backgroundColor: color,
+                                                                display: 'block',
+                                                                position: 'relative',
+                                                            }}
+                                                        >
+                                                            {!inStock && (
+                                                                <svg
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 100 100"
+                                                                    preserveAspectRatio="none"
+                                                                    className="absolute inset-0 h-full w-full stroke-2 text-gray-400"
+                                                                >
+                                                                    <line
+                                                                        x1={0}
+                                                                        x2={100}
+                                                                        y1={100}
+                                                                        y2={0}
+                                                                        vectorEffect="non-scaling-stroke"
+                                                                    />
+                                                                </svg>
+                                                            )}
+                                                        </span>
+                                                    </Radio>
+                                                );
+                                            })}
                                         </RadioGroup>
                                     </fieldset>
                                 </div>
@@ -265,13 +359,28 @@ export default function ProductDetail() {
                                     </fieldset>
                                 </div>
 
+                                <div className="flex items-center space-x-2 mt-5">
+                                    <IconButton sx={{ color: '#2f19ae' }} aria-label="remove" onClick={handleDecrease}>
+                                        <RemoveCircleOutlineIcon />
+                                    </IconButton>
+                                    <input
+                                        className="py-1 px-1 border rounded-sm w-16"
+                                        value={quantity}
+                                        onChange={(e) => setQuantity(Number(e.target.value))}
+                                        min="1"
+                                    />
+                                    <IconButton sx={{ color: '#2f19ae' }} aria-label="add" onClick={handleIncrease}>
+                                        <AddCircleOutlineIcon />
+                                    </IconButton>
+                                </div>
+
                                 <button
                                     type="button"
                                     className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                     onClick={() => {
                                         handleAddCart({
                                             taiKhoanId: 1,
-                                            soLuong: 1,
+                                            soLuong: quantity,
                                             trangThai: 1,
                                         });
                                     }}

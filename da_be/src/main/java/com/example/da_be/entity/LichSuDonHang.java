@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -32,10 +33,10 @@ public class LichSuDonHang {
     private String moTa;
 
     @Column(name = "NgayTao")
-    private Date ngayTao;
+    private LocalDateTime ngayTao;
 
     @Column(name = "NgaySua")
-    private Date ngaySua;
+    private LocalDateTime ngaySua;
 
     @Column(name = "TrangThai")
     private Integer trangThai;

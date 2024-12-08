@@ -4,6 +4,7 @@ import com.example.da_be.entity.HinhAnh;
 import com.example.da_be.service.HinhAnhService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -44,5 +45,11 @@ public class HinhAnhController {
     public HinhAnh updateHinhAnh(@PathVariable int id, @RequestBody HinhAnh hinhAnh) {
         hinhAnh.setId(id);  // Đảm bảo ID trong body và path là giống nhau
         return hinhAnhService.saveOrUpdateHinhAnh(hinhAnh);
+    }
+
+    // Tải lên hình ảnh
+    @PostMapping("/upload-images")
+    public List<HinhAnh> uploadImages(@RequestParam("images") MultipartFile[] files, @RequestParam("idSanPhamCT") int idSanPhamCT) {
+        return hinhAnhService.uploadImages(files, idSanPhamCT);
     }
 }

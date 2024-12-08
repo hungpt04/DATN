@@ -31,6 +31,7 @@ import Analytic from '../pages/admin/Analytics/Analytics.jsx';
 import AddUser from '../pages/admin/User/Add.js';
 import EditUser from '../pages/admin/User/Edit.js';
 import AddCustomer from '../pages/admin/Customer/Add.js';
+
 import DiscountVoucher from "../pages/admin/Voucher/PhieuGiamGia/DiscountVoucher";
 import CreateVoucher from "../pages/admin/Voucher/PhieuGiamGia/CreateVoucher";
 import VoucherDetail from "../pages/admin/Voucher/PhieuGiamGia/VoucherDetail";
@@ -39,10 +40,21 @@ import CreateSale from "../pages/admin/Voucher/DotGiamGia/CreateSale";
 import SaleDetail from "../pages/admin/Voucher/DotGiamGia/SaleDetail";
 import EditCustomer from '../pages/admin/Customer/Edit.js';
 
+import DiscountVoucher from '../pages/admin/Voucher/PhieuGiamGia/DiscountVoucher';
+import CreateVoucher from '../pages/admin/Voucher/PhieuGiamGia/CreateVoucher';
+import VoucherDetail from '../pages/admin/Voucher/PhieuGiamGia/VoucherDetail';
+import Sale from '../pages/admin/Voucher/DotGiamGia/Sale';
+import CreateSale from '../pages/admin/Voucher/DotGiamGia/CreateSale';
+import SaleDetail from '../pages/admin/Voucher/DotGiamGia/SaleDetail';
+import ProductVariants from '../pages/admin/Product/ProductVariants.js';
+import PaymentSuccessPage from '../pages/users/Checkout/PaymentSuccessPage.js';
+
+
 // Public routes
 const publicRoutes = [
     { path: '/', component: Home },
     { path: '/admin', component: Admin, layout: AdminLayout },
+    { path: '/payment-success', component: PaymentSuccessPage },
     { path: '/admin/thong-ke', component: Analytic, layout: AdminLayout },
     { path: '/admin/quan-ly-don-hang', component: Order, layout: AdminLayout },
     { path: '/admin/tra-hang', component: SearchOrder, layout: AdminLayout },
@@ -57,6 +69,11 @@ const publicRoutes = [
     { path: '/admin/quan-ly-san-pham/do-cung', component: Stiff, layout: AdminLayout },
     { path: '/admin/quan-ly-san-pham/san-pham-ct', component: ProductAdmin, layout: AdminLayout },
     { path: '/admin/quan-ly-san-pham/san-pham-ct/add', component: AddProduct, layout: AdminLayout },
+    {
+        path: '/admin/quan-ly-san-pham/san-pham-ct/:productId/variants',
+        component: ProductVariants,
+        layout: AdminLayout,
+    },
     { path: '/admin/tai-khoan/nhan-vien', component: User, layout: AdminLayout },
     { path: '/admin/tai-khoan/nhan-vien/add', component: AddUser, layout: AdminLayout },
     { path: '/admin/tai-khoan/nhan-vien/edit/:id', component: EditUser, layout: AdminLayout },

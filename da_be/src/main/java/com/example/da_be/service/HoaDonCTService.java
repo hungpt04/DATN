@@ -55,8 +55,7 @@ public class HoaDonCTService {
             sanPhamCTRepository.save(sanPhamCT);
         }
 
-        // Xóa tất cả hóa đơn chi tiết
-        hoaDonCTRepository.deleteAll(hoaDonCTList);
+
     }
 
     // Phương thức cập nhật trạng thái hóa đơn

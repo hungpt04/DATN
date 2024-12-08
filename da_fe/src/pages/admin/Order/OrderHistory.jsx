@@ -134,6 +134,11 @@ const OrderHistory = () => {
     };
 
     const getButtonLabel = (status) => {
+        // Kiểm tra xem hóa đơn đã được thanh toán chưa
+        const isPaid = paymentHistory.some(
+            (payment) => payment.hoaDon.id === currentOrder.id && payment.trangThai === 1,
+        );
+
         switch (status) {
             case 1:
                 return 'Xác nhận đơn hàng';
@@ -142,7 +147,8 @@ const OrderHistory = () => {
             case 3:
                 return 'Xác nhận lấy hàng';
             case 4:
-                return 'Thanh toán';
+                // Nếu đã thanh toán, chuyển button thành "Hoàn thành"
+                return isPaid ? 'Hoàn thành' : 'Thanh toán';
             case 5:
                 return 'Hoàn thành';
             case 6:
@@ -380,6 +386,11 @@ const OrderHistory = () => {
     }, [currentOrder]);
 
     const handleButtonClick = async () => {
+        // Kiểm tra xem hóa đơn đã được thanh toán chưa
+        const isPaid = paymentHistory.some(
+            (payment) => payment.hoaDon.id === currentOrder.id && payment.trangThai === 1,
+        );
+
         switch (currentOrder.trangThai) {
             case 1:
                 await handleConfirmOrder();
@@ -391,7 +402,12 @@ const OrderHistory = () => {
                 await handleConfirmDelivery();
                 break;
             case 4:
-                handleOpenModal();
+                // Nếu đã thanh toán, chuyển sang hoàn thành
+                if (isPaid) {
+                    await handleConfirmComplete();
+                } else {
+                    handleOpenModal();
+                }
                 break;
             case 5:
                 await handleConfirmComplete();
@@ -562,7 +578,7 @@ const OrderHistory = () => {
                                                 <div className="text-gray-800 font-semibold">
                                                     {detail.hoaDonCT.sanPhamCT.sanPham.ten}
                                                 </div>
-                                                <div className="text-gray-400 line-through">
+                                                <div className="text-gray-400 ">
                                                     {detail.hoaDonCT.giaBan.toLocaleString()} VND
                                                 </div>
                                                 <div className="text-gray-600">
@@ -743,7 +759,7 @@ const OrderHistory = () => {
                             Giảm giá: <span className="font-bold"> 0 VND</span>
                         </p>
                         <div className="flex items-center justify-end">
-                            <p className="text-gray-700 font-medium mr-2 ">Ph í vận chuyển:</p>
+                            <p className="text-gray-700 font-medium mr-2 ">Phí vận chuyển:</p>
                             <input
                                 type="text"
                                 value={shippingFee}
