@@ -386,11 +386,11 @@ function Product() {
                                         className={`px-2 py-1 rounded-full text-xs font-semibold
                         ${
                             product.trangThai
-                                ? 'text-green-600 bg-green-100 border border-green-600'
-                                : 'text-red-600 bg-red-100 border border-red-600'
+                                ? 'text-red-600 bg-red-100 border border-red-600'
+                                :  'text-green-600 bg-green-100 border border-green-600'
                         }`}
                                     >
-                                        {product.trangThai ? 'Active' : 'Inactive'}
+                                        {product.trangThai ? 'Inactive' : 'Active'}
                                     </span>
                                 </td>
                                 <td className="py-4 px-6">

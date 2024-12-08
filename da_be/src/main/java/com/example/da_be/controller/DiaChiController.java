@@ -66,7 +66,7 @@ public class DiaChiController {
 
     // Cập nhật thông tin địa chỉ
    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateDiaChi(@PathVariable Long id, @RequestBody DiaChi diaChi) {
+    public ResponseEntity<?> updateDiaChiByHoang(@PathVariable Long id, @RequestBody DiaChi diaChi) {
         try {
             // Ensure the ID in the path is set in the body
             diaChi.setId(id);

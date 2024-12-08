@@ -31,7 +31,6 @@ import Analytic from '../pages/admin/Analytics/Analytics.jsx';
 import AddUser from '../pages/admin/User/Add.js';
 import EditUser from '../pages/admin/User/Edit.js';
 import AddCustomer from '../pages/admin/Customer/Add.js';
-
 import DiscountVoucher from "../pages/admin/Voucher/PhieuGiamGia/DiscountVoucher";
 import CreateVoucher from "../pages/admin/Voucher/PhieuGiamGia/CreateVoucher";
 import VoucherDetail from "../pages/admin/Voucher/PhieuGiamGia/VoucherDetail";
@@ -39,13 +38,6 @@ import Sale from "../pages/admin/Voucher/DotGiamGia/Sale";
 import CreateSale from "../pages/admin/Voucher/DotGiamGia/CreateSale";
 import SaleDetail from "../pages/admin/Voucher/DotGiamGia/SaleDetail";
 import EditCustomer from '../pages/admin/Customer/Edit.js';
-
-import DiscountVoucher from '../pages/admin/Voucher/PhieuGiamGia/DiscountVoucher';
-import CreateVoucher from '../pages/admin/Voucher/PhieuGiamGia/CreateVoucher';
-import VoucherDetail from '../pages/admin/Voucher/PhieuGiamGia/VoucherDetail';
-import Sale from '../pages/admin/Voucher/DotGiamGia/Sale';
-import CreateSale from '../pages/admin/Voucher/DotGiamGia/CreateSale';
-import SaleDetail from '../pages/admin/Voucher/DotGiamGia/SaleDetail';
 import ProductVariants from '../pages/admin/Product/ProductVariants.js';
 import PaymentSuccessPage from '../pages/users/Checkout/PaymentSuccessPage.js';
 
