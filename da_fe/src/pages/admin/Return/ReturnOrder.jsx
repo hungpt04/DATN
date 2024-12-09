@@ -12,6 +12,7 @@ function ReturnOrder() {
     const [bills, setBills] = useState([]);
     const [returnItems, setReturnItems] = useState([]); // Danh sách sản phẩm trả
     const navigate = useNavigate();
+    const [usedVoucher, setUsedVoucher] = useState(null);
 
     const loadBillDetailsWithImages = async (hoaDonId) => {
         try {
@@ -26,8 +27,20 @@ function ReturnOrder() {
         try {
             const response = await axios.get(`http://localhost:8080/api/hoa-don/${hoaDonId}`);
             setBills(response.data);
+
+            console.log('Hóa đơn: ', response.data);
+            console.log('Vao chờ: ', response.data.idVoucher);
+
+            // Nếu có voucher ID, load thông tin voucher
+            if (response.data.idVoucher) {
+                const voucherResponse = await axios.get(
+                    `http://localhost:8080/api/voucher/by-id/${response.data.idVoucher}`,
+                );
+                console.log('Voucher Response:', voucherResponse.data);
+                setUsedVoucher(voucherResponse.data);
+            }
         } catch (error) {
-            console.error('Failed to fetch BillDetails with images', error);
+            console.error('Failed to fetch Bill Details', error);
         }
     };
 
@@ -133,6 +146,55 @@ function ReturnOrder() {
         } else {
             swal('Thất bại!', 'Có lỗi xảy ra khi trả hàng!', 'error');
         }
+    };
+
+    useEffect(() => {
+        console.log('voucher: ', usedVoucher);
+    }, []);
+
+    const calculateDiscountAmount = () => {
+        if (!usedVoucher) return 0;
+
+        console.log('Used Voucher:', usedVoucher);
+        console.log('Return Items:', returnItems);
+
+        // Tính tổng tiền gốc của các sản phẩm trả
+        const totalReturnPrice = returnItems.reduce(
+            (total, item) => total + item.hoaDonCT.soLuong * item.hoaDonCT.giaBan,
+            0,
+        );
+
+        console.log('Total Return Price:', totalReturnPrice);
+
+        // Loại bỏ điều kiện kiểm tra dieuKienNhoNhat
+        // Kiểm tra kiểu giảm giá
+        if (usedVoucher.kieuGiaTri === 0) {
+            // Giảm theo %
+            const discountPercentage = usedVoucher.giaTri / 100;
+            const discountAmount = totalReturnPrice * discountPercentage;
+            const finalDiscount = Math.min(discountAmount, usedVoucher.giaTriMax);
+
+            console.log('Discount Percentage:', discountPercentage);
+            console.log('Discount Amount:', discountAmount);
+            console.log('Final Discount:', finalDiscount);
+
+            return finalDiscount;
+        } else if (usedVoucher.kieuGiaTri === 1) {
+            // Giảm cố định
+            return Math.min(usedVoucher.giaTri, totalReturnPrice);
+        }
+
+        return 0;
+    };
+
+    const calculateTotalReturnPrice = () => {
+        return returnItems.reduce((total, item) => total + item.hoaDonCT.soLuong * item.hoaDonCT.giaBan, 0);
+    };
+
+    const calculateRefundAmount = () => {
+        const totalReturnPrice = calculateTotalReturnPrice();
+        const discountAmount = calculateDiscountAmount();
+        return totalReturnPrice - discountAmount;
     };
 
     return (
@@ -253,32 +315,17 @@ function ReturnOrder() {
                     <div className="mb-2">
                         <span>Tổng tiền</span>
                         <span className="float-right">
-                            {(() => {
-                                const total = uniqueDetails.reduce(
-                                    (acc, detail) => acc + detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan,
-                                    0,
-                                );
-                                return total.toLocaleString();
-                            })()}{' '}
-                            đ
+                            {returnItems.length > 0 ? calculateTotalReturnPrice().toLocaleString() : '0'} đ
                         </span>
                     </div>
                     <div className="mb-2">
                         <span>Giảm giá</span>
-                        <span className="float-right text-red-600">13.750 ₫</span>
+                        <span className="float-right text-red-600">{calculateDiscountAmount().toLocaleString()} ₫</span>
                     </div>
                     <div className="mb-2">
                         <div className="mb-2">
                             <span>Số tiền hoàn trả</span>
-                            <span className="float-right">
-                                {(
-                                    returnItems.reduce(
-                                        (total, item) => total + item.hoaDonCT.soLuong * item.hoaDonCT.giaBan,
-                                        0,
-                                    ) - 13750
-                                ).toLocaleString()}{' '}
-                                ₫
-                            </span>
+                            <span className="float-right">{calculateRefundAmount().toLocaleString()} ₫</span>
                         </div>
                     </div>
                     <button className="w-full bg-[#2f19ae] text-white py-2 rounded" onClick={handleReturnOrder}>

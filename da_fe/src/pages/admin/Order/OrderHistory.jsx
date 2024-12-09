@@ -52,7 +52,6 @@ const OrderHistory = () => {
         const loadPaymentHistory = async (hoaDonId) => {
             try {
                 const response = await axios.get(`http://localhost:8080/api/thanh-toan/hoa-don/${hoaDonId}`);
-                console.log('Payment history response:', response.data); // Log dữ liệu nhận được
                 // Kiểm tra xem response.data có phải là mảng hay không
                 if (Array.isArray(response.data)) {
                     setPaymentHistory(response.data);
