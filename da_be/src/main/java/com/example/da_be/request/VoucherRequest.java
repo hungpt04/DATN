@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -30,18 +31,33 @@ public class VoucherRequest {
 
     private Integer dieuKienNhoNhat;
 
-    private LocalDate ngayBatDau;
+//    private LocalDate ngayBatDau;
+//
+//    private LocalDate ngayKetThuc;
 
-    private LocalDate ngayKetThuc;
+    private LocalDateTime ngayBatDau;
+
+    private LocalDateTime ngayKetThuc;
 
     private Integer trangThai;
 
     private List<Integer> listIdCustomer;
 
     // Phương thức tiện ích để thiết lập trạng thái dựa trên ngày hiện tại
-    public Integer setDataStatus(LocalDate startDate, LocalDate endDate, Integer status) {
-        LocalDate currentDate = LocalDate.now();
-        if (!currentDate.isBefore(startDate) && currentDate.isBefore(endDate.plusDays(1))) {
+//    public Integer setDataStatus(LocalDate startDate, LocalDate endDate, Integer status) {
+//        LocalDate currentDate = LocalDate.now();
+//        if (!currentDate.isBefore(startDate) && currentDate.isBefore(endDate.plusDays(1))) {
+//            return 1;  // Đang diễn ra
+//        } else {
+//            return status;  // Trạng thái mặc định hoặc đã hết hạn
+//        }
+//    }
+
+    public Integer setDataStatus(LocalDateTime startDate, LocalDateTime endDate, Integer status) {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+
+        // Kiểm tra xem thời gian hiện tại có nằm trong khoảng thời gian diễn ra không
+        if (!currentDateTime.isBefore(startDate) && currentDateTime.isBefore(endDate.plusMinutes(1))) {
             return 1;  // Đang diễn ra
         } else {
             return status;  // Trạng thái mặc định hoặc đã hết hạn

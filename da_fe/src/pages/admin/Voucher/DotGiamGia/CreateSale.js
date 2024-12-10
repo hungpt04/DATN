@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import swal from 'sweetalert';
 import ReactPaginate from 'react-paginate';
+import dayjs from 'dayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 const CreateSale = () => {
     const navigate = useNavigate();
@@ -120,8 +124,8 @@ const CreateSale = () => {
         ten: '',
         giaTri: '',
         loai: true,
-        tgBatDau: '',
-        tgKetThuc: '',
+        tgBatDau: null,
+        tgKetThuc: null,
         trangThai: 0,
         idProductDetail: selectedRows
     })
@@ -169,7 +173,6 @@ const CreateSale = () => {
         setSelectedRowsProduct(selectedIds)
         setSelectedRows(selectedIds)
         setSelectAllProduct(event.target.checked)
-        // getProductDetailById(selectedIds)
         getProductDetailById(fillterSanPhamChiTiet, selectedIds);
         console.log(selectedIds)
     }
@@ -224,8 +227,8 @@ const CreateSale = () => {
         const errors = {
             ten: '',
             giaTri: '',
-            tgBatDau: '',
-            tgKetThuc: '',
+            tgBatDau: null,
+            tgKetThuc: null,
         }
 
         const minBirthYear = 1900
@@ -252,7 +255,7 @@ const CreateSale = () => {
 
         const minDate = new Date(minBirthYear, 0, 1); // Ngày bắt đầu từ 01-01-minBirthYear
 
-        if (addKhuyenMai.tgBatDau === '') {
+        if (addKhuyenMai.tgBatDau === null) {
             errors.tgBatDau = 'Vui lòng nhập thời gian bắt đầu'
         } else {
             const tgBatDau = new Date(addKhuyenMai.tgBatDau);
@@ -262,7 +265,7 @@ const CreateSale = () => {
         }
 
 
-        if (addKhuyenMai.tgKetThuc === '') {
+        if (addKhuyenMai.tgKetThuc === null) {
             errors.tgKetThuc = 'Vui lòng nhập thời gian kết thúc'
         } else {
             const tgBatDau = new Date(addKhuyenMai.tgBatDau)
@@ -488,37 +491,54 @@ const CreateSale = () => {
                         </div>
 
                         <div>
-                            <label className="block text-gray-600 mb-1">Ngày bắt đầu</label>
-                            <input
-                                type="date"
-                                className="w-full border border-gray-300 rounded-md p-2"
-                                
-                                onChange={(e) => {
-                                    setAddKhuyenMai({ 
-                                        ...addKhuyenMai, 
-                                        tgBatDau: e.target.value 
-                                    })
-                                    setErrorTgBatDau('')
-                                }}
-
-                            />
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <label className="block text-gray-600 mb-1">Từ ngày</label>
+                                <DateTimePicker
+                                    format={'DD-MM-YYYY HH:mm:ss'}
+                                    slotProps={{
+                                        textField: {
+                                            size: 'small',
+                                            className: 'w-[608px]'
+                                        },
+                                        actionBar: {
+                                            actions: ['clear', 'today']
+                                        }
+                                    }}
+                                    onChange={(e) => {
+                                        setAddKhuyenMai({
+                                            ...addKhuyenMai,
+                                            tgBatDau: dayjs(e).format('YYYY-MM-DDTHH:mm:ss')
+                                        })
+                                        setErrorTgBatDau('')
+                                    }}
+                                />
+                            </LocalizationProvider>
                             <span className='text-red-600'>{errorTgBatDau}</span>
                         </div>
 
-                        <div>
-                            <label className="block text-gray-600 mb-1">Ngày kết thúc</label>
-                            <input
-                                type="date"
-                                className="w-full border border-gray-300 rounded-md p-2"
-                                
-                                onChange={(e) => {
-                                    setAddKhuyenMai({ 
-                                        ...addKhuyenMai, 
-                                        tgKetThuc: e.target.value 
-                                    })
-                                    setErrorTgKetThuc('')
-                                } }
-                            />
+                        <div className='mt-4'>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <label className="block text-gray-600 mb-1">Đến ngày</label>
+                                <DateTimePicker
+                                    format={'DD-MM-YYYY HH:mm:ss'}
+                                    slotProps={{
+                                        textField: {
+                                            size: 'small',
+                                            className: 'w-[608px]'
+                                        },
+                                        actionBar: {
+                                            actions: ['clear', 'today']
+                                        }
+                                    }}
+                                    onChange={(e) => {
+                                        setAddKhuyenMai({
+                                            ...addKhuyenMai,
+                                            tgKetThuc: dayjs(e).format('YYYY-MM-DDTHH:mm:ss')
+                                        })
+                                        setErrorTgKetThuc('')
+                                    }}
+                                />
+                            </LocalizationProvider>
                             <span className='text-red-600'>{errorTgKetThuc}</span>
                         </div>
 
@@ -531,7 +551,6 @@ const CreateSale = () => {
                             </button>
                         )}
                     </div>
-
 
                     {/* Product Table Section */}
                     <div className="w-1/2 pr-4">

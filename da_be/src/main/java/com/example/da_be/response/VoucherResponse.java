@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -26,9 +27,13 @@ public class VoucherResponse {
 
     private Integer soLuong;
 
-    private LocalDate ngayBatDau;
+//    private LocalDate ngayBatDau;
+//
+//    private LocalDate ngayKetThuc;
 
-    private LocalDate ngayKetThuc;
+    private LocalDateTime ngayBatDau;
+
+    private LocalDateTime ngayKetThuc;
 
     private Integer trangThai;
 

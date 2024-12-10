@@ -6,6 +6,10 @@ import swal from 'sweetalert';
 import { AiOutlineDollar, AiOutlinePercentage } from "react-icons/ai";
 import ReactPaginate from 'react-paginate';
 import numeral from 'numeral';
+import dayjs from 'dayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 const CreateVoucher = () => {
     const initialVoucher = {
@@ -17,8 +21,8 @@ const CreateVoucher = () => {
         kieuGiaTri: 0,
         dieuKienNhoNhat: '',
         soLuong: '',
-        ngayBatDau: '',
-        ngayKetThuc: '',
+        ngayBatDau: null,
+        ngayKetThuc: null,
         trangThai: 0,
         listIdCustomer: []
     }
@@ -533,35 +537,54 @@ const CreateVoucher = () => {
                             </div>
 
                             <div>
-                                <label className="block text-gray-600 mb-1">Từ ngày</label>
-                                <input
-                                    type="date"
-                                    className="w-full border border-gray-300 rounded-md p-2"
-                                    onChange={(e) => {
-                                        setVoucherAdd({
-                                            ...voucherAdd,
-                                            ngayBatDau: e.target.value
-                                        })
-                                        setErrorNgayBatDau('')
-                                    }}
-                                />
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DateTimePicker
+                                        format={'DD-MM-YYYY HH:mm:ss'}
+                                        label="Từ ngày"
+                                        slotProps={{
+                                            textField: {
+                                                size: 'small',
+                                                className: 'w-[200px]'
+                                            },
+                                            actionBar: {
+                                                actions: ['clear', 'today']
+                                            }
+                                        }}
+                                        onChange={(e) => {
+                                            setVoucherAdd({
+                                                ...voucherAdd,
+                                                ngayBatDau: dayjs(e).format('YYYY-MM-DDTHH:mm:ss')
+                                            })
+                                            setErrorNgayBatDau('')
+                                        }}
+                                    />
+                                </LocalizationProvider>
                                 <span className='text-red-600'>{errorNgayBatDau}</span>
                             </div>
 
                             <div>
-                                <label className="block text-gray-600 mb-1">Đến ngày</label>
-                                <input
-                                    type="date"
-                                    className="w-full border border-gray-300 rounded-md p-2"
-                                    onChange={(e) => {
-                                        setVoucherAdd({
-                                            ...voucherAdd,
-                                            ngayKetThuc: e.target.value
-                                        })
-                                        setErrorNgayKetThuc('')
-                                    }}
-                                    
-                                />
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DateTimePicker
+                                        format={'DD-MM-YYYY HH:mm:ss'}
+                                        label="Đến ngày"
+                                        slotProps={{
+                                            textField: {
+                                                size: 'small',
+                                                className: 'w-[200px]'
+                                            },
+                                            actionBar: {
+                                                actions: ['clear', 'today']
+                                            }
+                                        }}
+                                        onChange={(e) => {
+                                            setVoucherAdd({
+                                                ...voucherAdd,
+                                                ngayKetThuc: dayjs(e).format('YYYY-MM-DDTHH:mm:ss')
+                                            })
+                                            setErrorNgayKetThuc('')
+                                        }}
+                                    />
+                                </LocalizationProvider>
                                 <span className='text-red-600'>{errorNgayKetThuc}</span>
                             </div>
 
@@ -703,7 +726,7 @@ const CreateVoucher = () => {
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

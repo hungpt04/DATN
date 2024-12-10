@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -144,26 +145,39 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
 
     @Override
     public KhuyenMai deleteKhuyenMai(Integer id) {
-        // Lấy ngày hiện tại (không có giờ)
-        LocalDate currentDate = LocalDate.now();
-        // Định dạng ngày theo kiểu "dd-MM-yyyy"
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        String formattedDate = currentDate.format(dateFormatter);
+//        // Lấy ngày hiện tại (không có giờ)
+//        LocalDateTime currentDate = LocalDateTime.now();
+//        // Định dạng ngày theo kiểu "dd-MM-yyyy"
+//        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+//        String formattedDate = currentDate.format(dateFormatter);
+//
+//        // Chuyển đổi chuỗi thành LocalDate
+//        LocalDate endDate = LocalDate.parse(formattedDate, dateFormatter);
+//        // Tìm khuyến mãi theo id
+//        Optional<KhuyenMai> optionalKhuyenMai = khuyenMaiRepository.findById(id);
+//        if (optionalKhuyenMai.isPresent()) {
+//            KhuyenMai khuyenMai = optionalKhuyenMai.get();
+//            // Cập nhật trạng thái và thời gian kết thúc (chỉ ngày)
+//            khuyenMai.setTrangThai(2);
+//            khuyenMai.setTgKetThuc(endDate);
+//            return khuyenMaiRepository.save(khuyenMai);
+//        } else {
+//            return null;
+//        }
+        // Lấy ngày giờ hiện tại (bao gồm cả giờ)
+        LocalDateTime currentDateTime = LocalDateTime.now();
 
-        // Chuyển đổi chuỗi thành LocalDate
-        LocalDate endDate = LocalDate.parse(formattedDate, dateFormatter);
         // Tìm khuyến mãi theo id
         Optional<KhuyenMai> optionalKhuyenMai = khuyenMaiRepository.findById(id);
         if (optionalKhuyenMai.isPresent()) {
             KhuyenMai khuyenMai = optionalKhuyenMai.get();
-            // Cập nhật trạng thái và thời gian kết thúc (chỉ ngày)
+            // Cập nhật trạng thái và thời gian kết thúc
             khuyenMai.setTrangThai(2);
-            khuyenMai.setTgKetThuc(endDate);
+            khuyenMai.setTgKetThuc(currentDateTime);
             return khuyenMaiRepository.save(khuyenMai);
         } else {
             return null;
         }
-
     }
 
     @Override

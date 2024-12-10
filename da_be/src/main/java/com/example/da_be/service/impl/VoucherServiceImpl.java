@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -135,13 +136,29 @@ public class VoucherServiceImpl implements VoucherService {
         }
     }
 
+//    @Override
+//    public Boolean deleteVoucher(Integer id) {
+//        LocalDate currentDate = LocalDate.now();  // Lấy ngày hiện tại
+//        Optional<Voucher> optionalVoucher = voucherRepository.findById(id);  // Tìm voucher theo id kiểu Integer
+//        if (optionalVoucher.isPresent()) {
+//            Voucher voucher = optionalVoucher.get();
+//            voucher.setNgayKetThuc(currentDate);  // Cập nhật ngày kết thúc của voucher
+//            voucher.setTrangThai(2);  // Đặt trạng thái voucher là "đã xóa"
+//            voucherRepository.save(voucher);  // Lưu voucher đã thay đổi
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
+
     @Override
     public Boolean deleteVoucher(Integer id) {
-        LocalDate currentDate = LocalDate.now();  // Lấy ngày hiện tại
+        LocalDateTime currentDateTime = LocalDateTime.now();  // Lấy thời gian hiện tại với ngày và giờ
         Optional<Voucher> optionalVoucher = voucherRepository.findById(id);  // Tìm voucher theo id kiểu Integer
+
         if (optionalVoucher.isPresent()) {
             Voucher voucher = optionalVoucher.get();
-            voucher.setNgayKetThuc(currentDate);  // Cập nhật ngày kết thúc của voucher
+            voucher.setNgayKetThuc(currentDateTime);  // Cập nhật ngày kết thúc của voucher với ngày và giờ hiện tại
             voucher.setTrangThai(2);  // Đặt trạng thái voucher là "đã xóa"
             voucherRepository.save(voucher);  // Lưu voucher đã thay đổi
             return true;
@@ -149,6 +166,7 @@ public class VoucherServiceImpl implements VoucherService {
             return false;
         }
     }
+
 
     @Override
     public Page<VoucherResponse> phanTrangVoucher(Pageable pageable) {

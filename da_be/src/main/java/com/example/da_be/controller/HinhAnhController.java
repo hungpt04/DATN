@@ -52,4 +52,9 @@ public class HinhAnhController {
     public List<HinhAnh> uploadImages(@RequestParam("images") MultipartFile[] files, @RequestParam("idSanPhamCT") int idSanPhamCT) {
         return hinhAnhService.uploadImages(files, idSanPhamCT);
     }
+
+    @PostMapping("/upload-image")
+    public List<HinhAnh> uploadImage(@RequestParam("images") MultipartFile[] files, @RequestParam("idSanPhamCT") int idSanPhamCT) {
+        return hinhAnhService.uploadImage(files, idSanPhamCT);
+    }
 }

@@ -151,13 +151,13 @@ function Sidebar() {
                             <React.Fragment key={index}>
                                 <li
                                     className={`flex items-center h-[50px] pl-5 mb-2 cursor-pointer transition-all duration-300 ${isActive
-                                            ? 'bg-gray-200 border-l-4 border-x-blue-800 text-gray-800'
-                                            : 'bg-white text-gray-700 hover:bg-gray-200 hover:text-gray-900'
+                                        ? 'bg-gray-200 border-l-4 border-x-blue-800 text-gray-800'
+                                        : 'bg-white text-gray-700 hover:bg-gray-200 hover:text-gray-900'
                                         }`}
                                     onClick={() => toggleSubMenu(index)}
                                 >
                                     <div className="flex-[20%] text-xl">{item.icon}</div>
-<div className="flex-[80%] text-base">{item.title}</div>
+                                    <div className="flex-[80%] text-base">{item.title}</div>
                                 </li>
                                 <ul className={`list-none p-0 m-0 ${openSubMenus[index] ? 'block' : 'hidden'}`}>
                                     {item.subItems.map((subItem, subIndex) => {
@@ -167,8 +167,8 @@ function Sidebar() {
                                         return (
                                             <li
                                                 className={`flex items-center h-[40px] pl-10 cursor-pointer transition-all duration-300 ${subItemActive
-                                                        ? 'bg-gray-200 border-l-4 border-x-blue-800 text-gray-800'
-                                                        : 'bg-white text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                                                    ? 'bg-gray-200 border-l-4 border-x-blue-800 text-gray-800'
+                                                    : 'bg-white text-gray-600 hover:bg-gray-200 hover:text-gray-900'
                                                     } ${!subItemHasAccess ? 'cursor-not-allowed opacity-50' : ''}`}
                                                 key={subItem.link}
                                             >
@@ -185,8 +185,8 @@ function Sidebar() {
                         return (
                             <li
                                 className={`flex items-center h-[50px] pl-5 mb-2 cursor-pointer transition-all duration-300 ${isActive
-                                        ? 'bg-gray-200 border-l-4 border-x-blue-800 text-gray-800'
-                                        : 'bg-white text-gray-700 hover:bg-gray-200 hover:text-gray-900'
+                                    ? 'bg-gray-200 border-l-4 border-x-blue-800 text-gray-800'
+                                    : 'bg-white text-gray-700 hover:bg-gray-200 hover:text-gray-900'
                                     }`}
                             >
                                 <Link to={item.link} className="flex w-full h-full items-center">

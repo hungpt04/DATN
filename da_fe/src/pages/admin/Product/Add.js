@@ -256,11 +256,26 @@ function AddProduct() {
         setShowAddWeightModal(true);
     };
 
+    //Sửa ảnh từ đây
+
+    // const handleAddImage = (e) => {
+    //     const files = Array.from(e.target.files);
+    //     const newImages = files.map((file) => URL.createObjectURL(file));
+    //     setImageList((prev) => [...prev, ...newImages]);
+    // };
+
     const handleAddImage = (e) => {
         const files = Array.from(e.target.files);
-        const newImages = files.map((file) => URL.createObjectURL(file));
-        setImageList((prev) => [...prev, ...newImages]);
+    
+        // Lưu file thực tế
+        setImageList((prev) => [...prev, ...files]);
+    
+        // Tạo URL xem trước và lưu
+        const newImageUrls = files.map((file) => URL.createObjectURL(file));
+        setSelectedImages((prev) => [...prev, ...newImageUrls]);
     };
+    
+    
 
     const handleSelectImage = (image) => {
         if (selectedImages.includes(image)) {
@@ -332,15 +347,26 @@ function AddProduct() {
                 const sanPhamCTId = sanPhamCTResponse.data.id;
 
                 // Thêm hình ảnh chung cho tất cả biến thể
+                // if (selectedImages.length > 0) {
+                //     for (const image of selectedImages) {
+                //         const hinhAnhData = {
+                //             sanPhamCT: { id: sanPhamCTId },
+                //             link: image,
+                //             trangThai: 1,
+                //         };
+                //         await axios.post('http://localhost:8080/api/hinh-anh', hinhAnhData);
+                //     }
+                // }
                 if (selectedImages.length > 0) {
-                    for (const image of selectedImages) {
-                        const hinhAnhData = {
-                            sanPhamCT: { id: sanPhamCTId },
-                            link: image,
-                            trangThai: 1,
-                        };
-                        await axios.post('http://localhost:8080/api/hinh-anh', hinhAnhData);
-                    }
+                    const formData = new FormData();
+                    selectedImages.forEach((image) => {
+                        formData.append('images', image); // Ensure each image is added
+                    });
+                    formData.append('idSanPhamCT', sanPhamCTId);
+    
+                    await axios.post('http://localhost:8080/api/hinh-anh/upload-image', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                    });
                 }
             }
 
@@ -354,6 +380,7 @@ function AddProduct() {
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm sản phẩm!', 'error');
         }
     };
+
 
     return (
         <div className="p-4 max-w-full mx-auto bg-white rounded-lg shadow-md w-[1000px]">
@@ -604,6 +631,7 @@ function AddProduct() {
                 </div>
 
                 <h3 className="text-lg font-semibold mb-2 mt-[40px]">Biến thể sản phẩm</h3>
+
                 <table className="table-auto bg-white rounded-lg shadow-md w-[950px]">
                     <thead>
                         <tr className="bg-gray-200 text-gray-700">

@@ -51,7 +51,7 @@ function SearchOrder() {
                 {/* Hình ảnh minh họa */}
                 <div className="flex justify-center mb-6">
                     <img
-                        src="https://files.oaiusercontent.com/file-QVi8IMXpZyt8WvQSV6udHhvB?se=2024-11-14T04%3A10%3A01Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D1f92fc6d-74b4-40a7-aab4-99bde59d92d2.webp&sig=ifShX5Uxt73frBNoMQ2DZImpfEAmnJx4zBNrGegqupg%3D"
+                        src="https://blog.dktcdn.net/files/ship-hang-nhanh3.jpg"
                         alt="Illustration of a person loading boxes into a truck"
                         className="rounded-lg shadow-lg"
                         width={400}

@@ -1,11 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { IoAdd } from "react-icons/io5";
 import { TbEyeEdit } from "react-icons/tb";
 import axios from "axios";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import swal from 'sweetalert';
 import ReactPaginate from "react-paginate";
 import numeral from 'numeral';
+import dayjs from 'dayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 const DiscountVoucher = () => {
     const [listVoucher, setListVoucher] = useState([]);
@@ -16,8 +20,8 @@ const DiscountVoucher = () => {
 
     const [searchVoucher, setSearchVoucher] = useState({
         tenSearch: "",
-        ngayBatDauSearch: "",
-        ngayKetThucSearch: "",
+        ngayBatDauSearch: null,
+        ngayKetThucSearch: null,
         kieuSearch: "",
         kieuGiaTriSearch: "",
         trangThaiSearch: "",
@@ -55,16 +59,23 @@ const DiscountVoucher = () => {
     }
 
     const loadVoucherSearch = (searchVoucher, currentPage) => {
+
         const params = new URLSearchParams({
-            tenSearch: searchVoucher.tenSearch,
-            ngayBatDauSearch: searchVoucher.ngayBatDauSearch,
-            ngayKetThucSearch: searchVoucher.ngayKetThucSearch,
-            kieuSearch: searchVoucher.kieuSearch,
-            kieuGiaTriSearch: searchVoucher.kieuGiaTriSearch,
-            trangThaiSearch: searchVoucher.trangThaiSearch,
-            currentPage: currentPage, // Thêm tham số cho trang
-            size: size // Kích thước trang cũng có thể được truyền vào nếu cần
+            tenSearch: searchVoucher.tenSearch || "",
+            ngayBatDauSearch: searchVoucher.ngayBatDauSearch
+                ? dayjs(searchVoucher.ngayBatDauSearch).format('YYYY-MM-DDTHH:mm:ss')
+                : "",
+            ngayKetThucSearch: searchVoucher.ngayKetThucSearch
+                ? dayjs(searchVoucher.ngayKetThucSearch).format('YYYY-MM-DDTHH:mm:ss')
+                : "",
+            kieuSearch: searchVoucher.kieuSearch || "",
+            kieuGiaTriSearch: searchVoucher.kieuGiaTriSearch || "",
+            trangThaiSearch: searchVoucher.trangThaiSearch || "",
+            currentPage: currentPage,
+            size: size
         });
+
+        console.log("Search Params:", Object.fromEntries(params)); // Để kiểm tra các tham số
 
         axios.get(`http://localhost:8080/api/voucher/search?${params.toString()}`)
             .then((response) => {
@@ -79,7 +90,7 @@ const DiscountVoucher = () => {
 
     useEffect(() => {
         loadVoucherSearch(searchVoucher, 0);
-    }   ,[searchVoucher])
+    }, [searchVoucher])
 
 
     const handelDeleteVoucher = (id) => {
@@ -104,12 +115,12 @@ const DiscountVoucher = () => {
                     },
                 })
                     .then(() => {
-                        swal('Thành công!','Hủy phiếu giảm giá thành công', 'success');
+                        swal('Thành công!', 'Hủy phiếu giảm giá thành công', 'success');
                         loadVoucherSearch(searchVoucher, currentPage); // Gọi lại hàm loadVoucher để làm mới danh sách
                     })
                     .catch((error) => {
                         console.error("Lỗi cập nhật:", error);
-                        swal('Thất bại!','Hủy phiếu giảm giá thất bại', 'error');
+                        swal('Thất bại!', 'Hủy phiếu giảm giá thất bại', 'error');
                     });
             }
         });
@@ -142,7 +153,7 @@ const DiscountVoucher = () => {
                             const valueNhap = e.target.value;
                             if (validateSearchInput(valueNhap)) {
                                 setInputValue(valueNhap);
-                            }else {
+                            } else {
                                 setInputValue('');
                                 swal('Lỗi!', 'Không được nhập ký tự đặc biệt', 'warning');
                             }
@@ -152,118 +163,252 @@ const DiscountVoucher = () => {
                     <button
                         onClick={handleCreateNew}
                         className="border border-amber-400 hover:bg-gray-100 text-amber-400 py-2 px-4 rounded-md ml-auto flex items-center">
-                        <span className="mr-2 text-2xl"><IoAdd/></span>
+                        <span className="mr-2 text-2xl"><IoAdd /></span>
                         Tạo mới
                     </button>
                 </div>
                 {/* fillter */}
                 <div className="flex space-x-4 pt-4 pb-4">
-                    {/* Date Pickers */}
-                    <input
-                        type="date"
-                        placeholder="Từ ngày"
-                        className="border border-gray-300 rounded-md px-4 py-2 w-[200px] focus:outline-none focus:ring-2 focus:ring-gray-200"
-                        onChange={(e) => {
-                            const newNgayBatDauSearch = e.target.value;
-                            setSearchVoucher({
-                                ...searchVoucher,
-                                ngayBatDauSearch: newNgayBatDauSearch
-                            });
-                            loadVoucherSearch({
-                                ...searchVoucher,
-                                ngayBatDauSearch: newNgayBatDauSearch
-                            },0);
-                        }}
-                    />
-                    <input
-                        type="date"
-                        placeholder="Đến ngày"
-                        className="border border-gray-300 rounded-md px-4 py-2 w-[200px] focus:outline-none focus:ring-2 focus:ring-gray-200"
-                        onChange={(e) => {
-                            const newNgayKetThucSearch = e.target.value;
-                            setSearchVoucher({
-                                ...searchVoucher,
-                                ngayKetThucSearch: newNgayKetThucSearch
-                            });
-                            loadVoucherSearch({
-                                ...searchVoucher,
-                                ngayKetThucSearch: newNgayKetThucSearch
-                            },0);
-                        }}
-                    />
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <div className="flex items-center space-x-2">
+                            <DateTimePicker
+                                format={'DD-MM-YYYY HH:mm'}
+                                label="Từ ngày"
+                                slotProps={{
+                                    textField: {
+                                        size: 'small',
+                                        className: 'w-[200px]'
+                                    },
+                                    actionBar: {
+                                        actions: ['clear', 'today']
+                                    }
+                                }}
+                                value={searchVoucher.ngayBatDauSearch}
+                                onChange={(newValue) => {
+                                    setSearchVoucher({
+                                        ...searchVoucher,
+                                        ngayBatDauSearch: newValue
+                                    });
+                                    loadVoucherSearch({
+                                        ...searchVoucher,
+                                        ngayBatDauSearch: newValue
+                                    }, 0);
+                                }}
+                            />
+                            <DateTimePicker
+                                format={'DD-MM-YYYY HH:mm'}
+                                label="Đến ngày"
+                                slotProps={{
+                                    textField: {
+                                        size: 'small',
+                                        className: 'w-[200px]'
+                                    },
+                                    actionBar: {
+                                        actions: ['clear', 'today']
+                                    }
+                                }}
+                                value={searchVoucher.ngayKetThucSearch}
+                                onChange={(newValue) => {
+                                    setSearchVoucher({
+                                        ...searchVoucher,
+                                        ngayKetThucSearch: newValue
+                                    });
+                                    loadVoucherSearch({
+                                        ...searchVoucher,
+                                        ngayKetThucSearch: newValue
+                                    }, 0);
+                                }}
+                            />
+                        </div>
+                    </LocalizationProvider>
 
-                    {/* Kiểu Dropdown */}
                     <div className="flex items-center space-x-2">
                         <label className="text-gray-700 font-semibold">Kiểu:</label>
-                        <select
-                            value={searchVoucher.kieuSearch}
-                            onChange={(e) => {
-                                const newKieuSearch = e.target.value;
-                                setSearchVoucher({
-                                    ...searchVoucher,
-                                    kieuSearch: newKieuSearch
-                                });
-                                loadVoucherSearch({
-                                    ...searchVoucher,
-                                    kieuSearch: newKieuSearch
-                                }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
-                            }}
-                            className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-200"
-                        >
-                            <option value="">
-                                Kiểu
-                            </option>
-                            <option value={0}>Công khai</option>
-                            <option value={1}>Cá nhân</option>
-                        </select>
+                        <div className="relative">
+                            <select
+                                value={searchVoucher.kieuSearch}
+                                onChange={(e) => {
+                                    const newKieuSearch = e.target.value;
+                                    setSearchVoucher({
+                                        ...searchVoucher,
+                                        kieuSearch: newKieuSearch
+                                    });
+                                    loadVoucherSearch({
+                                        ...searchVoucher,
+                                        kieuSearch: newKieuSearch
+                                    }, 0);
+                                }}
+                                className="
+                                    appearance-none 
+                                    bg-transparent 
+                                    text-amber-400
+                                    py-2 
+                                    px-3
+                                    focus:border-blue-500 
+                                    focus:outline-none 
+                                    cursor-pointer
+                                "
+                            >
+                                <option
+                                    value=""
+                                    className="bg-white text-gray-700"
+                                >
+                                    Kiểu
+                                </option>
+                                <option
+                                    value={0}
+                                    className="bg-white text-gray-700"
+                                >
+                                    Công khai
+                                </option>
+                                <option
+                                    value={1}
+                                    className="bg-white text-gray-700"
+                                >
+                                    Cá nhân
+                                </option>
+                            </select>
+
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                <svg
+                                    className="fill-current h-4 w-4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Giá trị Dropdown */}
                     <div className="flex items-center space-x-2">
                         <label className="text-gray-700 font-semibold">Loại:</label>
-                        <select
-                            value={searchVoucher.kieuGiaTriSearch}
-                            onChange={(e) => {
-                                const newKieuGiaTriSearch = e.target.value;
-                                setSearchVoucher({
-                                    ...searchVoucher,
-                                    kieuGiaTriSearch: newKieuGiaTriSearch
-                                });
-                                loadVoucherSearch({
-                                    ...searchVoucher,
-                                    kieuGiaTriSearch: newKieuGiaTriSearch
-                                }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
-                            }}
-                            className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-200"
-                        >
-                            <option value="">Loại</option>
-                            <option value={0}>Phần trăm</option>
-                            <option value={1}>Giá tiền</option>
-                        </select>
+                        <div className="relative">
+                            <select
+                                value={searchVoucher.kieuGiaTriSearch}
+                                onChange={(e) => {
+                                    const newKieuGiaTriSearch = e.target.value;
+                                    setSearchVoucher({
+                                        ...searchVoucher,
+                                        kieuGiaTriSearch: newKieuGiaTriSearch
+                                    });
+                                    loadVoucherSearch({
+                                        ...searchVoucher,
+                                        kieuGiaTriSearch: newKieuGiaTriSearch
+                                    }, 0);
+                                }}
+                                className="
+                                    appearance-none 
+                                    bg-transparent 
+                                    text-amber-400
+                                    py-2 
+                                    px-3
+                                    focus:border-blue-500 
+                                    focus:outline-none 
+                                    cursor-pointer
+                                    "
+                                >
+                                <option
+                                    value=""
+                                    className="bg-white text-gray-700"
+                                >
+                                    Loại
+                                </option>
+                                <option
+                                    value={0}
+                                    className="bg-white text-gray-700"
+                                >
+                                    Phần trăm
+                                </option>
+                                <option
+                                    value={1}
+                                    className="bg-white text-gray-700"
+                                >
+                                    Giá tiền
+                                </option>
+                            </select>
+
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                <svg
+                                    className="fill-current h-4 w-4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="flex items-center space-x-2">
                         <label className="text-gray-700 font-semibold">Trạng thái:</label>
-                        <select
-                            value={searchVoucher.trangThaiSearch}
-                            onChange={(e) => {
-                                const newTrangThaiSearch = e.target.value;
-                                setSearchVoucher({
-                                    ...searchVoucher,
-                                    trangThaiSearch: newTrangThaiSearch
-                                });
-                                loadVoucherSearch({
-                                    ...searchVoucher,
-                                    trangThaiSearch: newTrangThaiSearch
-                                }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
-                            }}
-                            className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-200"
-                        >
-                            <option value="">Trạng thái</option>
-                            <option value={0}>Sắp diễn ra</option>
-                            <option value={1}>Đang diễn ra</option>
-                            <option value={2}>Đã kết thúc</option>
-                        </select>
+                        <div className="relative">
+                            <select
+                                value={searchVoucher.trangThaiSearch}
+                                onChange={(e) => {
+                                    const newTrangThaiSearch = e.target.value;
+                                    setSearchVoucher({
+                                        ...searchVoucher,
+                                        trangThaiSearch: newTrangThaiSearch
+                                    });
+                                    loadVoucherSearch({
+                                        ...searchVoucher,
+                                        trangThaiSearch: newTrangThaiSearch
+                                    }, 0);
+                                }}
+                                className="
+                                    appearance-none 
+                                    bg-transparent 
+                                    text-amber-400
+                                    py-2 
+                                    px-3
+                                    focus:border-blue-500 
+                                    focus:outline-none 
+                                    cursor-pointer
+                                    "
+                                >
+                                <option
+                                    value=""
+                                    className="bg-white text-gray-700"
+                                >
+                                    Trạng thái
+                                </option>
+                                <option
+                                    value={0}
+                                    className="bg-white text-gray-700"
+                                >
+                                    Sắp diễn ra
+                                </option>
+                                <option
+                                    value={1}
+                                    className="bg-white text-gray-700"
+                                >
+                                    Đang diễn ra
+                                </option>
+                                <option
+                                    value={2}
+                                    className="bg-white text-gray-700"
+                                >
+                                    Đã kết thúc
+                                </option>
+                            </select>
+
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                <svg
+                                    className="fill-current h-4 w-4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Export Button */}
@@ -274,99 +419,87 @@ const DiscountVoucher = () => {
                 {/* table */}
                 <table className="min-w-full text-center table-auto border-collapse border border-gray-200">
                     <thead>
-                    <tr className="bg-gray-100 text-gray-700">
-                        <th className="py-2 px-4 text-center border-b">STT</th>
-                        <th className="py-2 px-4 text-center border-b">Mã</th>
-                        <th className="py-2 px-4 text-center border-b">Tên</th>
-                        <th className="py-2 px-4 text-center border-b">Kiểu</th>
-                        <th className="py-2 px-4 text-center border-b">Giá trị</th>
-                        <th className="py-2 px-4 text-center border-b">Số lượng</th>
-                        <th className="py-2 px-4 text-center border-b">Ngày bắt đầu</th>
-                        <th className="py-2 px-4 text-center border-b">Ngày kết thúc</th>
-                        <th className="py-2 px-4 text-center border-b">Trạng thái</th>
-                        <th className="py-2 px-4 text-center border-b">Hành động</th>
-                    </tr>
+                        <tr className="bg-gray-100 text-gray-700">
+                            <th className="py-2 px-4 text-center border-b">STT</th>
+                            <th className="py-2 px-4 text-center border-b">Mã</th>
+                            <th className="py-2 px-4 text-center border-b">Tên</th>
+                            <th className="py-2 px-4 text-center border-b">Kiểu</th>
+                            <th className="py-2 px-4 text-center border-b">Loại</th>
+                            <th className="py-2 px-4 text-center border-b">Số lượng</th>
+                            <th className="py-2 px-4 text-center border-b">Ngày bắt đầu</th>
+                            <th className="py-2 px-4 text-center border-b">Ngày kết thúc</th>
+                            <th className="py-2 px-4 text-center border-b">Trạng thái</th>
+                            <th className="py-2 px-4 text-center border-b">Hành động</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {
-                        listVoucher && listVoucher.length > 0 && listVoucher.map((item, index) => {
-                            const stt = (currentPage * 5) + index + 1;
-                            return (
-                                <tr key={`${index}`} className="hover:bg-gray-100">
-                                    <td className="py-2 px-4 border-b">{stt}</td>
-                                    <td className="py-2 px-4 border-b">{item.ma}</td>
-                                    <td className="py-2 px-4 border-b">{item.ten}</td>
-                                    <td className="py-2 px-4 border-b">
-                                        <span
-                                            className={`py-1 px-3 rounded-full text-xs whitespace-nowrap ${
-                                                item.kieu === 0
+                        {
+                            listVoucher && listVoucher.length > 0 && listVoucher.map((item, index) => {
+                                const stt = (currentPage * 5) + index + 1;
+                                return (
+                                    <tr key={`${index}`} className="hover:bg-gray-100">
+                                        <td className="py-2 px-4 border-b">{stt}</td>
+                                        <td className="py-2 px-4 border-b">{item.ma}</td>
+                                        <td className="py-2 px-4 border-b">{item.ten}</td>
+                                        <td className="py-2 px-4 border-b">
+                                            <span
+                                                className={`py-1 px-3 rounded-full text-xs whitespace-nowrap ${item.kieu === 0
                                                     ? 'bg-purple-200 text-purple-600 border border-purple-700'
                                                     : item.kieu === 1
                                                         ? 'bg-yellow-200 text-yellow-600 border border-yellow-700'
                                                         : 'bg-gray-200 text-gray-700 border border-gray-800'
-                                            }`}>
-                                            {item.kieu === 0 ? "Công khai" : item.kieu === 1 ? "Cá nhân" : "Chưa xác định"}
-                                        </span>
-                                    </td>
-                                    <td className="py-2 px-4 border-b">
-                                        {item.kieuGiaTri === 0 ? item.giaTri + "%" : formatCurrency(item.giaTri)}
-                                    </td>
-                                    <td className="py-2 px-4 border-b">{item.soLuong}</td>
-                                    <td className="py-2 px-4 border-b">{new Date(item.ngayBatDau).toLocaleDateString('vi-VN', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                    })}
-                                    </td>
-                                    <td className="py-2 px-4 border-b">{new Date(item.ngayKetThuc).toLocaleDateString('vi-VN', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                    })}
-                                    </td>
-                                    <td className="py-2 px-4 border-b">
-                                        <span
-                                            className={`py-1 px-3 rounded-full text-xs whitespace-nowrap ${
-                                                item.trangThai === 2
+                                                    }`}>
+                                                {item.kieu === 0 ? "Công khai" : item.kieu === 1 ? "Cá nhân" : "Chưa xác định"}
+                                            </span>
+                                        </td>
+                                        <td className="py-2 px-4 border-b">
+                                            {item.kieuGiaTri === 0 ? item.giaTri + "%" : formatCurrency(item.giaTri)}
+                                        </td>
+                                        <td className="py-2 px-4 border-b">{item.soLuong}</td>
+                                        <td className="py-2 px-4 border-b">{dayjs(item.ngayBatDau).format('DD/MM/YYYY HH:mm')}</td>
+                                        <td className="py-2 px-4 border-b">{dayjs(item.ngayKetThuc).format('DD/MM/YYYY HH:mm')}</td>
+                                        <td className="py-2 px-4 border-b">
+                                            <span
+                                                className={`py-1 px-3 rounded-full text-xs whitespace-nowrap ${item.trangThai === 2
                                                     ? 'bg-red-200 text-red-700 border border-red-800'
                                                     : item.trangThai === 1
                                                         ? 'bg-green-200 text-green-700 border border-green-800'
                                                         : 'bg-gray-200 text-gray-700 border border-gray-800'
-                                            }`}
-                                            onClick={
-                                                item.trangThai === 2
-                                                    ? undefined // Không có hành động khi trạng thái là "Đã kết thúc".
-                                                    : () => handelDeleteVoucher(item.id) // Chỉ xử lý click khi trạng thái khác 2.
-                                            }
-                                            style={{
-                                                cursor: item.trangThai === 2 ? 'not-allowed' : 'pointer', // Đổi con trỏ chuột khi không được click.
-                                            }}
-                                        >
-                                            {item.trangThai === 2
-                                                ? "Đã kết thúc"
-                                                : item.trangThai === 1
-                                                    ? "Đang diễn ra"
-                                                    : "Sắp diễn ra"}
-                                        </span>
-                                    </td>
-                                    <td className="py-2 px-4 border-b">
-                                        <button
-                                            onClick={() => handleDetail(item.id)}
-                                            className="text-2xl text-amber-400">
-                                            <TbEyeEdit/>
-                                        </button>
-                                    </td>
-                                </tr>
-                            )
-                        })
-                    }
-                    {listVoucher && listVoucher.length === 0 && (
-                        <tr>
-                            <td colSpan="12" className="py-4 text-center">
-                                Not found data
-                            </td>
-                        </tr>
-                    )}
+                                                    }`}
+                                                onClick={
+                                                    item.trangThai === 2
+                                                        ? undefined // Không có hành động khi trạng thái là "Đã kết thúc".
+                                                        : () => handelDeleteVoucher(item.id) // Chỉ xử lý click khi trạng thái khác 2.
+                                                }
+                                                style={{
+                                                    cursor: item.trangThai === 2 ? 'not-allowed' : 'pointer', // Đổi con trỏ chuột khi không được click.
+                                                }}
+                                            >
+                                                {item.trangThai === 2
+                                                    ? "Đã kết thúc"
+                                                    : item.trangThai === 1
+                                                        ? "Đang diễn ra"
+                                                        : "Sắp diễn ra"}
+                                            </span>
+                                        </td>
+                                        <td className="py-2 px-4 border-b">
+                                            <button
+                                                onClick={() => handleDetail(item.id)}
+                                                className="text-2xl text-amber-400">
+                                                <TbEyeEdit />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )
+                            })
+                        }
+                        {listVoucher && listVoucher.length === 0 && (
+                            <tr>
+                                <td colSpan="12" className="py-4 text-center">
+                                    Not found data
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
 

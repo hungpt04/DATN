@@ -114,7 +114,7 @@ const OrderSummary = () => {
     // Fetch vouchers
     const fetchVouchers = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/voucher/hien-thi');
+            const response = await axios.get('http://localhost:8080/api/voucher/hien-thi'); //sửa lại api vì lấy cả voucher kêt thúc
             setVouchers(response.data);
         } catch (error) {
             console.error('Failed to fetch vouchers', error);
@@ -163,7 +163,7 @@ const OrderSummary = () => {
         try {
             // Tạo hóa đơn
             const hoaDonResponse = await axios.post('http://localhost:8080/api/hoa-don', {
-                taiKhoan: { id: 1 },
+                taiKhoan: { id: 1 }, //lấy tài khoản đang đăng nhập qua token Chi sửa lại nhe
                 soLuong: totalQuantity,
                 loaiHoaDon: 'Trực tuyến',
                 phuongThucThanhToan: 'Thanh toán VNPay',
@@ -291,7 +291,7 @@ const OrderSummary = () => {
         try {
             // Tạo hóa đơn
             const hoaDonResponse = await axios.post('http://localhost:8080/api/hoa-don', {
-                taiKhoan: { id: 1 },
+                taiKhoan: { id : 1 }, //lấy tài khoản đang đăng nhập qua token Chi sửa lại nhe
                 soLuong: totalQuantity,
                 loaiHoaDon: 'Trực tuyến',
                 phuongThucThanhToan: 'Thanh toán khi nhận hàng',

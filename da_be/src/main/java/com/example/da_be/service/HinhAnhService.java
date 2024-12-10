@@ -1,5 +1,6 @@
 package com.example.da_be.service;
 
+import com.example.da_be.cloudinary.CloudinaryImage;
 import com.example.da_be.entity.HinhAnh;
 import com.example.da_be.entity.SanPhamCT;
 import com.example.da_be.repository.HinhAnhRepository;
@@ -21,6 +22,8 @@ public class HinhAnhService {
 
     @Autowired
     private SanPhamCTRepository sanPhamCTRepository;
+    @Autowired
+    private CloudinaryImage cloudinaryImage;
 
     public List<HinhAnh> getAllHinhAnh() {
         return hinhAnhRepository.findAll();
@@ -69,5 +72,18 @@ public class HinhAnhService {
             }
         }
         return hinhAnhs; // Trả về danh sách hình ảnh đã lưu
+    }
+
+    public List<HinhAnh> uploadImage(MultipartFile[] files, int idSanPhamCT) {
+        List<HinhAnh> uploadedImages = new ArrayList<>();
+        for (MultipartFile file : files) {
+            String uploadedLink = cloudinaryImage.uploadAvatar(file);
+            HinhAnh hinhAnh = new HinhAnh();
+            hinhAnh.setLink(uploadedLink);
+            hinhAnh.setSanPhamCT(new SanPhamCT(idSanPhamCT));
+            hinhAnh.setTrangThai(1); // Active status
+            uploadedImages.add(hinhAnhRepository.save(hinhAnh));
+        }
+        return uploadedImages;
     }
 }

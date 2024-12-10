@@ -6,6 +6,10 @@ import axios from "axios";
 import swal from 'sweetalert';
 import { toast } from "react-toastify";
 import ReactPaginate from 'react-paginate';
+import dayjs from 'dayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 const Sale = () => {
     const navigate = useNavigate();
@@ -16,8 +20,8 @@ const Sale = () => {
 
     const [searchKhuyenMai, setSearchKhuyenMai] = useState({
         tenSearch: "",
-        tgBatDauSearch: "",
-        tgKetThucSearch: "",
+        tgBatDauSearch: null,
+        tgKetThucSearch: null,
         trangThaiSearch: "",
         sortOrder: ""
     })
@@ -48,12 +52,18 @@ const Sale = () => {
     const loadKhuyenMaiSearch = (searchKhuyenMai, currentPage) => {
         const params = new URLSearchParams({
             tenSearch: searchKhuyenMai.tenSearch || "",
-            tgBatDauSearch: searchKhuyenMai.tgBatDauSearch || "",
-            tgKetThucSearch: searchKhuyenMai.tgKetThucSearch || "",
+            tgBatDauSearch: searchKhuyenMai.tgBatDauSearch
+                ? dayjs(searchKhuyenMai.tgBatDauSearch).format('YYYY-MM-DDTHH:mm:ss')
+                : "",
+            tgKetThucSearch: searchKhuyenMai.tgKetThucSearch
+                ? dayjs(searchKhuyenMai.tgKetThucSearch).format('YYYY-MM-DDTHH:mm:ss')
+                : "",
             trangThaiSearch: searchKhuyenMai.trangThaiSearch || "",
             currentPage: currentPage,
             size: size
         });
+
+        console.log("Search Params:", Object.fromEntries(params)); // Để kiểm tra các tham số
 
         axios.get(`http://localhost:8080/api/khuyen-mai/search?${params.toString()}`)
             .then((response) => {
@@ -184,79 +194,185 @@ const Sale = () => {
                 </div>
                 {/* fillter */}
                 <div className="flex space-x-4 pt-4 pb-4">
-                    <input
-                        type="date"
-                        placeholder="Từ ngày"
-                        className="border border-gray-300 rounded-md px-4 py-2 w-[200px] focus:outline-none focus:ring-2 focus:ring-gray-200"
-                        onChange={(e) => {
-                            const newTgBatDauSearch = e.target.value;
-                            setSearchKhuyenMai({
-                                ...searchKhuyenMai,
-                                tgBatDauSearch: newTgBatDauSearch
-                            });
-                            loadKhuyenMaiSearch({
-                                ...searchKhuyenMai,
-                                tgBatDauSearch: newTgBatDauSearch
-                            }, 0);
-                        }}
-                    />
-                    <input
-                        type="date"
-                        placeholder="Đến ngày"
-                        className="border border-gray-300 rounded-md px-4 py-2 w-[200px] focus:outline-none focus:ring-2 focus:ring-gray-200"
-                        onChange={(e) => {
-                            const newTgKetThucSearch = e.target.value;
-                            setSearchKhuyenMai({
-                                ...searchKhuyenMai,
-                                tgKetThucSearch: newTgKetThucSearch
-                            });
-                            loadKhuyenMaiSearch({
-                                ...searchKhuyenMai,
-                                tgKetThucSearch: newTgKetThucSearch
-                            }, 0);
-                        }}
-                    />
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <div className="flex items-center space-x-2">
+                            <DateTimePicker
+                                format={'DD-MM-YYYY HH:mm'}
+                                label="Từ ngày"
+                                slotProps={{
+                                    textField: {
+                                        size: 'small',
+                                        className: 'w-[200px]'
+                                    },
+                                    actionBar: {
+                                        actions: ['clear', 'today']
+                                    }
+                                }}
+                                value={searchKhuyenMai.tgBatDauSearch}
+                                onChange={(newValue) => {
+                                    setSearchKhuyenMai({
+                                        ...searchKhuyenMai,
+                                        tgBatDauSearch: newValue
+                                    });
+                                    loadKhuyenMaiSearch({
+                                        ...searchKhuyenMai,
+                                        tgBatDauSearch: newValue
+                                    }, 0);
+                                }}
+                            />
+                            <DateTimePicker
+                                format={'DD-MM-YYYY HH:mm'}
+                                label="Đến ngày"
+                                slotProps={{
+                                    textField: {
+                                        size: 'small',
+                                        className: 'w-[200px]'
+                                    },
+                                    actionBar: {
+                                        actions: ['clear', 'today']
+                                    }
+                                }}
+                                value={searchKhuyenMai.tgKetThucSearch}
+                                onChange={(newValue) => {
+                                    setSearchKhuyenMai({
+                                        ...searchKhuyenMai,
+                                        tgKetThucSearch: newValue
+                                    });
+                                    loadKhuyenMaiSearch({
+                                        ...searchKhuyenMai,
+                                        tgKetThucSearch: newValue
+                                    }, 0);
+                                }}
+                            />
+                        </div>
+                    </LocalizationProvider>
 
-                    {/* Trạng thái Dropdown */}
                     <div className="flex items-center space-x-2">
                         <label className="text-gray-700 font-semibold">Trạng thái:</label>
-                        <select
-                            value={searchKhuyenMai.trangThaiSearch}
-                            onChange={(e) => {
-                                const newTrangThaiSearch = e.target.value;
-                                setSearchKhuyenMai({
-                                    ...searchKhuyenMai,
-                                    trangThaiSearch: newTrangThaiSearch
-                                });
-                                loadKhuyenMaiSearch({
-                                    ...searchKhuyenMai,
-                                    trangThaiSearch: newTrangThaiSearch
-                                }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
-                            }}
-                            className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-200">
-                            <option value="">Trạng thái</option>
-                            <option value={0}>Sắp diễn ra</option>
-                            <option value={1}>Đang hoạt động</option>
-                            <option value={2}>Đã kết thúc</option>
-                        </select>
+                        <div className="relative">
+                            <select
+                                value={searchKhuyenMai.trangThaiSearch}
+                                onChange={(e) => {
+                                    const newTrangThaiSearch = e.target.value;
+                                    setSearchKhuyenMai({
+                                        ...searchKhuyenMai,
+                                        trangThaiSearch: newTrangThaiSearch
+                                    });
+                                    loadKhuyenMaiSearch({
+                                        ...searchKhuyenMai,
+                                        trangThaiSearch: newTrangThaiSearch
+                                    }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
+                                }}
+                                className="
+                                    appearance-none 
+                                    bg-transparent 
+                                    text-amber-400
+                                    py-2 
+                                    px-3
+                                    focus:border-blue-500 
+                                    focus:outline-none 
+                                    cursor-pointer
+                                    "
+                            >
+                                <option
+                                    value=""
+                                    className="bg-white text-gray-700"
+                                >
+                                    Trạng thái
+                                </option>
+                                <option
+                                    value={0}
+                                    className="bg-white text-gray-700"
+                                >
+                                    Sắp diễn ra
+                                </option>
+                                <option
+                                    value={1}
+                                    className="bg-white text-gray-700"
+                                >
+                                    Đang diễn ra
+                                </option>
+                                <option
+                                    value={2}
+                                    className="bg-white text-gray-700"
+                                >
+                                    Đã kết thúc
+                                </option>
+                            </select>
+
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                <svg
+                                    className="fill-current h-4 w-4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Giá trị Dropdown */}
                     <div className="flex items-center space-x-2">
                         <label className="text-gray-700 font-semibold">Giá trị:</label>
-                        <select
-                            value={searchKhuyenMai.sortOrder}
-                            onChange={(e) =>
-                                setSearchKhuyenMai((prevState) => ({
-                                    ...prevState,
-                                    sortOrder: e.target.value, // Cập nhật giá trị sortOrder
-                                }))
-                            }
-                            className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-200">
-                            <option value="">Giá trị</option>
-                            <option value="ascending">Tăng dần</option>
-                            <option value="descending">Giảm dần</option>
-                        </select>
+                        <div className="relative">
+                            <select
+                                value={searchKhuyenMai.sortOrder}
+                                onChange={(e) => {
+                                    const newSortOrder = e.target.value;
+                                    setSearchKhuyenMai({
+                                        ...searchKhuyenMai,
+                                        sortOrder: newSortOrder
+                                    });
+                                    loadKhuyenMaiSearch({
+                                        ...searchKhuyenMai,
+                                        sortOrder: newSortOrder
+                                    }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
+                                }}
+                                className="
+                                    appearance-none 
+                                    bg-transparent 
+                                    text-amber-400
+                                    py-2 
+                                    px-3
+                                    focus:border-blue-500 
+                                    focus:outline-none 
+                                    cursor-pointer
+                                    "
+                                >
+                                <option
+                                    value=""
+                                    className="bg-white text-gray-700"
+                                >
+                                    Giá trị
+                                </option>
+                                <option
+                                    value="ascending"
+                                    className="bg-white text-gray-700"
+                                >
+                                    Tăng dần
+                                </option>
+                                <option
+                                    value="descending"
+                                    className="bg-white text-gray-700"
+                                >
+                                    Giảm dần
+                                </option>
+                            </select>
+
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                <svg
+                                    className="fill-current h-4 w-4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -307,18 +423,8 @@ const Sale = () => {
                                                         : "Sắp diễn ra"}
                                             </span>
                                         </td>
-                                        <td className="py-2 px-4 border-b">{new Date(sale.tgBatDau).toLocaleDateString('vi-VN', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric',
-                                        })}
-                                        </td>
-                                        <td className="py-2 px-4 border-b">{new Date(sale.tgKetThuc).toLocaleDateString('vi-VN', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric',
-                                        })}
-                                        </td>
+                                        <td className="py-2 px-4 border-b">{dayjs(sale.tgBatDau).format('DD/MM/YYYY HH:mm')}</td>
+                                        <td className="py-2 px-4 border-b">{dayjs(sale.tgKetThuc).format('DD/MM/YYYY HH:mm')}</td>
                                         <td className="py-2 px-4 border-b">
                                             <button
                                                 onClick={() => handleDetail(sale.id)}

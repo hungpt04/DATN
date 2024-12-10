@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,8 +79,10 @@ public class VoucherController {
     @GetMapping("/search")
     public Map<String, Object> searchVouchers(
             @RequestParam(required = false) String tenSearch,       // Tìm kiếm theo mã hoặc tên
-            @RequestParam(required = false) LocalDate ngayBatDauSearch,  // Tìm kiếm theo ngày bắt đầu
-            @RequestParam(required = false) LocalDate ngayKetThucSearch,    // Tìm kiếm theo ngày kết thúc
+//            @RequestParam(required = false) LocalDate ngayBatDauSearch,  // Tìm kiếm theo ngày bắt đầu
+//            @RequestParam(required = false) LocalDate ngayKetThucSearch,    // Tìm kiếm theo ngày kết thúc
+            @RequestParam(required = false) LocalDateTime ngayBatDauSearch,  // Tìm kiếm theo ngày bắt đầu
+            @RequestParam(required = false) LocalDateTime ngayKetThucSearch,    // Tìm kiếm theo ngày kết thúc
             @RequestParam(required = false) Integer kieuSearch    ,  // Tìm kiếm theo loại
             @RequestParam(required = false) Integer kieuGiaTriSearch,    // Tìm kiếm theo giá trị loại
             @RequestParam(required = false) Integer trangThaiSearch,       // Tìm kiếm theo trạng thái

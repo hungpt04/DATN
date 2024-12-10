@@ -3,6 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import swal from "sweetalert";
 import ReactPaginate from 'react-paginate';
+import dayjs from 'dayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 const SaleDetail = () => {
     const { id } = useParams();
@@ -510,36 +514,58 @@ const SaleDetail = () => {
                         </div>
 
                         <div>
-                            <label className="block text-gray-600 mb-1">Ngày bắt đầu</label>
-                            <input
-                                type="date"
-                                className="w-full border border-gray-300 rounded-md p-2"
-                                value={updateKhuyenMai.tgBatDau}
-                                onChange={(e) => {
-                                    setUpdateKhuyenMai({
-                                        ...updateKhuyenMai,
-                                        tgBatDau: e.target.value
-                                    })
-                                    setErrorTgBatDau('')
-                                }}
-                            />
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <label className="block text-gray-600 mb-1">Từ ngày</label>
+                                <DateTimePicker
+                                    format={'DD-MM-YYYY HH:mm:ss'}
+                                
+                                    slotProps={{
+                                        textField: {
+                                            size: 'small',
+                                            className: 'w-[608px]'
+                                        },
+                                        actionBar: {
+                                            actions: ['clear', 'today']
+                                        }
+                                    }}
+                                    value={dayjs(updateKhuyenMai.tgBatDau, 'YYYY-MM-DDTHH:mm:ss')}
+                                    onChange={(e) => {
+                                        setUpdateKhuyenMai({
+                                            ...updateKhuyenMai,
+                                            tgBatDau: dayjs(e).format('YYYY-MM-DDTHH:mm:ss')
+                                        })
+                                        setErrorTgBatDau('')
+                                    }}
+                                />
+                            </LocalizationProvider>
                             <span className='text-red-600'>{errorTgBatDau}</span>
                         </div>
 
-                        <div>
-                            <label className="block text-gray-600 mb-1">Ngày kết thúc</label>
-                            <input
-                                type="date"
-                                className="w-full border border-gray-300 rounded-md p-2"
-                                value={updateKhuyenMai.tgKetThuc}
-                                onChange={(e) => {
-                                    setUpdateKhuyenMai({
-                                        ...updateKhuyenMai,
-                                        tgKetThuc: e.target.value
-                                    })
-                                    setErrorTgKetThuc('')
-                                }}
-                            />
+                        <div className='mt-4'>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <label className="block text-gray-600 mb-1">Đến ngày</label>
+                                <DateTimePicker
+                                    format={'DD-MM-YYYY HH:mm:ss'}
+                                    
+                                    slotProps={{
+                                        textField: {
+                                            size: 'small',
+                                            className: 'w-[608px]'
+                                        },
+                                        actionBar: {
+                                            actions: ['clear', 'today']
+                                        }
+                                    }}
+                                    value={dayjs(updateKhuyenMai.tgKetThuc, 'YYYY-MM-DDTHH:mm:ss')}
+                                    onChange={(e) => {
+                                        setUpdateKhuyenMai({
+                                            ...updateKhuyenMai,
+                                            tgKetThuc: dayjs(e).format('YYYY-MM-DDTHH:mm:ss')
+                                        })
+                                        setErrorTgKetThuc('')
+                                    }}
+                                />
+                            </LocalizationProvider>
                             <span className='text-red-600'>{errorTgKetThuc}</span>
                         </div>
 
