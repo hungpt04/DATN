@@ -291,7 +291,8 @@ const OrderSummary = () => {
         try {
             // Tạo hóa đơn
             const hoaDonResponse = await axios.post('http://localhost:8080/api/hoa-don', {
-                taiKhoan: { id : 1 }, //lấy tài khoản đang đăng nhập qua token Chi sửa lại nhe
+                taiKhoan: { id: 1 },
+                idVoucher: selectedVoucher.id,
                 soLuong: totalQuantity,
                 loaiHoaDon: 'Trực tuyến',
                 phuongThucThanhToan: 'Thanh toán khi nhận hàng',

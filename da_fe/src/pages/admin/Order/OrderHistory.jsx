@@ -23,6 +23,8 @@ const OrderHistory = () => {
     const [events, setEvents] = useState([]);
     const [billDetails, setBillDetails] = useState([]);
 
+    const [usedVoucher, setUsedVoucher] = useState(null);
+
     useEffect(() => {
         const calculateTotal = () => {
             const uniqueProductIds = new Set();
@@ -41,8 +43,7 @@ const OrderHistory = () => {
                 return total + detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan;
             }, 0);
 
-            const total = totalItems + shippingFee;
-            setTotalAmount(total);
+            setTotalAmount(totalItems);
         };
 
         calculateTotal();
@@ -52,7 +53,6 @@ const OrderHistory = () => {
         const loadPaymentHistory = async (hoaDonId) => {
             try {
                 const response = await axios.get(`http://localhost:8080/api/thanh-toan/hoa-don/${hoaDonId}`);
-                console.log('Payment history response:', response.data); // Log dữ liệu nhận được
                 // Kiểm tra xem response.data có phải là mảng hay không
                 if (Array.isArray(response.data)) {
                     setPaymentHistory(response.data);
@@ -68,6 +68,7 @@ const OrderHistory = () => {
         if (currentOrder && currentOrder.id) {
             loadPaymentHistory(currentOrder.id);
         }
+        setShippingFee(currentOrder.phiShip);
     }, [currentOrder]);
 
     useEffect(() => {
@@ -245,6 +246,22 @@ const OrderHistory = () => {
         }
     };
 
+    const loadVoucherById = async (voucherId) => {
+        try {
+            if (voucherId) {
+                const voucherResponse = await axios.get(`http://localhost:8080/api/voucher/by-id/${voucherId}`);
+                console.log('Voucher Response:', voucherResponse.data);
+                setUsedVoucher(voucherResponse.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch materials', error);
+        }
+    };
+
+    useEffect(() => {
+        loadVoucherById(currentOrder.idVoucher);
+    }, []);
+
     const increaseQuantity = async (detail) => {
         const updatedDetail = {
             ...detail.hoaDonCT,
@@ -283,6 +300,10 @@ const OrderHistory = () => {
             return null;
         }
     };
+
+    useEffect(() => {
+        console.log('Hoa ddonw: ', currentOrder);
+    }, []);
 
     const handleConfirmOrder = async () => {
         const result = await updateBillStatus(currentOrder.id, 2);
@@ -417,8 +438,28 @@ const OrderHistory = () => {
         }
     };
 
-    const getReturnedItems = () => {
-        return billDetails.filter((detail) => detail.hoaDonCT.trangThai === 2);
+    const calculateDiscountAmount = () => {
+        if (!usedVoucher) return 0;
+
+        // Loại bỏ điều kiện kiểm tra dieuKienNhoNhat
+        // Kiểm tra kiểu giảm giá
+        if (usedVoucher.kieuGiaTri === 0) {
+            // Giảm theo %
+            const discountPercentage = usedVoucher.giaTri / 100;
+            const discountAmount = totalAmount * discountPercentage;
+            const finalDiscount = Math.min(discountAmount, usedVoucher.giaTriMax);
+
+            console.log('Discount Percentage:', discountPercentage);
+            console.log('Discount Amount:', discountAmount);
+            console.log('Final Discount:', finalDiscount);
+
+            return finalDiscount;
+        } else if (usedVoucher.kieuGiaTri === 1) {
+            // Giảm cố định
+            return Math.min(usedVoucher.giaTri, totalAmount);
+        }
+
+        return 0;
     };
 
     if (!currentOrder) {
@@ -746,9 +787,12 @@ const OrderHistory = () => {
                 </div>
                 <div className="flex justify-between items-center p-4 bg-white border border-gray-300 rounded-lg shadow-md mt-6">
                     <div>
-                        <p className="text-gray-700 font-medium">Phiếu giảm giá:</p>
                         <p className="text-gray-700 font-medium">
-                            Giảm giá từ cửa hàng: <span className="font-bold">0%</span>
+                            Phiếu giảm giá: {usedVoucher ? usedVoucher.ma : 'Không có'}
+                        </p>
+                        <p className="text-gray-700 font-medium">
+                            Giảm giá từ cửa hàng:{' '}
+                            <span className="font-bold">{usedVoucher ? usedVoucher.giaTri : 0}%</span>
                         </p>
                     </div>
                     <div className="text-right">
@@ -756,7 +800,8 @@ const OrderHistory = () => {
                             Tổng tiền hàng: <span className="font-bold">{totalAmount.toLocaleString()} VND</span>
                         </p>
                         <p className="text-gray-700 font-medium">
-                            Giảm giá: <span className="font-bold"> 0 VND</span>
+                            Giảm giá:{' '}
+                            <span className="font-bold">{calculateDiscountAmount().toLocaleString()} VND</span>
                         </p>
                         <div className="flex items-center justify-end">
                             <p className="text-gray-700 font-medium mr-2 ">Phí vận chuyển:</p>
@@ -769,7 +814,7 @@ const OrderHistory = () => {
                         </div>
                         <p className="text-gray-700 font-medium mt-2">
                             Tổng tiền:{' '}
-                            <span className="font-bold text-red-500">{totalAmount.toLocaleString()} VND</span>
+                            <span className="font-bold text-red-500">{currentOrder.tongTien.toLocaleString()} VND</span>
                         </p>
                     </div>
                 </div>
@@ -782,7 +827,7 @@ const OrderHistory = () => {
                             <label className="block text-gray-700">Tổng tiền</label>
                             <input
                                 type="text"
-                                value={`${totalAmount.toLocaleString()} VND`}
+                                value={`${currentOrder.tongTien.toLocaleString()} VND`}
                                 className="w-full p-2 border border-gray-300 rounded mt-1"
                                 readOnly
                             />

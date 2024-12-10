@@ -26,4 +26,5 @@ public interface VoucherService {
     Page<KhachHangResponse> getSearchKhachHang(KhachHangSearch khachHangSearch, Pageable pageable);
     Voucher giamSoLuongVoucher(Integer id);
 
+
 }

@@ -1468,7 +1468,7 @@ function OfflineSale() {
                                 <option value="">Tất cả trọng lượng</option>
                                 <option value="2U">2U</option>
                                 <option value="3U">3U</option>
-                                <option value="3U">4U</option>
+                                <option value="4U">4U</option>
                                 <option value="5U">5U</option>
                                 <option value="6U">6U</option>
                             </select>

@@ -80,4 +80,6 @@ public interface VoucherRepository extends JpaRepository<Voucher, Integer> {
 """
     )
     List<String> getAllTenVoucher();
+
+
 }
