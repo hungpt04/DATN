@@ -22,6 +22,8 @@ export default function ProductDetail() {
 
     const [quantity, setQuantity] = useState(1);
 
+    const [currentImages, setCurrentImages] = useState([]);
+
     const { id } = useParams();
 
     useEffect(() => {
@@ -32,8 +34,14 @@ export default function ProductDetail() {
 
             if (selectedVariant) {
                 setCurrentPrice(selectedVariant.donGia);
-                // Reset số lượng về 1 khi chọn biến thể mới
                 setQuantity(1);
+
+                // Lấy hình ảnh của biến thể được chọn
+                const variantImages = product.variants
+                    .filter((v) => v.mauSacTen === selectedColor && v.trongLuongTen === selectedWeight)
+                    .flatMap((v) => v.hinhAnhUrls);
+
+                setCurrentImages(variantImages.length > 0 ? variantImages : product.hinhAnhUrls);
             }
         }
     }, [selectedColor, selectedWeight, product]);
@@ -108,23 +116,44 @@ export default function ProductDetail() {
             return;
         }
 
-        const newCart = {
-            sanPhamCT: {
-                id: selectedVariant.id,
-            },
-            taiKhoan: {
-                id: values.taiKhoanId,
-            },
-            soLuong: quantity,
-            trangThai: values.trangThai === '1' ? 1 : 0,
-            ngayTao: new Date(),
-            ngaySua: new Date(),
-        };
-
+        // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
         try {
-            await axios.post('http://localhost:8080/api/gio-hang', newCart);
-            swal('Thành công!', 'Giỏ hàng đã được thêm!', 'success');
-            setCartItemCount((prevCount) => prevCount + 1);
+            const response = await axios.get('http://localhost:8080/api/gio-hang'); // Lấy giỏ hàng hiện tại
+            const cartItems = response.data;
+
+            const existingItem = cartItems.find(
+                (item) => item.sanPhamCT.id === selectedVariant.id && item.taiKhoan.id === values.taiKhoanId,
+            );
+
+            if (existingItem) {
+                // Nếu sản phẩm đã tồn tại, cập nhật số lượng
+                const updatedCartItem = {
+                    ...existingItem,
+                    soLuong: existingItem.soLuong + quantity,
+                };
+
+                await axios.put(`http://localhost:8080/api/gio-hang/${existingItem.id}`, updatedCartItem);
+                swal('Thành công!', 'Số lượng sản phẩm đã được cập nhật trong giỏ hàng!', 'success');
+            } else {
+                // Nếu sản phẩm chưa tồn tại, thêm mới
+                const newCart = {
+                    sanPhamCT: {
+                        id: selectedVariant.id,
+                    },
+                    taiKhoan: {
+                        id: values.taiKhoanId,
+                    },
+                    soLuong: quantity,
+                    trangThai: values.trangThai === '1' ? 1 : 0,
+                    ngayTao: new Date(),
+                    ngaySua: new Date(),
+                };
+
+                await axios.post('http://localhost:8080/api/gio-hang', newCart);
+                swal('Thành công!', 'Giỏ hàng đã được thêm!', 'success');
+            }
+
+            setCartItemCount((prevCount) => prevCount + quantity); // Cập nhật số lượng sản phẩm trong giỏ hàng
         } catch (error) {
             console.error('Có lỗi xảy ra khi thêm Giỏ hàng!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm Giỏ hàng!', 'error');
@@ -146,13 +175,13 @@ export default function ProductDetail() {
                     <div className="flex flex-col items-center h-[510px]">
                         <div className="overflow-hidden rounded-lg max-w-[30rem] max-h-[35rem]">
                             <img
-                                alt={product.hinhAnhUrls[0]}
-                                src={product.hinhAnhUrls[0]}
+                                alt={currentImages[0]}
+                                src={currentImages[0]}
                                 className="h-full w-full object-cover object-center"
                             />
                         </div>
                         <div className="flex flex-wrap space-x-5 justify-center">
-                            {product.hinhAnhUrls.map((link, index) => (
+                            {currentImages.slice(1).map((link, index) => (
                                 <div
                                     key={index}
                                     className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg max-w-[5rem] max-h-[10rem] mt-4"
