@@ -113,4 +113,10 @@ public class SanPhamCTController {
         return sanPhamCTService.getAllSanPhamCT();
     }
 
+    @PutMapping("/with-images/{id}")
+    public ResponseEntity<Void> updateHinhAnhUrls(@PathVariable int id, @RequestBody List<String> hinhAnhUrls) {
+        sanPhamCTService.updateHinhAnhUrls(id, hinhAnhUrls);
+        return ResponseEntity.ok().build();
+    }
+
 }

@@ -16,6 +16,8 @@ function ProductVariants() {
     const [previewImages, setPreviewImages] = useState([]);
     const [currentImages, setCurrentImages] = useState([]);
 
+    const [uploadImage, setUploadImage] = useState({});
+
     const [selectedColors, setSelectedColors] = useState([]);
     const [selectedWeights, setSelectedWeights] = useState([]);
 
@@ -115,6 +117,16 @@ function ProductVariants() {
             setVariants(response.data);
         } catch (error) {
             console.error('Failed to fetch product variants', error);
+        }
+    };
+
+    const loadImages = async (idspct) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/san-pham-ct/with-images/${idspct}`);
+            console.log('images: ', response.data);
+            setCurrentImages(response.data.hinhAnhUrls);
+        } catch (error) {
+            console.error('Failed to fetch product Images', error);
         }
     };
 
@@ -251,70 +263,169 @@ function ProductVariants() {
         }
     };
 
+    const handleRemoveImage = async (index, isPreview) => {
+        try {
+            if (isPreview) {
+                // Nếu là ảnh preview, xóa khỏi previewImages
+                setPreviewImages((prevImages) => prevImages.filter((_, i) => i !== index));
+            } else {
+                // Nếu là ảnh hiện tại, xóa khỏi currentImages
+                const imageToRemove = currentImages[index];
+
+                // Cập nhật currentImages để xóa ảnh
+                const updatedCurrentImages = currentImages.filter((_, i) => i !== index);
+                setCurrentImages(updatedCurrentImages);
+
+                // Lấy ra các variant cùng màu
+                const sameColorVariants = variants.filter(
+                    (v) => v.mauSac.ten === selectedProduct.mauSac.ten && v.id !== selectedProduct.id,
+                );
+
+                // Xóa ảnh khỏi tất cả các variant cùng màu
+                await Promise.all(
+                    sameColorVariants.map(async (colorVariant) => {
+                        try {
+                            // Gửi request để xóa ảnh cho variant cùng màu
+                            await axios.put(
+                                `http://localhost:8080/api/san-pham-ct/with-images/${colorVariant.id}`,
+                                updatedCurrentImages,
+                            );
+                        } catch (error) {
+                            console.error('Failed to remove image from variant:', error);
+                            swal('Thất bại!', 'Có lỗi xảy ra khi xóa hình ảnh!', 'error');
+                        }
+                    }),
+                );
+            }
+        } catch (error) {
+            console.error('Failed to remove image:', error);
+            swal('Thất bại!', 'Có lỗi xảy ra khi xóa hình ảnh!', 'error');
+        }
+    };
+
+    console.log('anh moi: ', previewImages);
+
+    const handleUpdateImages = async (variant) => {
+        try {
+            // Lấy ra các variant cùng màu
+            const sameColorVariants = variants.filter(
+                (v) => v.mauSac.ten === variant.mauSac.ten && v.id !== variant.id,
+            );
+
+            // Kiểm tra nếu có hình ảnh mới để upload
+            if (uploadImage && uploadImage.length > 0) {
+                const formData = new FormData();
+
+                // Thêm từng file vào FormData
+                uploadImage.forEach((file) => {
+                    formData.append('images', file);
+                });
+
+                formData.append('idSanPhamCT', variant.id);
+
+                // Upload hình ảnh mới
+                const uploadResponse = await axios.post('http://localhost:8080/api/hinh-anh/upload-image', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+
+                // Lấy URLs của hình ảnh vừa upload
+                const newImageUrls = uploadResponse.data.map((image) => image.link);
+
+                // Kết hợp URLs của hình ảnh cũ và mới
+                const combinedImageUrls = [...currentImages, ...newImageUrls];
+
+                // Cập nhật URLs hình ảnh cho các variant cùng màu
+                await Promise.all(
+                    sameColorVariants.map(async (colorVariant) => {
+                        await axios.put(
+                            `http://localhost:8080/api/san-pham-ct/with-images/${colorVariant.id}`,
+                            combinedImageUrls,
+                        );
+                    }),
+                );
+            }
+        } catch (error) {
+            console.error('Failed to update product images', error);
+            swal('Thất bại!', 'Có lỗi xảy ra khi cập nhật hình ảnh!', 'error');
+        }
+    };
+
     const handleUpdateProduct = async (formData) => {
         try {
-            // Tạo FormData để upload nhiều file
-            const formDataUpload = new FormData();
-
-            // Thêm các file ảnh mới
-            selectedImages.forEach((file) => {
-                formDataUpload.append('images', file);
-            });
-
-            // Upload ảnh và nhận về URL
-            let uploadedImageUrls = [];
-            if (selectedImages.length > 0) {
-                const uploadResponse = await axios.post('http://localhost:8080/api/upload-images', formDataUpload, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                });
-                uploadedImageUrls = uploadResponse.data;
-            }
-
-            // Kết hợp URL ảnh cũ và mới
-            const finalImageUrls = [...currentImages, ...uploadedImageUrls];
-
-            // Cập nhật thông tin chung cho tất cả biến thể
-            const commonUpdateData = {
+            // Cập nhật thông tin cho variant được chọn
+            const updatedVariant = {
+                ...selectedProduct,
+                donGia: parseFloat(formData.price),
+                soLuong: formData.quantity,
+                trangThai: formData.status === 'Active' ? 1 : 0,
+                chatLieu: { id: parseInt(formData.material) },
+                diemCanBang: { id: parseInt(formData.balancePoint) },
+                doCung: { id: parseInt(formData.hardness) },
+                mauSac: {
+                    id: colors.find((c) => c.ten === selectedColors[0])?.id || selectedProduct.mauSac.id,
+                },
+                trongLuong: {
+                    id: weights.find((w) => w.ten === selectedWeights[0])?.id || selectedProduct.trongLuong.id,
+                },
+                moTa: formData.description,
                 sanPham: {
                     id: selectedProduct.sanPham.id,
                     ten: formData.productName,
-                    hinhAnh: finalImageUrls,
                 },
                 thuongHieu: { id: parseInt(formData.brand) },
             };
 
-            // Cập nhật từng biến thể
-            const updatedVariants = await Promise.all(
-                variants.map(async (variant) => {
-                    // Kiểm tra xem biến thể này có phải là biến thể đang được chọn không
-                    const isSelectedVariant = variant.id === selectedProduct.id;
+            // Kết hợp ảnh hiện tại và ảnh mới
+            const combinedImages = [...currentImages];
 
-                    const updatedVariant = {
-                        ...variant,
-                        ...commonUpdateData,
-                        donGia: isSelectedVariant ? parseFloat(formData.price) : variant.donGia,
-                        soLuong: isSelectedVariant ? formData.quantity : variant.soLuong,
-                        trangThai: isSelectedVariant ? (formData.status === 'Active' ? 1 : 0) : variant.trangThai,
-                        chatLieu: isSelectedVariant ? { id: parseInt(formData.material) } : variant.chatLieu,
-                        diemCanBang: isSelectedVariant ? { id: parseInt(formData.balancePoint) } : variant.diemCanBang,
-                        doCung: isSelectedVariant ? { id: parseInt(formData.hardness) } : variant.doCung,
-                        mauSac: isSelectedVariant
-                            ? { id: colors.find((c) => c.ten === selectedColors[0])?.id || variant.mauSac.id }
-                            : variant.mauSac,
-                        trongLuong: isSelectedVariant
-                            ? { id: weights.find((w) => w.ten === selectedWeights[0])?.id || variant.trongLuong.id }
-                            : variant.trongLuong,
-                        moTa: isSelectedVariant ? formData.description : variant.moTa,
-                    };
+            // Upload ảnh mới nếu có
+            if (uploadImage && uploadImage.length > 0) {
+                const formDataUpload = new FormData();
+                uploadImage.forEach((file) => {
+                    formDataUpload.append('images', file);
+                });
+                formDataUpload.append('idSanPhamCT', selectedProduct.id);
 
-                    // Gửi request cập nhật cho từng biến thể
-                    const response = await axios.put(
-                        `http://localhost:8080/api/san-pham-ct/${variant.id}`,
-                        updatedVariant,
+                const uploadResponse = await axios.post(
+                    'http://localhost:8080/api/hinh-anh/upload-image',
+                    formDataUpload,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    },
+                );
+
+                // Thêm URLs của hình ảnh mới vào mảng
+                const newImageUrls = uploadResponse.data.map((image) => image.link);
+                combinedImages.push(...newImageUrls);
+            }
+
+            // Lấy ra các variant cùng màu
+            const sameColorVariants = variants.filter(
+                (v) => v.mauSac.ten === selectedProduct.mauSac.ten && v.id !== selectedProduct.id,
+            );
+
+            // Cập nhật ảnh cho các variant cùng màu
+            await Promise.all(
+                sameColorVariants.map(async (colorVariant) => {
+                    await axios.put(
+                        `http://localhost:8080/api/san-pham-ct/with-images/${colorVariant.id}`,
+                        combinedImages,
                     );
-                    return response.data;
                 }),
             );
+
+            // Gửi request cập nhật cho variant được chọn
+            const response = await axios.put(
+                `http://localhost:8080/api/san-pham-ct/${selectedProduct.id}`,
+                updatedVariant,
+            );
+
+            // Cập nhật ảnh cho variant hiện tại
+            await axios.put(`http://localhost:8080/api/san-pham-ct/with-images/${selectedProduct.id}`, combinedImages);
 
             swal({
                 title: 'Thành công!',
@@ -335,6 +446,15 @@ function ProductVariants() {
         }
     };
 
+    const handleImageChange = (event) => {
+        const files = Array.from(event.target.files);
+        const newImages = files.map((file) => file);
+        setUploadImage(newImages);
+
+        // Cập nhật trạng thái previewImages
+        setPreviewImages((prevImages) => [...prevImages, ...newImages]);
+    };
+
     const handleAddMaterial = async (values) => {
         const newMaterial = {
             ten: values.materialName,
@@ -352,6 +472,7 @@ function ProductVariants() {
     };
 
     const handleUpdateClick = (variant) => {
+        loadImages(variant.id);
         console.log('Selected Product:', variant);
         setSelectedProduct(variant);
         setShowUpdateModal(true);
@@ -362,7 +483,6 @@ function ProductVariants() {
 
         // Load ảnh hiện tại
         const productImages = variant.sanPham?.hinhAnh || [];
-        setCurrentImages(productImages);
 
         // Các logic set giá trị form khác...
         reset();
@@ -793,6 +913,7 @@ function ProductVariants() {
                                             />
                                             <button
                                                 type="button"
+                                                onClick={() => handleRemoveImage(index, false)} // Gọi hàm xóa với isPreview là false
                                                 className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
                                             >
                                                 ×
@@ -810,6 +931,7 @@ function ProductVariants() {
                                             />
                                             <button
                                                 type="button"
+                                                onClick={() => handleRemoveImage(index, true)} // Gọi hàm xóa với isPreview là true
                                                 className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
                                             >
                                                 ×
@@ -825,6 +947,7 @@ function ProductVariants() {
                                                 multiple
                                                 accept="image/jpeg,image/png,image/gif"
                                                 className="hidden"
+                                                onChange={handleImageChange} // Thêm sự kiện onChange
                                             />
                                             <span className="text-2xl text-gray-500">+</span>
                                         </label>

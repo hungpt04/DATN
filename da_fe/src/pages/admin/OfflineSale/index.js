@@ -491,7 +491,15 @@ function OfflineSale() {
         );
 
         // Tính giảm giá từ voucher
-        const voucherDiscount = bestVoucher ? (totalItems * bestVoucher.giaTri) / 100 : 0;
+        const voucherDiscount = bestVoucher
+            ? (() => {
+                  const discountPercentage = bestVoucher.giaTri / 100;
+                  const discountAmount = totalItems * discountPercentage;
+
+                  // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                  return discountAmount > bestVoucher.giaTriMax ? bestVoucher.giaTriMax : discountAmount;
+              })()
+            : 0;
 
         // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
         const totalAmount = totalItems - voucherDiscount + shippingFee;
@@ -582,6 +590,7 @@ function OfflineSale() {
                 // Cập nhật thông tin hóa đơn
                 const updatedBill = {
                     id: hoaDonId,
+                    idVoucher: bestVoucher.id,
                     soLuong: totalQuantity,
                     tongTien: totalAmount,
                     ma: existingBill.ma, // Giữ nguyên mã hóa đơn cũ
@@ -979,9 +988,17 @@ function OfflineSale() {
                                                                                 detail.hoaDonCT.giaBan,
                                                                         0,
                                                                     );
-                                                                    return bestVoucher
-                                                                        ? (total * bestVoucher.giaTri) / 100
-                                                                        : 0;
+
+                                                                    if (!bestVoucher) return 0;
+
+                                                                    // Tính toán giảm giá theo phần trăm
+                                                                    const discountPercentage = bestVoucher.giaTri / 100;
+                                                                    const discountAmount = total * discountPercentage;
+
+                                                                    // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                                                    return discountAmount > bestVoucher.giaTriMax
+                                                                        ? bestVoucher.giaTriMax
+                                                                        : discountAmount;
                                                                 })()}
                                                                 className="ml-4 px-2 py-1 rounded bg-gray-100 cursor-not-allowed"
                                                                 readOnly
@@ -1005,7 +1022,17 @@ function OfflineSale() {
 
                                                                 // Tính toán giảm giá từ voucher (nếu có)
                                                                 const voucherDiscount = bestVoucher
-                                                                    ? (totalItems * bestVoucher.giaTri) / 100
+                                                                    ? (() => {
+                                                                          const discountPercentage =
+                                                                              bestVoucher.giaTri / 100;
+                                                                          const discountAmount =
+                                                                              totalItems * discountPercentage;
+
+                                                                          // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                                                          return discountAmount > bestVoucher.giaTriMax
+                                                                              ? bestVoucher.giaTriMax
+                                                                              : discountAmount;
+                                                                      })()
                                                                     : 0;
 
                                                                 // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
@@ -1100,7 +1127,17 @@ function OfflineSale() {
                                     );
 
                                     // Tính giảm giá từ voucher
-                                    const voucherDiscount = bestVoucher ? (totalItems * bestVoucher.giaTri) / 100 : 0;
+                                    const voucherDiscount = bestVoucher
+                                        ? (() => {
+                                              const discountPercentage = bestVoucher.giaTri / 100;
+                                              const discountAmount = totalItems * discountPercentage;
+
+                                              // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                              return discountAmount > bestVoucher.giaTriMax
+                                                  ? bestVoucher.giaTriMax
+                                                  : discountAmount;
+                                          })()
+                                        : 0;
 
                                     // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
                                     const total = totalItems - voucherDiscount + shippingFee;
@@ -1261,7 +1298,19 @@ function OfflineSale() {
                                         0,
                                     );
 
-                                    const voucherDiscount = bestVoucher ? (totalItems * bestVoucher.giaTri) / 100 : 0;
+                                    // Tính giảm giá từ voucher
+                                    const voucherDiscount = bestVoucher
+                                        ? (() => {
+                                              const discountPercentage = bestVoucher.giaTri / 100;
+                                              const discountAmount = totalItems * discountPercentage;
+
+                                              // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                              return discountAmount > bestVoucher.giaTriMax
+                                                  ? bestVoucher.giaTriMax
+                                                  : discountAmount;
+                                          })()
+                                        : 0;
+
                                     const total = totalItems - voucherDiscount + shippingFee;
 
                                     // Tính tiền thiếu, cho phép giá trị âm
@@ -1536,15 +1585,20 @@ function OfflineSale() {
                         <div className="flex justify-center">
                             <button
                                 className="bg-blue-500 text-white py-2 px-4 rounded"
-                                onClick={() =>
-                                    handleAddBillDetail({
-                                        sanPhamCTId: selectedProduct.id,
-                                        hoaDonId: selectedBill.id,
-                                        soLuong: quantity,
-                                        giaBan: selectedProduct.donGia,
-                                        trangThai: '1',
-                                    })
-                                }
+                                onClick={() => {
+                                    // Kiểm tra số lượng
+                                    if (quantity > selectedProduct.soLuong) {
+                                        swal('Thất bại!', 'Số lượng trong kho không đủ!', 'warning');
+                                    } else {
+                                        handleAddBillDetail({
+                                            sanPhamCTId: selectedProduct.id,
+                                            hoaDonId: selectedBill.id,
+                                            soLuong: quantity,
+                                            giaBan: selectedProduct.donGia,
+                                            trangThai: '1',
+                                        });
+                                    }
+                                }}
                             >
                                 Thêm vào hóa đơn
                             </button>

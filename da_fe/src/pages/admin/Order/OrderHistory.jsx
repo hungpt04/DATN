@@ -441,7 +441,6 @@ const OrderHistory = () => {
     const calculateDiscountAmount = () => {
         if (!usedVoucher) return 0;
 
-        // Loại bỏ điều kiện kiểm tra dieuKienNhoNhat
         // Kiểm tra kiểu giảm giá
         if (usedVoucher.kieuGiaTri === 0) {
             // Giảm theo %
