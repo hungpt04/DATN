@@ -10,6 +10,7 @@ import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { CircularProgress } from '@mui/material';
 
 const CreateVoucher = () => {
     const initialVoucher = {
@@ -49,6 +50,8 @@ const CreateVoucher = () => {
     const [giaTriMaxDefault, setGiaTriMaxDefault] = useState(0)
     const [soLuongDefault, setSoLuongDefault] = useState(0)
     const [dieuKienNhoNhatDefault, setDieuKienNhoNhatDefault] = useState(0)
+    const [loading, setLoading] = useState(false)
+    const [confirmClicked, setConfirmClicked] = useState(false)
 
     const listMa = []
     allMaVoucher.map((m) => listMa.push(m.toLowerCase()))
@@ -285,6 +288,7 @@ const CreateVoucher = () => {
         setErrorSoLuong(errors.soLuong)
         setErrorNgayBatDau(errors.ngayBatDau)
         setErrorNgayKetThuc(errors.ngayKetThuc)
+        setConfirmClicked(true)
         return check
     }
 
@@ -304,6 +308,7 @@ const CreateVoucher = () => {
                 },
             }).then((willConfirm) => {
                 if (willConfirm) {
+                    setLoading(true)
                     const updatedVoucherAdd = { ...voucherAdd, listIdCustomer: selectedCustomerIds };
 
                     axios.post('http://localhost:8080/api/voucher/add', updatedVoucherAdd, {
@@ -318,7 +323,10 @@ const CreateVoucher = () => {
                         .catch((error) => {
                             console.error("Lỗi cập nhật:", error);
                             swal("Thất bại!", "Thêm mới phiếu giảm giá thất bại!", "error");
-                        });
+                        })
+                        .finally(() => {
+                            setLoading(false)
+                        })
                 }
             });
         } else {
@@ -718,11 +726,24 @@ const CreateVoucher = () => {
                     </div>
                 </div>
                 <div className="pt-4">
+                    {confirmClicked && loading && (
+                        <div
+                            style={{
+                                position: 'fixed',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                zIndex: 9999,
+                            }}>
+                            <CircularProgress size={50} />
+                        </div>
+                    )}
                     {/*Button*/}
                     <button
                         onClick={() => handleVoucherAdd()}
+                        disabled={loading}
                         className="border border-amber-400 hover:bg-gray-100 text-amber-400 py-2 px-4 rounded-md ml-auto flex items-center">
-                        Thêm mới
+                        {loading ? 'Đang thêm...' : 'Tạo Voucher'}
                     </button>
                 </div>
             </div>
