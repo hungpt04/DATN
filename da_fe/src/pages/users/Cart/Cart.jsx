@@ -16,9 +16,34 @@ const Cart = () => {
 
     const navigate = useNavigate(); // Khởi tạo hàm navigate
 
-    const loadCarts = async (taiKhoanId) => {
+    // Lấy id người dùng
+    const [customerId, setCustomerId] = useState(null)
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const fetchUserInfo = async () => {
+                try {
+                    const response = await axios.get("http://localhost:8080/api/tai-khoan/my-info", {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
+                    
+                    // Lưu ID người dùng
+                    const userId = response.data.id; // Trong trường hợp này là 11
+                    console.log('User Cart ID:', userId);
+                    setCustomerId(userId);
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                }
+            };   
+            fetchUserInfo();
+        }
+    }, []);
+
+    const loadCarts = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/gio-hang/with-images/${taiKhoanId}`);
+            const response = await axios.get(`http://localhost:8080/api/gio-hang/with-images/${customerId}`);
             setCarts(response.data);
         } catch (error) {
             console.error('Failed to fetch Carts', error);
@@ -46,8 +71,9 @@ const Cart = () => {
     };
 
     useEffect(() => {
-        loadCarts(1);
-    }, []);
+        
+        loadCarts(customerId);
+    }, [customerId]);
 
     useEffect(() => {
         if (carts.length > 0) {

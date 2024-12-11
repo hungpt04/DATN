@@ -1,6 +1,7 @@
 package com.example.da_be.repository;
 
 import com.example.da_be.entity.KhuyenMai;
+import com.example.da_be.entity.Voucher;
 import com.example.da_be.request.KhuyenMaiSearch;
 import com.example.da_be.request.SanPhamCTSearch;
 import com.example.da_be.request.SanPhamSearch;
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -153,4 +155,15 @@ public interface KhuyenMaiRepository extends JpaRepository<KhuyenMai, Integer> {
 """
     )
     List<String> getAllTenKhuyenMai();
+
+    @Query(
+            """
+            SELECT km
+            FROM KhuyenMai km
+            WHERE (km.tgBatDau > :dateNow and km.trangThai != 0)
+            OR (km.tgKetThuc <= :dateNow and km.trangThai != 2)
+            OR ((km.tgBatDau <= km.tgKetThuc and km.tgKetThuc > :dateNow) and km.trangThai != 1)
+"""
+    )
+    List<KhuyenMai> getAllKhuyenMaiWrong(LocalDateTime dateNow);
 }

@@ -183,7 +183,12 @@ const LoginPanel = () => {
                 setError('');
 
                 setTimeout(() => {
-                    navigate(0)
+                    // navigate(0)
+                    if (vaiTro.toLowerCase() === 'customer' ) {
+                        navigate(0)
+                    } else {
+                        navigate('/admin')
+                    }
                 }, 2000);
             
         } catch (error) {

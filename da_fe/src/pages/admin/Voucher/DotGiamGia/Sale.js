@@ -98,21 +98,6 @@ const Sale = () => {
         navigate(`/admin/giam-gia/dot-giam-gia/${id}/detail`);
     }
 
-    useEffect(() => {
-        fetchListKhuyenMai();
-    }, []);
-
-    const fetchListKhuyenMai = async () => {
-        try {
-            axios.get("http://localhost:8080/api/khuyen-mai/list-khuyen-mai")
-                .then((response) => {
-                    setListKhuyenMai(response.data);
-                })
-        } catch (error) {
-            console.error('Failed to fetch list khuyen mai: ', error);
-        }
-    }
-
     const handelDeleteSale = async (id) => {
         const title = 'Xác nhận xóa phiếu giảm giá?';
 
@@ -138,7 +123,7 @@ const Sale = () => {
                 })
                     .then(() => {
                         swal("Thành công!", "Hủy đợt giảm giá thành công", "success")
-                        fetchListKhuyenMai() // Gọi lại hàm loadVoucher để làm mới danh sách
+                        loadKhuyenMaiSearch(searchKhuyenMai, 0) 
                     })
                     .catch((error) => {
                         console.error("Lỗi cập nhật:", error);

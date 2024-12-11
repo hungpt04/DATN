@@ -37,23 +37,22 @@ function AddProduct() {
     const [currentVariantForImage, setCurrentVariantForImage] = useState(null);
 
     // Hàm mở modal chọn ảnh cho biến thể
-    const openVariantImageModal = (variant) => {
-        setCurrentVariantForImage(variant);
+    const openVariantImageModal = (color) => {
+        setCurrentVariantForImage(color);
         setShowVariantImageModal(true);
     };
 
     const handleSaveVariantImages = () => {
         if (currentVariantForImage && selectedImages.length > 0) {
-            // Lưu ảnh cho biến thể cụ thể
+            // Lưu file gốc thay vì URL
             setVariantImages((prev) => ({
                 ...prev,
-                [currentVariantForImage.id]: selectedImages[0], // Chọn ảnh đầu tiên
+                [currentVariantForImage]: selectedImages[0],
             }));
-
+    
             // Reset trạng thái
             setShowVariantImageModal(false);
             setSelectedImages([]);
-            setImageList([]);
             setCurrentVariantForImage(null);
         }
     };
@@ -284,26 +283,11 @@ function AddProduct() {
         setShowAddWeightModal(true);
     };
 
-    //Sửa ảnh từ đây
-
     // const handleAddImage = (e) => {
     //     const files = Array.from(e.target.files);
     //     const newImages = files.map((file) => URL.createObjectURL(file));
     //     setImageList((prev) => [...prev, ...newImages]);
     // };
-
-    const handleAddImage = (e) => {
-        const files = Array.from(e.target.files);
-    
-        // Lưu file thực tế
-        setImageList((prev) => [...prev, ...files]);
-    
-        // Tạo URL xem trước và lưu
-        const newImageUrls = files.map((file) => URL.createObjectURL(file));
-        setSelectedImages((prev) => [...prev, ...newImageUrls]);
-    };
-    
-    
 
     const handleSelectImage = (image) => {
         if (selectedImages.includes(image)) {
@@ -311,6 +295,12 @@ function AddProduct() {
         } else {
             setSelectedImages([...selectedImages, image]);
         }
+    };
+
+    const handleAddImage = (e) => {
+        const files = Array.from(e.target.files);
+        const newImages = files.map((file) => file); // Lưu trực tiếp file gốc
+        setImageList((prev) => [...prev, ...newImages]);
     };
 
     const handleSaveImages = () => {
@@ -325,8 +315,9 @@ function AddProduct() {
                     id: newVariants.length + 1,
                     name: `${productName} - ${color} - ${weight}`,
                     quantity: 0,
-                    price: '', // Để giá trống để người dùng nhập
+                    price: '',
                     weight: weight,
+                    color: color, // Thêm thông tin màu
                     colorId: colors.find((c) => c.ten === color)?.id,
                     weightId: weights.find((w) => w.ten === weight)?.id,
                 });
@@ -345,70 +336,70 @@ function AddProduct() {
 
     const handleAddProduct = async (e) => {
         e.preventDefault();
-
+    
         const newProduct = {
             ten: productName,
             trangThai: 1,
         };
-
+    
         try {
             const productResponse = await axios.post('http://localhost:8080/api/san-pham', newProduct);
             const newProductId = productResponse.data.id;
-
-            for (const variant of variants) {
-                const newSanPhamCT = {
-                    sanPham: { id: newProductId },
-                    thuongHieu: { id: brand },
-                    mauSac: { id: variant.colorId },
-                    chatLieu: { id: material },
-                    trongLuong: { id: variant.weightId },
-                    diemCanBang: { id: balancePoint },
-                    doCung: { id: hardness },
-                    ma: `SPCT${variant.id}`,
-                    soLuong: variant.quantity,
-                    donGia: variant.price,
-                    moTa: description,
-                    trangThai: status === 'Active' ? 1 : 0,
-                };
-
-                const sanPhamCTResponse = await axios.post('http://localhost:8080/api/san-pham-ct', newSanPhamCT);
-                const sanPhamCTId = sanPhamCTResponse.data.id;
-
-                // Thêm hình ảnh chung cho tất cả biến thể
-                // if (selectedImages.length > 0) {
-                //     for (const image of selectedImages) {
-                //         const hinhAnhData = {
-                //             sanPhamCT: { id: sanPhamCTId },
-                //             link: image,
-                //             trangThai: 1,
-                //         };
-                //         await axios.post('http://localhost:8080/api/hinh-anh', hinhAnhData);
-                //     }
-                // }
-                if (selectedImages.length > 0) {
-                    const formData = new FormData();
-                    selectedImages.forEach((image) => {
-                        formData.append('images', image); // Ensure each image is added
-                    });
-                    formData.append('idSanPhamCT', sanPhamCTId);
     
-                    await axios.post('http://localhost:8080/api/hinh-anh/upload-image', formData, {
-                        headers: { 'Content-Type': 'multipart/form-data' },
-                    });
+            // Nhóm variants theo màu
+            const colorGroups = {};
+            variants.forEach(variant => {
+                if (!colorGroups[variant.color]) {
+                    colorGroups[variant.color] = [];
                 }
-
-                // Thêm ảnh cho từng biến thể
-                if (variantImages[variant.id]) {
-                    const hinhAnhData = {
-                        sanPhamCT: { id: sanPhamCTId },
-                        link: variantImages[variant.id],
-                        trangThai: 1,
-                    };
-                    await axios.post('http://localhost:8080/api/hinh-anh', hinhAnhData);
-
+                colorGroups[variant.color].push(variant);
+            });
+    
+            // Duyệt qua từng nhóm màu
+            for (const color in colorGroups) {
+                const colorVariants = colorGroups[color];
+                const colorImage = variantImages[color];
+    
+                // Nếu có ảnh cho màu này
+                if (colorImage) {
+                    // Upload ảnh cho TẤT CẢ các variant của màu này
+                    for (const variant of colorVariants) {
+                        const newSanPhamCT = {
+                            sanPham: { id: newProductId },
+                            thuongHieu: { id: brand },
+                            mauSac: { id: variant.colorId },
+                            chatLieu: { id: material },
+                            trongLuong: { id: variant.weightId },
+                            diemCanBang: { id: balancePoint },
+                            doCung: { id: hardness },
+                            ma: `SPCT${variant.id}`,
+                            soLuong: variant.quantity,
+                            donGia: variant.price,
+                            moTa: description,
+                            trangThai: status === 'Active' ? 1 : 0,
+                        };
+    
+                        const sanPhamCTResponse = await axios.post('http://localhost:8080/api/san-pham-ct', newSanPhamCT);
+                        const sanPhamCTId = sanPhamCTResponse.data.id;
+    
+                        // Upload ảnh cho mỗi sản phẩm chi tiết
+                        const formData = new FormData();
+                        formData.append('images', colorImage);
+                        formData.append('idSanPhamCT', sanPhamCTId);
+    
+                        try {
+                            await axios.post('http://localhost:8080/api/hinh-anh/upload-image', formData, {
+                                headers: {
+                                    'Content-Type': 'multipart/form-data',
+                                },
+                            });
+                        } catch (error) {
+                            console.error(`Lỗi upload ảnh cho sản phẩm chi tiết ${sanPhamCTId}:`, error);
+                        }
+                    }
                 }
             }
-
+    
             swal('Thành công!', 'Sản phẩm đã được thêm!', 'success');
             reset();
             setVariants([]);
@@ -418,7 +409,6 @@ function AddProduct() {
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm sản phẩm!', 'error');
         }
     };
-
 
     return (
         <div className="p-4 max-w-full mx-auto bg-white rounded-lg shadow-md w-[1000px]">
@@ -592,20 +582,19 @@ function AddProduct() {
                     <div className="flex items-center">
                         <span className="block text-xl font-bold text-gray-700 mr-2">Màu sắc:</span>
 
-                        {/* Render các button với màu đã chọn */}
                         {selectedColors.map((color, index) => (
-                            <button
-                                key={index}
-                                className="border font-medium py-1 px-1 rounded ml-2 w-9 h-9"
-                                style={{
-                                    backgroundColor: color,
-                                    color: '#fff',
-                                    borderColor: color === 'white' ? '#000' : 'transparent',
-                                }}
-                            ></button>
+                            <div key={index} className="flex items-center mr-4">
+                                <button
+                                    className="border font-medium py-1 px-1 rounded w-9 h-9"
+                                    style={{
+                                        backgroundColor: color,
+                                        color: '#fff',
+                                        borderColor: color === 'white' ? '#000' : 'transparent',
+                                    }}
+                                ></button>
+                            </div>
                         ))}
 
-                        {/* Nút dấu + */}
                         <button
                             onClick={handleColorModal}
                             type="button"
@@ -643,98 +632,121 @@ function AddProduct() {
                 </div>
 
                 <h3 className="text-lg font-semibold mb-2 mt-[40px]">Biến thể sản phẩm</h3>
-
-                <table className="table-auto bg-white rounded-lg shadow-md w-[950px]">
-                    <thead>
-                        <tr className="bg-gray-200 text-gray-700">
-                            <th className="p-1 text-sm"></th>
-                            <th className="p-1 text-sm">STT</th>
-                            <th className="p-1 text-sm w-[250px]">Tên sản phẩm</th>
-                            <th className="p-4 text-sm w-[100px]">Số lượng</th>
-                            <th className="p-1 text-sm w-[100px]">Giá</th>
-                            <th className="p-1 text-sm">Ảnh</th>
-                            <th className="p-1 text-sm">Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {variants.map((variant, index) => (
-                            <tr key={variant.id}>
-                                <td className="p-1 text-sm text-center">
-                                    <input
-                                        type="checkbox"
-                                        checked={variant.selected}
-                                        onChange={() => {
-                                            const newVariants = [...variants];
-                                            newVariants[index].selected = !newVariants[index].selected;
-                                            setVariants(newVariants);
-                                        }}
-                                    />
-                                </td>
-                                <td className="p-1 text-sm text-center">{index + 1}</td>
-                                <td className="p-1 text-sm">{variant.name}</td>
-                                <td className="p-1 text-sm text-center">
-                                    <input
-                                        type="number"
-                                        value={variant.quantity}
-                                        onChange={(e) => {
-                                            const newVariants = [...variants];
-                                            newVariants[index].quantity = e.target.value;
-                                            setVariants(newVariants);
-                                        }}
-                                        className="w-20 h-8 border border-gray-300 rounded-md p-1 text-sm"
-                                    />
-                                </td>
-                                <td className="p-1 text-sm text-center">
-                                    <input
-                                        type="number"
-                                        value={variant.price}
-                                        onChange={(e) => {
-                                            const newVariants = [...variants];
-                                            newVariants[index].price = e.target.value;
-                                            setVariants(newVariants);
-                                        }}
-                                        className="w-20 h-8 border border-gray-300 rounded-md p-1 text-sm"
-                                    />
-                                </td>
-                                <td className="p-1 text-sm text-center">
-                                    <div className="flex items-center justify-center">
-                                        {variantImages[variant.id] ? (
-                                            <img
-                                                src={variantImages[variant.id]}
-                                                alt="Variant"
-                                                className="w-16 h-16 object-cover rounded"
-                                            />
-                                        ) : (
-                                            <button
-                                                type="button" // Thêm type="button" để ngăn việc submit form
-                                                onClick={() => openVariantImageModal(variant)}
-                                                className="border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium py-1 px-2 rounded"
-                                            >
-                                                <AddIcon />
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
-                                <td className="p-1 text-sm text-center">
-                                    <button
-                                        className="text-red-600 hover:underline"
-                                        onClick={() => {
-                                            const newVariants = variants.filter((v) => v.id !== variant.id);
-                                            setVariants(newVariants);
-
-                                            // Xóa ảnh của biến thể
-                                            const newVariantImages = { ...variantImages };
-                                            delete newVariantImages[variant.id];
-                                            setVariantImages(newVariantImages);
-                                        }}
-                                    >
-                                        Xóa
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                {selectedColors.map((color) => (
+                    <div key={color} className="mb-6">
+                        <div className="flex items-center mb-2">
+                            <span className="text-md font-semibold mr-2">Màu: {color}</span>
+                        </div>
+                        <table className="table-auto bg-white rounded-lg shadow-md w-[950px]">
+                            <thead>
+                                <tr className="bg-gray-200 text-gray-700">
+                                    <th className="p-1 text-sm"></th>
+                                    <th className="p-1 text-sm">STT</th>
+                                    <th className="p-1 text-sm w-[250px]">Tên sản phẩm</th>
+                                    <th className="p-4 text-sm w-[100px]">Số lượng</th>
+                                    <th className="p-1 text-sm w-[100px]">Giá</th>
+                                    <th className="p-1 text-sm w-[100px]">Ảnh</th>
+                                    <th className="p-1 text-sm">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {variants
+                                    .filter((variant) => variant.color === color)
+                                    .map((variant, index) => (
+                                        <tr key={variant.id}>
+                                            <td className="p-1 text-sm text-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={variant.selected}
+                                                    onChange={() => {
+                                                        const newVariants = [...variants];
+                                                        const variantIndex = newVariants.findIndex(
+                                                            (v) => v.id === variant.id,
+                                                        );
+                                                        newVariants[variantIndex].selected =
+                                                            !newVariants[variantIndex].selected;
+                                                        setVariants(newVariants);
+                                                    }}
+                                                />
+                                            </td>
+                                            <td className="p-1 text-sm text-center">{index + 1}</td>
+                                            <td className="p-1 text-sm">{variant.name}</td>
+                                            <td className="p-1 text-sm text-center">
+                                                <input
+                                                    type="number"
+                                                    value={variant.quantity}
+                                                    onChange={(e) => {
+                                                        const newVariants = [...variants];
+                                                        const variantIndex = newVariants.findIndex(
+                                                            (v) => v.id === variant.id,
+                                                        );
+                                                        newVariants[variantIndex].quantity = e.target.value;
+                                                        setVariants(newVariants);
+                                                    }}
+                                                    className="w-20 h-8 border border-gray-300 rounded-md p-1 text-sm"
+                                                />
+                                            </td>
+                                            <td className="p-1 text-sm text-center">
+                                                <input
+                                                    type="number"
+                                                    value={variant.price}
+                                                    onChange={(e) => {
+                                                        const newVariants = [...variants];
+                                                        const variantIndex = newVariants.findIndex(
+                                                            (v) => v.id === variant.id,
+                                                        );
+                                                        newVariants[variantIndex].price = e.target.value;
+                                                        setVariants(newVariants);
+                                                    }}
+                                                    className="w-20 h-8 border border-gray-300 rounded-md p-1 text-sm"
+                                                />
+                                            </td>
+                                            <td className="p-1 text-sm text-center">
+                                                {index === 0 && (
+                                                    <div className="flex items-center justify-center">
+                                                        <button
+                                                            onClick={() => openVariantImageModal(color)}
+                                                            type="button"
+                                                            className="border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium py-1 px-2 rounded mr-2"
+                                                        >
+                                                            {variantImages[color] ? 'Đổi ảnh' : 'Thêm ảnh'}
+                                                        </button>
+                                                        {/* {variantImages[color] && (
+                                                            <img
+                                                                src={variantImages[color]}
+                                                                alt={`Ảnh ${color}`}
+                                                                className="w-16 h-16 object-cover rounded"
+                                                            />
+                                                        )} */}
+                                                        {variantImages[variant.color] && (
+    <div className="flex items-center justify-center">
+        <img
+            src={URL.createObjectURL(variantImages[variant.color])}
+            alt={`Ảnh ${variant.color}`}
+            className="w-16 h-16 object-cover rounded"
+        />
+    </div>
+)}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="p-1 text-sm text-center">
+                                                <button
+                                                    className="text-red-600 hover:underline"
+                                                    onClick={() => {
+                                                        const newVariants = variants.filter((v) => v.id !== variant.id);
+                                                        setVariants(newVariants);
+                                                    }}
+                                                >
+                                                    Xóa
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ))}
                 <div className="mt-6">
                     <button
                         type="button"
@@ -939,7 +951,7 @@ function AddProduct() {
                         <h3 className="text-lg font-bold mb-4">Chọn ảnh cho biến thể</h3>
                         <input type="file" multiple onChange={handleAddImage} />
                         <div className="mt-4 grid grid-cols-4 gap-2">
-                            {imageList.map((image, index) => (
+                            {/* {imageList.map((image, index) => (
                                 <div key={index} className="relative">
                                     <input
                                         type="checkbox"
@@ -952,7 +964,25 @@ function AddProduct() {
                                     />
                                     <img src={image} alt="preview" className="w-full h-32 object-cover rounded" />
                                 </div>
-                            ))}
+                            ))} */}
+                            {imageList.map((file, index) => (
+    <div key={index} className="relative">
+        <input
+            type="checkbox"
+            checked={selectedImages.includes(file)}
+            onChange={() => {
+                // Chỉ cho chọn 1 ảnh
+                setSelectedImages(selectedImages.includes(file) ? [] : [file]);
+            }}
+            className="absolute top-1 left-1 z-10"
+        />
+        <img 
+            src={URL.createObjectURL(file)} 
+            alt="preview" 
+            className="w-full h-32 object-cover rounded" 
+        />
+    </div>
+))}
                         </div>
                         <div className="mt-4 flex justify-end space-x-2">
                             <button

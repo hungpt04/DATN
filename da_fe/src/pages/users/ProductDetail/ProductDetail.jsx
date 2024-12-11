@@ -26,6 +26,31 @@ export default function ProductDetail() {
 
     const { id } = useParams();
 
+    // Lấy id người dùng
+    const [customerId, setCustomerId] = useState(null)
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const fetchUserInfo = async () => {
+                try {
+                    const response = await axios.get("http://localhost:8080/api/tai-khoan/my-info", {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
+                    
+                    // Lưu ID người dùng
+                    const userId = response.data.id; // Trong trường hợp này là 11
+                    console.log('User ID:', userId);
+                    setCustomerId(userId);
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                }
+            };   
+            fetchUserInfo();
+        }
+    }, []);
+
     useEffect(() => {
         if (product && selectedColor && selectedWeight) {
             const selectedVariant = product.variants.find(
@@ -408,7 +433,7 @@ export default function ProductDetail() {
                                     className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                     onClick={() => {
                                         handleAddCart({
-                                            taiKhoanId: 1,
+                                            taiKhoanId: customerId,
                                             soLuong: quantity,
                                             trangThai: 1,
                                         });

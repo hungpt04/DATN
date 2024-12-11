@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -81,5 +82,14 @@ public interface VoucherRepository extends JpaRepository<Voucher, Integer> {
     )
     List<String> getAllTenVoucher();
 
-
+    @Query(
+            """
+            SELECT v
+            FROM Voucher v
+            WHERE (v.ngayBatDau > :dateNow and v.trangThai != 0)
+            OR (v.ngayKetThuc <= :dateNow and v.trangThai != 2)
+            OR ((v.ngayBatDau <= v.ngayKetThuc and v.ngayKetThuc > :dateNow) and v.trangThai != 1)
+"""
+    )
+    List<Voucher> getAllVoucherWrong(LocalDateTime dateNow);
 }

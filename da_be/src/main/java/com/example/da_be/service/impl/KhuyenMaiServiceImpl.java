@@ -16,14 +16,15 @@ import com.example.da_be.service.KhuyenMaiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class KhuyenMaiServiceImpl implements KhuyenMaiService {
@@ -35,8 +36,6 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
 
     @Autowired
     private SanPhamKhuyenMaiRepository sanPhamKhuyenMaiRepository;
-    @Autowired
-    private KhachHangRepository khachHangRepository;
 
     @Override
     public List<KhuyenMaiResponse> getAllKhuyenMai() {
@@ -145,25 +144,6 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
 
     @Override
     public KhuyenMai deleteKhuyenMai(Integer id) {
-//        // Lấy ngày hiện tại (không có giờ)
-//        LocalDateTime currentDate = LocalDateTime.now();
-//        // Định dạng ngày theo kiểu "dd-MM-yyyy"
-//        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-//        String formattedDate = currentDate.format(dateFormatter);
-//
-//        // Chuyển đổi chuỗi thành LocalDate
-//        LocalDate endDate = LocalDate.parse(formattedDate, dateFormatter);
-//        // Tìm khuyến mãi theo id
-//        Optional<KhuyenMai> optionalKhuyenMai = khuyenMaiRepository.findById(id);
-//        if (optionalKhuyenMai.isPresent()) {
-//            KhuyenMai khuyenMai = optionalKhuyenMai.get();
-//            // Cập nhật trạng thái và thời gian kết thúc (chỉ ngày)
-//            khuyenMai.setTrangThai(2);
-//            khuyenMai.setTgKetThuc(endDate);
-//            return khuyenMaiRepository.save(khuyenMai);
-//        } else {
-//            return null;
-//        }
         // Lấy ngày giờ hiện tại (bao gồm cả giờ)
         LocalDateTime currentDateTime = LocalDateTime.now();
 
@@ -208,5 +188,31 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
     @Override
     public List<String> getAllTenKhuyenMai() {
         return khuyenMaiRepository.getAllTenKhuyenMai();
+    }
+
+    @Scheduled(cron = "0 * * * * ?")
+    @Transactional
+    public void cronJobCheckPromotion() {
+        boolean flag = false;
+        LocalDateTime dateNow = LocalDateTime.now();
+
+        List<KhuyenMai> khuyenMaisList = khuyenMaiRepository.getAllKhuyenMaiWrong(dateNow);
+
+        for (KhuyenMai khuyenMai : khuyenMaisList) {
+            if (khuyenMai.getTgBatDau().isAfter(dateNow) &&
+                    khuyenMai.getTrangThai() != 0) {
+                khuyenMai.setTrangThai(0);
+                flag = true;
+            } else if (khuyenMai.getTgKetThuc().isBefore(dateNow) &&
+                    khuyenMai.getTrangThai() != 2) {
+                khuyenMai.setTrangThai(2);
+                flag = true;
+            } else if (khuyenMai.getTgBatDau().isBefore(dateNow) &&
+                    khuyenMai.getTgKetThuc().isAfter(dateNow) &&
+                    khuyenMai.getTrangThai() != 1) {
+                khuyenMai.setTrangThai(1);
+                flag = true;
+            }
+        }
     }
 }
