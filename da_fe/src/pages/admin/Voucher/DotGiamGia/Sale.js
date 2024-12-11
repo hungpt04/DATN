@@ -10,10 +10,12 @@ import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import ExcelJS from 'exceljs'
 
 const Sale = () => {
     const navigate = useNavigate();
     const [listKhuyenMai, setListKhuyenMai] = useState([]);
+    const [listKhuyenMaiEx, setListKhuyenMaiEx] = useState([])
     const [pageCount, setPageCount] = useState(0);
     const [currentPage, setCurrentPage] = useState(0);
     const size = 5;
@@ -139,6 +141,81 @@ const Sale = () => {
         console.log(`User  requested page number ${selectedPage + 1}`);
     };
 
+    const getAllKhuyenMaiExcel = () => {
+        axios.get(`http://localhost:8080/api/khuyen-mai/list-khuyen-mai`)
+        .then((response) => {
+            setListKhuyenMaiEx(response.data);
+        })
+        .catch((error) => {
+            console.error("Có lỗi xảy ra:", error);
+        });
+    };
+
+    useEffect(() => {
+        getAllKhuyenMaiExcel();
+    }, [])
+
+    const exportToExcel = () => {
+        const workbook = new ExcelJS.Workbook()
+        const worksheet = workbook.addWorksheet('PromotionData')
+    
+        const columns = [
+          { header: 'STT', key: 'stt', width: 5 },
+          { header: 'Tên', key: 'ten', width: 15 },
+          { header: 'Giá trị', key: 'giaTri', width: 15 },
+          { header: 'Trạng thái', key: 'trangThai', width: 20 },
+          { header: 'Thời gian bắt đầu', key: 'tgBatdau', width: 17.5 },
+          { header: 'Thời gian kết thúc', key: 'tgKetThuc', width: 17.5 },
+        ]
+    
+        worksheet.columns = columns
+    
+        listKhuyenMaiEx.forEach((sale, index) => {
+          worksheet.addRow({
+            stt: index + 1,
+            ten: sale.ten,
+            giaTri: `${sale.giaTri}%`,
+            trangThai:
+              sale.trangThai === 2 ? 'Đã kết thúc' : sale.trangThai === 1 ? 'Đang diễn ra' : 'Sắp diễn ra',
+            tgBatdau: dayjs(sale.tgBatdau).format('DD/MM/YYYY HH:mm'),
+            tgKetThuc: dayjs(sale.tgKetThuc).format('DD/MM/YYYY HH:mm'),
+          })
+        })
+    
+        const titleStyle = {
+          font: { bold: true, color: { argb: 'FFFFFF' } },
+          fill: {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF008080' },
+          },
+        }
+    
+        worksheet.getRow(1).eachCell((cell) => {
+          cell.style = titleStyle
+        })
+    
+        worksheet.columns.forEach((column) => {
+          const { width } = column
+          column.width = width
+        })
+    
+        const blob = workbook.xlsx.writeBuffer().then(
+          (buffer) =>
+            new Blob([buffer], {
+              type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            }),
+        )
+    
+        blob.then((blobData) => {
+          const url = window.URL.createObjectURL(blobData)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = 'promotion_data.xlsx'
+          link.click()
+        })
+      }
+
     return (
         <div>
             <div className="font-bold text-sm">
@@ -164,7 +241,7 @@ const Sale = () => {
                     {/* Button Group */}
                     <div className="ml-auto flex space-x-4">
                         {/* Export Button */}
-                        <button className="border border-amber-400 text-amber-400 px-4 py-2 rounded-md hover:bg-gray-100">
+                        <button onClick={exportToExcel} className="border border-amber-400 text-amber-400 px-4 py-2 rounded-md hover:bg-gray-100">
                             Xuất Excel
                         </button>
 

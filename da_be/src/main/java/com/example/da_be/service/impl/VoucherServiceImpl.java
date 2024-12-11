@@ -172,64 +172,6 @@ public class VoucherServiceImpl implements VoucherService {
         }
     }
 
-//    @Override
-//    public Voucher updateVoucher(Integer id, VoucherRequest voucherRequest) throws ParseException {
-//        // Lấy thông tin voucher theo ID
-//        Optional<Voucher> optionalVoucher = voucherRepository.findById(id);
-//        // Lấy danh sách KhachHang_Voucher liên quan đến voucher
-//        List<KhachHang_Voucher> customerVouchers = khachHang_VoucherRepository.getListKhachHangVoucherByIdVoucher(id);
-//
-//        // Xóa tất cả các KhachHang_Voucher cũ
-//        for (KhachHang_Voucher customerVoucher : customerVouchers) {
-//            khachHang_VoucherRepository.deleteById(customerVoucher.getId());
-//        }
-//
-//        if (optionalVoucher.isPresent()) {
-//            // Lấy voucher cần cập nhật
-//            Voucher voucher = optionalVoucher.get();
-//            // Cập nhật thông tin voucher
-//            Voucher voucherUpdate = voucherRepository.save(voucherRequest.newVoucher(voucher));
-//            List<KhachHang_Voucher> customerVoucherList = new ArrayList<>();
-//
-//            // Kiểm tra kiểu voucher
-//            if (voucherRequest.getKieu() == 0) {
-//                return voucherUpdate; // Không cần xử lý thêm nếu kiểu là 0
-//            } else {
-//                // Lấy danh sách ID khách hàng từ yêu cầu
-//                List<Integer> listIdCustomer = voucherRequest.getListIdCustomer();
-//                if (listIdCustomer != null && !listIdCustomer.isEmpty()) {
-//                    for (Integer idCustomer : listIdCustomer) {
-//                        // Kiểm tra và lấy thông tin tài khoản khách hàng theo ID
-//                        Optional<TaiKhoan> optionalCustomer = khachHangRepository.findById(idCustomer);
-//                        if (optionalCustomer.isPresent()) {
-//                            TaiKhoan customer = optionalCustomer.get();
-//                            // Tạo mới đối tượng KhachHang_Voucher từ thông tin yêu cầu
-//                            KhachHang_VoucherRequest adCustomerVoucherRequest = new KhachHang_VoucherRequest();
-//                            adCustomerVoucherRequest.setVoucher(voucherUpdate);
-//                            adCustomerVoucherRequest.setTaiKhoan(customer);
-//                            KhachHang_Voucher customerVoucher = adCustomerVoucherRequest.newKhachHang_Voucher(new KhachHang_Voucher());
-//                            customerVoucherList.add(customerVoucher);
-//                        } else {
-//                            // Xử lý nếu không tìm thấy khách hàng
-//                            System.out.println("Không tìm thấy khách hàng với ID: " + idCustomer);
-//                        }
-//                    }
-//                } else {
-//                    // Xử lý khi danh sách ID khách hàng bị null hoặc rỗng
-//                    System.out.println("Danh sách ID khách hàng (listIdCustomer) null hoặc rỗng.");
-//                }
-//            }
-//
-//            // Lưu danh sách KhachHang_Voucher mới vào cơ sở dữ liệu
-//            khachHang_VoucherRepository.saveAll(customerVoucherList);
-//            return voucherUpdate;
-//        } else {
-//            // Trả về null nếu không tìm thấy voucher
-//            System.out.println("Không tìm thấy voucher với ID: " + id);
-//            return null;
-//        }
-//    }
-
     @Override
     public Voucher updateVoucher(Integer id, VoucherRequest voucherRequest) throws ParseException {
         Optional<Voucher> optionalVoucher = voucherRepository.findById(id);

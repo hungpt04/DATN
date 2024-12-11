@@ -20,6 +20,7 @@
     "chart.js": "^4.4.6",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
+    "exceljs": "^4.4.0",
     "is-react": "^1.5.4",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",

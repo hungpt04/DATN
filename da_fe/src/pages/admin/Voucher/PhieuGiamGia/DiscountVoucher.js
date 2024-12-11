@@ -10,9 +10,11 @@ import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import ExcelJS from 'exceljs'
 
 const DiscountVoucher = () => {
     const [listVoucher, setListVoucher] = useState([]);
+    const [listVoucherEx, setListVoucherEx] = useState([])
     const navigate = useNavigate();
     const [pageCount, setPageCount] = useState(0);
     const [currentPage, setCurrentPage] = useState(0);
@@ -136,8 +138,85 @@ const DiscountVoucher = () => {
         return numeral(money).format('0,0') + ' ₫'
     }
 
-    return (
+    const getAllVoucherExcel = () => {
+        axios.get(`http://localhost:8080/api/voucher/hien-thi`)
+        .then((response) => {
+            setListVoucherEx(response.data);
+        })
+        .catch((error) => {
+            console.error("Có lỗi xảy ra:", error);
+        });
+    };
 
+    useEffect(() => {
+        getAllVoucherExcel();
+    }, [])
+    
+    const exportToExcel = () => {
+        const workbook = new ExcelJS.Workbook()
+        const worksheet = workbook.addWorksheet('VoucherData')
+    
+        const columns = [
+          { header: 'STT', key: 'stt', width: 5 },
+          { header: 'Mã', key: 'ma', width: 8 },
+          { header: 'Tên', key: 'ten', width: 15 },
+          { header: 'Kiểu', key: 'kieu', width: 15 },
+          { header: 'Loại', key: 'kieuGiaTri', width: 15 },
+          { header: 'Ngày bắt đầu', key: 'ngayBatDau', width: 17.5 },
+          { header: 'Ngày kết thúc', key: 'ngayKetThuc', width: 17.5 },
+          { header: 'Trạng thái', key: 'trangThai', width: 20 },
+        ]
+    
+        worksheet.columns = columns
+    
+        listVoucherEx.forEach((item, index) => {
+          worksheet.addRow({
+            stt: index + 1,
+            ma: item.ma,
+            ten: item.ten,
+            kieu: item.kieu === 0 ? 'Công khai' : 'Cá nhân',
+            kieuGiaTri: item.kieuGiaTri === 0 ? 'Phần trăm' : 'Giá tiền',
+            ngayBatDau: dayjs(item.ngayBatDau).format('DD/MM/YYYY HH:mm'),
+            ngayKetThuc: dayjs(item.ngayKetThuc).format('DD/MM/YYYY HH:mm'),
+            trangThai:
+              item.trangThai === 2 ? 'Đã kết thúc' : item.trangThai === 1 ? 'Đang diễn ra' : 'Sắp diễn ra',
+          })
+        })
+    
+        const titleStyle = {
+          font: { bold: true, color: { argb: 'FFFFFF' } },
+          fill: {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF008080' },
+          },
+        }
+    
+        worksheet.getRow(1).eachCell((cell) => {
+          cell.style = titleStyle
+        })
+    
+        worksheet.columns.forEach((column) => {
+          const { width } = column
+          column.width = width
+        })
+    
+        const blob = workbook.xlsx.writeBuffer().then(
+          (buffer) =>
+            new Blob([buffer], {
+              type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            }),
+        )
+        blob.then((blobData) => {
+          const url = window.URL.createObjectURL(blobData)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = 'voucher_data.xlsx'
+          link.click()
+        })
+      }
+
+    return (
         <div>
             <div className="font-bold text-sm">
                 Phiếu giảm giá
@@ -412,7 +491,7 @@ const DiscountVoucher = () => {
                     </div>
 
                     {/* Export Button */}
-                    <button className="border border-amber-400 text-amber-400 px-4 py-2 rounded-md hover:bg-gray-100">
+                    <button onClick={exportToExcel} className="border border-amber-400 text-amber-400 px-4 py-2 rounded-md hover:bg-gray-100">
                         Xuất Excel
                     </button>
                 </div>
