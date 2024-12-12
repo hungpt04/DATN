@@ -49,7 +49,7 @@ function AddProduct() {
                 ...prev,
                 [currentVariantForImage]: selectedImages[0],
             }));
-    
+
             // Reset trạng thái
             setShowVariantImageModal(false);
             setSelectedImages([]);
@@ -336,30 +336,31 @@ function AddProduct() {
 
     const handleAddProduct = async (e) => {
         e.preventDefault();
-    
+
         const newProduct = {
             ten: productName,
             trangThai: 1,
         };
-    
+
         try {
             const productResponse = await axios.post('http://localhost:8080/api/san-pham', newProduct);
             const newProductId = productResponse.data.id;
-    
+
             // Nhóm variants theo màu
             const colorGroups = {};
-            variants.forEach(variant => {
+            variants.forEach((variant) => {
                 if (!colorGroups[variant.color]) {
                     colorGroups[variant.color] = [];
                 }
                 colorGroups[variant.color].push(variant);
             });
-    
+
             // Duyệt qua từng nhóm màu
             for (const color in colorGroups) {
                 const colorVariants = colorGroups[color];
                 const colorImage = variantImages[color];
-    
+
+                console.log('co lo image:', colorImage);
                 // Nếu có ảnh cho màu này
                 if (colorImage) {
                     // Upload ảnh cho TẤT CẢ các variant của màu này
@@ -378,15 +379,18 @@ function AddProduct() {
                             moTa: description,
                             trangThai: status === 'Active' ? 1 : 0,
                         };
-    
-                        const sanPhamCTResponse = await axios.post('http://localhost:8080/api/san-pham-ct', newSanPhamCT);
+
+                        const sanPhamCTResponse = await axios.post(
+                            'http://localhost:8080/api/san-pham-ct',
+                            newSanPhamCT,
+                        );
                         const sanPhamCTId = sanPhamCTResponse.data.id;
-    
+
                         // Upload ảnh cho mỗi sản phẩm chi tiết
                         const formData = new FormData();
                         formData.append('images', colorImage);
                         formData.append('idSanPhamCT', sanPhamCTId);
-    
+
                         try {
                             await axios.post('http://localhost:8080/api/hinh-anh/upload-image', formData, {
                                 headers: {
@@ -399,7 +403,7 @@ function AddProduct() {
                     }
                 }
             }
-    
+
             swal('Thành công!', 'Sản phẩm đã được thêm!', 'success');
             reset();
             setVariants([]);
@@ -719,14 +723,16 @@ function AddProduct() {
                                                             />
                                                         )} */}
                                                         {variantImages[variant.color] && (
-    <div className="flex items-center justify-center">
-        <img
-            src={URL.createObjectURL(variantImages[variant.color])}
-            alt={`Ảnh ${variant.color}`}
-            className="w-16 h-16 object-cover rounded"
-        />
-    </div>
-)}
+                                                            <div className="flex items-center justify-center">
+                                                                <img
+                                                                    src={URL.createObjectURL(
+                                                                        variantImages[variant.color],
+                                                                    )}
+                                                                    alt={`Ảnh ${variant.color}`}
+                                                                    className="w-16 h-16 object-cover rounded"
+                                                                />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </td>
@@ -966,23 +972,23 @@ function AddProduct() {
                                 </div>
                             ))} */}
                             {imageList.map((file, index) => (
-    <div key={index} className="relative">
-        <input
-            type="checkbox"
-            checked={selectedImages.includes(file)}
-            onChange={() => {
-                // Chỉ cho chọn 1 ảnh
-                setSelectedImages(selectedImages.includes(file) ? [] : [file]);
-            }}
-            className="absolute top-1 left-1 z-10"
-        />
-        <img 
-            src={URL.createObjectURL(file)} 
-            alt="preview" 
-            className="w-full h-32 object-cover rounded" 
-        />
-    </div>
-))}
+                                <div key={index} className="relative">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedImages.includes(file)}
+                                        onChange={() => {
+                                            // Chỉ cho chọn 1 ảnh
+                                            setSelectedImages(selectedImages.includes(file) ? [] : [file]);
+                                        }}
+                                        className="absolute top-1 left-1 z-10"
+                                    />
+                                    <img
+                                        src={URL.createObjectURL(file)}
+                                        alt="preview"
+                                        className="w-full h-32 object-cover rounded"
+                                    />
+                                </div>
+                            ))}
                         </div>
                         <div className="mt-4 flex justify-end space-x-2">
                             <button

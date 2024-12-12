@@ -5,6 +5,7 @@ import com.example.da_be.entity.HinhAnh;
 import com.example.da_be.entity.SanPham;
 import com.example.da_be.entity.SanPhamCT;
 import com.example.da_be.exception.ResourceNotFoundException;
+import com.example.da_be.repository.HinhAnhRepository;
 import com.example.da_be.repository.SanPhamCTRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
@@ -18,6 +19,11 @@ import java.util.stream.Collectors;
 public class SanPhamCTService {
     @Autowired
     private SanPhamCTRepository sanPhamCTRepository;
+
+    @Autowired
+    private HinhAnhRepository HinhAnhRepository;
+    @Autowired
+    private HinhAnhRepository hinhAnhRepository;
 
     public List<SanPhamCT> getAllSanPhamCT() {
         return sanPhamCTRepository.findAll();
@@ -97,4 +103,24 @@ public class SanPhamCTService {
     }
 
 
+    public void updateHinhAnhUrls(int sanPhamCTId, List<String> hinhAnhUrls) {
+        // Tìm sản phẩm chi tiết theo ID
+        SanPhamCT sanPhamCT = sanPhamCTRepository.findById(sanPhamCTId)
+                .orElseThrow(() -> new ResourceNotFoundException("SanPhamCT not found with id " + sanPhamCTId));
+
+        // Xóa tất cả hình ảnh hiện tại
+        List<HinhAnh> existingHinhAnhs = sanPhamCT.getHinhAnh();
+        for (HinhAnh hinhAnh : existingHinhAnhs) {
+            hinhAnhRepository.delete(hinhAnh);
+        }
+
+        // Thêm hình ảnh mới
+        for (String url : hinhAnhUrls) {
+            HinhAnh newHinhAnh = new HinhAnh();
+            newHinhAnh.setLink(url);
+            newHinhAnh.setTrangThai(1); // Ví dụ: 1 cho trạng thái hoạt động
+            newHinhAnh.setSanPhamCT(sanPhamCT); // Thiết lập sản phẩm liên quan
+            hinhAnhRepository.save(newHinhAnh);
+        }
+    }
 }
