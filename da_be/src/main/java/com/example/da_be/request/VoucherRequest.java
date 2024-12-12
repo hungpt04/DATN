@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -30,17 +31,17 @@ public class VoucherRequest {
 
     private Integer dieuKienNhoNhat;
 
-    private LocalDate ngayBatDau;
+    private LocalDateTime ngayBatDau;
 
-    private LocalDate ngayKetThuc;
+    private LocalDateTime ngayKetThuc;
 
     private Integer trangThai;
 
     private List<Integer> listIdCustomer;
 
     // Phương thức tiện ích để thiết lập trạng thái dựa trên ngày hiện tại
-    public Integer setDataStatus(LocalDate startDate, LocalDate endDate, Integer status) {
-        LocalDate currentDate = LocalDate.now();
+    public Integer setDataStatus(LocalDateTime startDate, LocalDateTime endDate, Integer status) {
+        LocalDateTime currentDate = LocalDateTime.now();
         if (!currentDate.isBefore(startDate) && currentDate.isBefore(endDate.plusDays(1))) {
             return 1;  // Đang diễn ra
         } else {

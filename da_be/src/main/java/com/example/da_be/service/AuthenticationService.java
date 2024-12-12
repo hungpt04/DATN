@@ -42,7 +42,7 @@ public class AuthenticationService {
         taiKhoan.setMatKhau(passwordEncoder.encode(signupRequest.getMatKhau()));
 
         // Thiết lập vai trò mặc định là "Customer"
-        taiKhoan.setVaiTro("Admin");
+        taiKhoan.setVaiTro("Customer");
         taiKhoan.setTrangThai(1); // Hoặc trạng thái mặc định nào đó
         return taiKhoanRepository.save(taiKhoan);
     }

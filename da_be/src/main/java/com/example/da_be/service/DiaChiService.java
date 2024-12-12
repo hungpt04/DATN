@@ -7,6 +7,7 @@ import com.example.da_be.repository.KhachHangRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -67,4 +68,19 @@ public class DiaChiService {
     public Long getIdDiaChiByIdTaiKhoan(Integer idTaiKhoan) {
         return diaChiRepository.getIdDiaChiByIdTaiKhoan(idTaiKhoan);
     }
+
+    @Transactional
+    public DiaChi setDefaultAddress(Long diaChiId) {
+        // Lấy địa chỉ cần đặt mặc định
+        DiaChi diaChi = diaChiRepository.findById(diaChiId)
+                .orElseThrow(() -> new RuntimeException("Address not found with ID: " + diaChiId));
+
+        // Reset tất cả các địa chỉ của tài khoản về loai = 0
+        diaChiRepository.resetDefaultAddress(diaChi.getTaiKhoan().getId().longValue());
+
+        // Cập nhật địa chỉ thành mặc định
+        diaChi.setLoai(1);
+        return diaChiRepository.save(diaChi);
+    }
+
 }

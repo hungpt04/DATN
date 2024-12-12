@@ -59,7 +59,7 @@ import axios from 'axios';
 function HeaderAdmin() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userRole, setUserRole] = useState(null); 
+    const [userRole, setUserRole] = useState(null);
     const [username, setUsername] = useState(null);
     const [avatar, setAvatar] = useState(user_icon); // Khai báo state cho avatar
     const menuRef = useRef(null);
@@ -73,27 +73,27 @@ function HeaderAdmin() {
         gioiTinh: 0,
         vaiTro: "",
         avatar: "",
-      });
-    
-      useEffect(() => {
+    });
+
+    useEffect(() => {
         const token = localStorage.getItem('token'); // Lấy token từ localStorage
         if (token) {
-          const fetchUserInfo = async () => {
-            try {
-              const response = await axios.get("http://localhost:8080/api/tai-khoan/my-info", {
-                headers: {
-                  Authorization: `Bearer ${token}`, // Gửi token trong header
-                },
-              });
-              setAdmin(response.data);
-            } catch (error) {
-              console.error("Error fetching user data:", error);
-            }
-          };
-    
-          fetchUserInfo();
+            const fetchUserInfo = async () => {
+                try {
+                    const response = await axios.get("http://localhost:8080/api/tai-khoan/my-info", {
+                        headers: {
+                            Authorization: `Bearer ${token}`, // Gửi token trong header
+                        },
+                    });
+                    setAdmin(response.data);
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                }
+            };
+
+            fetchUserInfo();
         } else {
-          // navigate("/login"); Điều hướng đến trang đăng nhập nếu không có token
+            // navigate("/login"); Điều hướng đến trang đăng nhập nếu không có token
         }
     }, [navigate]);
 
@@ -129,7 +129,7 @@ function HeaderAdmin() {
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
-document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
 
@@ -194,8 +194,8 @@ document.removeEventListener('mousedown', handleClickOutside);
                                         <>
                                             {userRole === "Admin" && (
                                                 <li className="flex px-4 py-2 hover:bg-gray-100 space-x-3">
-                                                    <User  className='h-5 w-5' />
-<Link to="/profile/user" onClick={() => { setIsMenuOpen(false) }}>Tài khoản của tôi</Link>
+                                                    <User className='h-5 w-5' />
+                                                    <Link to="/profile-admin" onClick={() => { setIsMenuOpen(false) }}>Tài khoản của tôi</Link>
                                                 </li>
                                             )}
                                             <li className="flex px-4 py-2 hover:bg-gray-100 space-x-3">

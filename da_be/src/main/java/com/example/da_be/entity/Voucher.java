@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -43,10 +44,10 @@ public class Voucher {
     private Integer dieuKienNhoNhat;
 
     @Column(name = "NgayBatDau")
-    private LocalDate ngayBatDau;
+    private LocalDateTime ngayBatDau;
 
     @Column(name = "NgayKetThuc")
-    private LocalDate ngayKetThuc;
+    private LocalDateTime ngayKetThuc;
 
     @Column(name = "TrangThai")
     private Integer trangThai;

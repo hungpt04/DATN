@@ -167,6 +167,7 @@ const LoginPanel = () => {
 
                 const vaiTro = decodedToken.vaiTro || decodedToken.authorities || decodedToken.role;
                 const email = decodedToken.sub || decodedToken.email;
+
                 if (!vaiTro) {
                     swal("Lỗi!", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau!", "error");
                     setError('*Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau!');
@@ -183,7 +184,12 @@ const LoginPanel = () => {
                 setError('');
 
                 setTimeout(() => {
-                    navigate(0)
+                    if (vaiTro.toLowerCase() === 'customer') {
+                        navigate(0)
+                    } else {
+                        navigate("/admin")
+                    }
+                    // navigate(0)
                 }, 2000);
             
         } catch (error) {

@@ -1,9 +1,11 @@
 package com.example.da_be.controller;
 
 import com.example.da_be.cloudinary.CloudinaryImage;
+import com.example.da_be.config.JwtTokenProvider;
 import com.example.da_be.entity.TaiKhoan;
 import com.example.da_be.exception.ResourceNotFoundException;
 import com.example.da_be.repository.TaiKhoanRepository;
+import com.example.da_be.request.ChangeRequest;
 import com.example.da_be.request.KhachHangSearch;
 import com.example.da_be.request.NhanVienSearch;
 import com.example.da_be.request.TaiKhoanRequest;
@@ -40,6 +42,8 @@ public class TaiKhoanController {
 
     @Autowired
     private CloudinaryImage cloudinaryImage;
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     // Lấy tất cả tài khoản
     @GetMapping
@@ -102,11 +106,11 @@ public class TaiKhoanController {
             @RequestParam(value = "email", required = false) String email,
 //            @RequestParam(value = "matKhau", required = false) String matKhau,
             @RequestParam(value = "gioiTinh", required = false) Integer gioiTinh,
-            @RequestParam(value = "vaiTro", required = false) String vaiTro,
+//            @RequestParam(value = "vaiTro", required = false) String vaiTro,
             @RequestParam(value = "avatar", required = false) MultipartFile avatar,
             @RequestParam(value = "ngaySinh", required = false) LocalDate ngaySinh,
-            @RequestParam(value = "cccd", required = false) String cccd,
-            @RequestParam(value = "trangThai", required = false) Integer trangThai
+            @RequestParam(value = "cccd", required = false) String cccd
+//            @RequestParam(value = "trangThai", required = false) Integer trangThai
     ) throws ParseException, IOException {
         // Tìm tài khoản cần update
         TaiKhoan existingTaiKhoan = taiKhoanRepository.findById(id)
@@ -123,10 +127,10 @@ public class TaiKhoanController {
 //        }
 
         existingTaiKhoan.setGioiTinh(gioiTinh);
-        existingTaiKhoan.setVaiTro(vaiTro);
+//        existingTaiKhoan.setVaiTro(vaiTro);
         existingTaiKhoan.setNgaySinh(ngaySinh);
         existingTaiKhoan.setCccd(cccd);
-        existingTaiKhoan.setTrangThai(trangThai);
+//        existingTaiKhoan.setTrangThai(trangThai);
 
         // Cập nhật avatar nếu được cung cấp
         if (avatar != null && !avatar.isEmpty()) {
@@ -151,66 +155,82 @@ public class TaiKhoanController {
         return new ResponseEntity<>(taiKhoan, HttpStatus.OK);
     }
 
-    @GetMapping("/searchNhanVien")
-    public Map<String, Object> searchNhanVien(
-            @RequestParam(required = false) String tenSearch,
-            @RequestParam(required = false) String emailSearch,
-            @RequestParam(required = false) String sdtSearch,
-            @RequestParam(required = false) Integer gioiTinhSearch,
-            @RequestParam(required = false) Integer trangThaiSearch,
-            @RequestParam(value = "currentPage", defaultValue = "0") Integer currentPage,
-            @RequestParam(value = "size", defaultValue = "5") Integer size
-    ) {
-        NhanVienSearch search = new NhanVienSearch();
-        search.setTenSearch(tenSearch);
-        search.setEmailSearch(emailSearch);
-        search.setSdtSearch(sdtSearch);
-        search.setGioiTinhSearch(gioiTinhSearch);
-        search.setTrangThaiSearch(trangThaiSearch);
+//    @GetMapping("/searchNhanVien")
+//    public Map<String, Object> searchNhanVien(
+//            @RequestParam(required = false) String tenSearch,
+//            @RequestParam(required = false) String emailSearch,
+//            @RequestParam(required = false) String sdtSearch,
+//            @RequestParam(required = false) Integer gioiTinhSearch,
+//            @RequestParam(required = false) Integer trangThaiSearch,
+//            @RequestParam(value = "currentPage", defaultValue = "0") Integer currentPage,
+//            @RequestParam(value = "size", defaultValue = "5") Integer size
+//    ) {
+//        NhanVienSearch search = new NhanVienSearch();
+//        search.setTenSearch(tenSearch);
+//        search.setEmailSearch(emailSearch);
+//        search.setSdtSearch(sdtSearch);
+//        search.setGioiTinhSearch(gioiTinhSearch);
+//        search.setTrangThaiSearch(trangThaiSearch);
+//
+//        Pageable pageable = PageRequest.of(currentPage, size);
+//
+//        Page<TaiKhoan> pageResult = taiKhoanService.searchNhanVien(search, pageable);
+//
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("content", pageResult.getContent());
+//        response.put("totalPages", pageResult.getTotalPages());
+//        response.put("totalElements", pageResult.getTotalElements());
+//        response.put("currentPage", pageResult.getNumber());
+//        response.put("size", pageResult.getSize());
+//
+//        return response;
+//    }
 
-        Pageable pageable = PageRequest.of(currentPage, size);
+//    @GetMapping("/searchKhachHang")
+//    public Map<String, Object> searchKhachHang(
+//            @RequestParam(required = false) String tenSearch,
+//            @RequestParam(required = false) String emailSearch,
+//            @RequestParam(required = false) String sdtSearch,
+//            @RequestParam(required = false) Integer gioiTinhSearch,
+//            @RequestParam(required = false) Integer trangThaiSearch,
+//            @RequestParam(value = "currentPage", defaultValue = "0") Integer currentPage,
+//            @RequestParam(value = "size", defaultValue = "5") Integer size
+//    ) {
+//        KhachHangSearch search = new KhachHangSearch();
+//        search.setTenSearch(tenSearch);
+//        search.setEmailSearch(emailSearch);
+//        search.setSdtSearch(sdtSearch);
+//        search.setGioiTinhSearch(gioiTinhSearch);
+//        search.setTrangThaiSearch(trangThaiSearch);
+//
+//        Pageable pageable = PageRequest.of(currentPage, size);
+//
+//        Page<TaiKhoan> pageResult = taiKhoanService.searchKhachHang(search, pageable);
+//
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("content", pageResult.getContent());
+//        response.put("totalPages", pageResult.getTotalPages());
+//        response.put("totalElements", pageResult.getTotalElements());
+//        response.put("currentPage", pageResult.getNumber());
+//        response.put("size", pageResult.getSize());
+//
+//        return response;
+//    }
 
-        Page<TaiKhoan> pageResult = taiKhoanService.searchNhanVien(search, pageable);
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePass(@RequestHeader("Authorization") String token, @RequestBody ChangeRequest request) {
+        try {
+            String email = jwtTokenProvider.getEmailFromJwtToken(token);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("content", pageResult.getContent());
-        response.put("totalPages", pageResult.getTotalPages());
-        response.put("totalElements", pageResult.getTotalElements());
-        response.put("currentPage", pageResult.getNumber());
-        response.put("size", pageResult.getSize());
-
-        return response;
-    }
-
-    @GetMapping("/searchKhachHang")
-    public Map<String, Object> searchKhachHang(
-            @RequestParam(required = false) String tenSearch,
-            @RequestParam(required = false) String emailSearch,
-            @RequestParam(required = false) String sdtSearch,
-            @RequestParam(required = false) Integer gioiTinhSearch,
-            @RequestParam(required = false) Integer trangThaiSearch,
-            @RequestParam(value = "currentPage", defaultValue = "0") Integer currentPage,
-            @RequestParam(value = "size", defaultValue = "5") Integer size
-    ) {
-        KhachHangSearch search = new KhachHangSearch();
-        search.setTenSearch(tenSearch);
-        search.setEmailSearch(emailSearch);
-        search.setSdtSearch(sdtSearch);
-        search.setGioiTinhSearch(gioiTinhSearch);
-        search.setTrangThaiSearch(trangThaiSearch);
-
-        Pageable pageable = PageRequest.of(currentPage, size);
-
-        Page<TaiKhoan> pageResult = taiKhoanService.searchKhachHang(search, pageable);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("content", pageResult.getContent());
-        response.put("totalPages", pageResult.getTotalPages());
-        response.put("totalElements", pageResult.getTotalElements());
-        response.put("currentPage", pageResult.getNumber());
-        response.put("size", pageResult.getSize());
-
-        return response;
+            Boolean isPasswordChanged = taiKhoanService.changePassword(email, request);
+            if (isPasswordChanged) {
+                return new ResponseEntity<>(isPasswordChanged, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Password change failed", HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("An error occurred: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/my-info")

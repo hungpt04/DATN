@@ -117,8 +117,6 @@ public class AuthController {
 //        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 //    }
 
-	@Autowired
-	private TaiKhoanService taiKhoanService;
 
 	@Autowired
 	private AuthenticationService authenticationService;

@@ -3,6 +3,7 @@ package com.example.da_be.repository;
 import com.example.da_be.entity.DiaChi;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -22,4 +23,8 @@ public interface DiaChiRepository extends JpaRepository<DiaChi, Long> {
     )
 
     Long getIdDiaChiByIdTaiKhoan(@Param("idTaiKhoan") Integer idTaiKhoan);
+
+    @Modifying
+    @Query("UPDATE DiaChi d SET d.loai = 0 WHERE d.taiKhoan.id = :taiKhoanId")
+    void resetDefaultAddress(Long taiKhoanId);
 }

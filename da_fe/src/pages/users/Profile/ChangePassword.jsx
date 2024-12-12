@@ -1,32 +1,39 @@
-import React, { useState } from 'react';
-import { toast } from 'react-toastify';
-import { Navigate, useNavigate } from 'react-router-dom';
-import swal from 'sweetalert';
+import React, { useState } from "react";
+import { toast } from "react-toastify";
+import { Navigate, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import swal from "sweetalert";
+import axios from "axios";
+
 const ChangePassword = () => {
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
+  const [formData, setFormData] = useState({
+    matKhau: "",
+    matKhauMoi: "",
+    xacNhanMkMoi: ""
+  })
+
   const [errors, setErrors] = useState({
-    passOld: '',
-    newPass: '',
-    confirmPass: '',
+    matKhau: "",
+    matKhauMoi: "",
+    xacNhanMkMoi: ""
   });
 
   const navigate = useNavigate();
-  const token = localStorage.getItem('token'); // Giả sử bạn lưu token trong localStorage
+  // const token = localStorage.getItem("token");
 
   const handleTogglePasswordVisibility = (field) => {
     switch (field) {
-      case 'currentPassword':
+      case "currentPassword":
         setShowCurrentPassword(!showCurrentPassword);
         break;
-      case 'newPassword':
+      case "newPassword":
         setShowNewPassword(!showNewPassword);
         break;
-      case 'confirmNewPassword':
+      case "confirmNewPassword":
         setShowConfirmNewPassword(!showConfirmNewPassword);
         break;
       default:
@@ -34,30 +41,36 @@ const ChangePassword = () => {
     }
   };
 
-  const handleChangePassword = () => {
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData, [e.target.name]: e.target.value
+    })
+  }
+
+  const handleChangePassword = async (e) => {
     const newErrors = {};
     let check = 0;
 
-    if (!currentPassword) {
-      newErrors.passOld = '*Vui lòng nhập mật khẩu cũ';
+    if (formData.matKhau === null) {
+      newErrors.matKhau = "*Vui lòng nhập mật khẩu cũ";
       check++;
     }
 
-    if (!newPassword) {
-      newErrors.newPass = '*Vui lòng nhập mật khẩu mới';
+    if (formData.matKhauMoi === null) {
+      newErrors.matKhauMoi = "*Vui lòng nhập mật khẩu mới";
       check++;
-    } else if (newPassword.length < 5) {
-      newErrors.newPass = '*Mật khẩu mới phải chứa ít nhất 6 kí tự.';
-      check++;
-    }
-
-    if (!confirmNewPassword) {
-      newErrors.confirmPass = '*Vui lòng xác nhận lại mật khẩu mới';
+    } else if (formData.matKhauMoi.length < 5) {
+      newErrors.matKhauMoi = "*Mật khẩu mới phải chứa ít nhất 6 kí tự.";
       check++;
     }
 
-    if (newPassword !== confirmNewPassword) {
-      newErrors.confirmPass = '*Mật khẩu mới và xác nhận mật khẩu mới không khớp';
+    if (formData.xacNhanMkMoi === null) {
+      newErrors.xacNhanMkMoi = "*Vui lòng xác nhận lại mật khẩu mới";
+      check++;
+    }
+
+    if (formData.matKhauMoi !== formData.xacNhanMkMoi) {
+      newErrors.xacNhanMkMoi = "*Mật khẩu mới và xác nhận mật khẩu mới không khớp";
       check++;
     }
 
@@ -66,15 +79,32 @@ const ChangePassword = () => {
       return;
     }
 
-    // Giả lập thành công đổi mật khẩu
-    swal("Thành công!", "Cập nhật mật khẩu thành công", "success")
+    try {
+      const response = await axios.post("http://localhost:8080/api/tai-khoan/change-password", formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      })
 
-    setErrors("");
+      if (response.status !== 200) throw new Error("Đổi mật khẩu không thành công");
 
-    setTimeout(() => {
-      navigate("/profile/user")
-    }, 2000)
-    
+      swal("Thành công!", "Cập nhật mật khẩu thành công", "success")
+
+      setErrors("");
+
+      setTimeout(() => {
+        navigate("/profile/user")
+      }, 2000)
+
+    } catch (error) {
+      console.error("Error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: error.message || "Có lỗi xảy ra khi cập nhật mật khẩu!",
+      });
+    }
+
   };
 
   return (
@@ -82,7 +112,7 @@ const ChangePassword = () => {
       <h2 className="text-2xl font-semibold mb-4">Đổi mật khẩu</h2>
       <p className="mb-4">Để bảo mật tài khoản, vui lòng không chia sẻ mật khẩu cho người khác</p>
       <hr className="mb-4" />
-      <div className='max-w-md mx-auto p-3'>
+      <div className="max-w-md mx-auto p-3">
         <form className="space-y-5">
           <div>
             <label className="block text-base font-medium mb-1">
@@ -90,20 +120,18 @@ const ChangePassword = () => {
             </label>
             <div className="relative">
               <input
-                type={showCurrentPassword ? 'text' : 'password'}
+                type={showCurrentPassword ? "text" : "password"}
                 className={"w-full p-2 border border-gray-400 rounded hover:border-gray-700"}
-                value={currentPassword}
-                onChange={(e) => {
-                  setCurrentPassword(e.target.value);
-                  setErrors({ ...errors, passOld: '' });
-                }}
+                name="matKhau"
+                value={formData.matKhau}
+                onChange={handleInputChange}
               />
               <button
                 type="button"
                 className="absolute right-2 top-2"
-                onClick={() => handleTogglePasswordVisibility('currentPassword')}
+                onClick={() => handleTogglePasswordVisibility("currentPassword")}
               >
-                {showCurrentPassword ? 'Ẩn' : 'Hiện'}
+                {showCurrentPassword ? "Ẩn" : "Hiện"}
               </button>
               {errors.passOld && <p className="text-sm" style={{ color: "red" }}>{errors.passOld}</p>}
             </div>
@@ -115,20 +143,18 @@ const ChangePassword = () => {
             </label>
             <div className="relative">
               <input
-                type={showNewPassword ? 'text' : 'password'}
+                type={showNewPassword ? "text" : "password"}
                 className={"w-full p-2 border border-gray-400 rounded hover:border-gray-700"}
-                value={newPassword}
-                onChange={(e) => {
-                  setNewPassword(e.target.value);
-                  setErrors({ ...errors, newPass: '' });
-                }}
+                name="matKhauMoi"
+                value={formData.matKhauMoi}
+                onChange={handleInputChange}
               />
               <button
                 type="button"
                 className="absolute right-2 top-2"
-                onClick={() => handleTogglePasswordVisibility('newPassword')}
+                onClick={() => handleTogglePasswordVisibility("newPassword")}
               >
-                {showNewPassword ? 'Ẩn' : 'Hiện'}
+                {showNewPassword ? "Ẩn" : "Hiện"}
               </button>
               {errors.newPass && <p className="text-sm" style={{ color: "red" }}>{errors.newPass}</p>}
             </div>
@@ -140,20 +166,18 @@ const ChangePassword = () => {
             </label>
             <div className="relative">
               <input
-                type={showConfirmNewPassword ? 'text' : 'password'}
+                type={showConfirmNewPassword ? "text" : "password"}
                 className={"w-full p-2 border border-gray-400 rounded hover:border-gray-700"}
-                value={confirmNewPassword}
-                onChange={(e) => {
-                  setConfirmNewPassword(e.target.value);
-                  setErrors({ ...errors, confirmPass: '' });
-                }}
+                name="xacNhanMkMoi"
+                value={formData.xacNhanMkMoi}
+                onChange={handleInputChange}
               />
               <button
                 type="button"
                 className="absolute right-2 top-2"
-                onClick={() => handleTogglePasswordVisibility('confirmNewPassword')}
+                onClick={() => handleTogglePasswordVisibility("confirmNewPassword")}
               >
-                {showConfirmNewPassword ? 'Ẩn' : 'Hiện'}
+                {showConfirmNewPassword ? "Ẩn" : "Hiện"}
               </button>
               {errors.confirmPass && <p className="text-sm mb-2" style={{ color: "red" }}>{errors.confirmPass}</p>}
             </div>

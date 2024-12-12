@@ -5,14 +5,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class VoucherSearch {
     public String tenSearch;
-    public LocalDate ngayBatDauSearch;
-    public LocalDate ngayKetThucSearch;
+    public LocalDateTime ngayBatDauSearch;
+    public LocalDateTime ngayKetThucSearch;
     public Integer kieuSearch;
     public Integer kieuGiaTriSearch;
     public Integer trangThaiSearch;

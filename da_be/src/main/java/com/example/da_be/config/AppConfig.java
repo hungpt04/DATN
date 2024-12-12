@@ -1,6 +1,8 @@
 package com.example.da_be.config;
 
+import com.example.da_be.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -40,6 +42,8 @@ public class AppConfig {
 //
 //		return http.build();
 //	}
+	@Autowired
+	private CustomUserDetailsService customUserDetailsService;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

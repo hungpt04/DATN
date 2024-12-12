@@ -4,6 +4,7 @@ import com.example.da_be.config.JwtTokenProvider;
 import com.example.da_be.entity.TaiKhoan;
 import com.example.da_be.exception.ResourceNotFoundException;
 import com.example.da_be.repository.TaiKhoanRepository;
+import com.example.da_be.request.ChangeRequest;
 import com.example.da_be.request.KhachHangSearch;
 import com.example.da_be.request.NhanVienSearch;
 import com.example.da_be.request.TaiKhoanRequest;
@@ -11,6 +12,7 @@ import com.google.gson.JsonParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,6 +29,8 @@ public class TaiKhoanService {
     private TaiKhoanRepository taiKhoanRepository;
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public List<TaiKhoan> getAllTaiKhoan() {
         return taiKhoanRepository.findAll();
@@ -76,6 +80,25 @@ public class TaiKhoanService {
         return taiKhoanRepository.save(taiKhoan);
     }
 
+    public Boolean changePassword(String email, ChangeRequest request) {
+        TaiKhoan taiKhoan = taiKhoanRepository.findByEmail(email);
+
+        if (taiKhoan != null) {
+            if (passwordEncoder.matches(request.getMatKhau(), taiKhoan.getMatKhau())) {
+                String hashedMatKhauMoi = passwordEncoder.encode(request.getMatKhauMoi());
+                taiKhoan.setMatKhau(hashedMatKhauMoi);
+                taiKhoanRepository.save(taiKhoan);
+                System.out.println("Thành công");
+                return true;
+            } else {
+                System.out.println("Thất bại");
+                return false;
+            }
+        }
+
+        return null;
+    }
+
 //    private String generatePassword() {
 //        String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 //
@@ -92,13 +115,13 @@ public class TaiKhoanService {
 //        return password.toString();
 //    }
 
-    public Page<TaiKhoan> searchNhanVien(NhanVienSearch search, Pageable pageable) {
-        return taiKhoanRepository.getSearchNhanVienAndPhanTrang(search, pageable);
-    }
+//    public Page<TaiKhoan> searchNhanVien(NhanVienSearch search, Pageable pageable) {
+//        return taiKhoanRepository.getSearchNhanVienAndPhanTrang(search, pageable);
+//    }
 
-    public Page<TaiKhoan> searchKhachHang(KhachHangSearch search, Pageable pageable) {
-        return taiKhoanRepository.getSearchKhacHangAndPhanTrang(search, pageable);
-    }
+//    public Page<TaiKhoan> searchKhachHang(KhachHangSearch search, Pageable pageable) {
+//        return taiKhoanRepository.getSearchKhacHangAndPhanTrang(search, pageable);
+//    }
 
     public TaiKhoan getMyInfo(String token) {
         try {
@@ -117,4 +140,5 @@ public class TaiKhoanService {
             throw new RuntimeException("Đã xảy ra lỗi: " + e.getMessage());
         }
     }
+
 }

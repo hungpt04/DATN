@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import dayjs from "dayjs";
+import { User } from 'react-feather'
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2"; // Đảm bảo import đúng
@@ -27,6 +29,7 @@ export default function UserProfile() {
           });
           setKhachHang(response.data);
           console.log('h', response.data)
+          console.log('id:', response.data.id)
         } catch (error) {
           console.error("Error fetching user data:", error);
           Swal.fire({
@@ -35,6 +38,7 @@ export default function UserProfile() {
             text: "Có lỗi xảy ra khi tải dữ liệu!",
           });
         }
+        
       };
 
       fetchUserInfo();
@@ -222,7 +226,7 @@ export default function UserProfile() {
           <div className="flex justify-center items-center mt-4">
                             <label className="cursor-pointer">
                                 <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                                <div className="w-32 h-32 border-4 border-dashed border-gray-400 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 overflow-hidden">
+                                <div className="w-32 h-32 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 overflow-hidden">
                                     {previewImage ? (
                                         <img src={previewImage || khachHang.avatar} alt="Preview" className="w-full h-full object-cover" />
                                     ) : (

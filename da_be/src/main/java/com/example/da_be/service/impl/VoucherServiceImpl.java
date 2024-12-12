@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -137,7 +138,7 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     public Boolean deleteVoucher(Integer id) {
-        LocalDate currentDate = LocalDate.now();  // Lấy ngày hiện tại
+        LocalDateTime currentDate = LocalDateTime.now();  // Lấy ngày hiện tại
         Optional<Voucher> optionalVoucher = voucherRepository.findById(id);  // Tìm voucher theo id kiểu Integer
         if (optionalVoucher.isPresent()) {
             Voucher voucher = optionalVoucher.get();
