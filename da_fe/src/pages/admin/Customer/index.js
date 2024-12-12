@@ -8,7 +8,6 @@ import swal from 'sweetalert';
 import { Avatar } from '@mui/material';
 import ReactPaginate from 'react-paginate';
 
-
 function Customer() {
     const [customer, setCustomer] = useState([]);
     const navigate = useNavigate();
@@ -24,19 +23,6 @@ function Customer() {
         trangThaiSearch: ""
     })
 
-    // const loadCustomer = async () => {
-    //     try {
-    //         const response = await axios.get('http://localhost:8080/api/tai-khoan');
-    //         setUsers(response.data);
-    //     } catch (error) {
-    //         console.error('Failed to fetch Users', error);
-    //     }
-    // };
-
-    // useEffect(() => {
-    //     loadCustomer();
-    // }, []);
-
     const loadKhachHangSearch = (searchKhachHang, currentPage) => {
         const params = new URLSearchParams({
             tenSearch: searchKhachHang.tenSearch,
@@ -47,7 +33,7 @@ function Customer() {
             size: size,
             currentPage: currentPage
         })
-        axios.get(`http://localhost:8080/api/tai-khoan/searchKhachHang?${params.toString()}`)
+        axios.get(`http://localhost:8080/api/khach-hang/searchKhachHang?${params.toString()}`)
         .then((response) => {
             setCustomer(response.data.content);
             setPageCount(response.data.totalPages);
@@ -99,9 +85,6 @@ function Customer() {
     const handleEdit = (id) => {
         navigate(`/admin/tai-khoan/khach-hang/edit/${id}`);
     };
-
-    // Lọc ra những tài khoản có vai trò là "Customer"
-    const fillterCustomer = customer.filter((customer) => customer.vaiTro === 'Customer');
 
     const handlePageClick = (event) => {
         const selectedPage = event.selected;
@@ -209,7 +192,7 @@ function Customer() {
                         </tr>
                     </thead>
                     <tbody>
-                        {fillterCustomer.map((customer, index) => (
+                        {customer.map((customer, index) => (
                             <tr key={customer.id} className="hover:bg-gray-100">
                                 <td className="py-2 px-4 border-b">{(currentPage * 5) + index + 1}</td>
                                 <td className="py-4 px-4 border-b">

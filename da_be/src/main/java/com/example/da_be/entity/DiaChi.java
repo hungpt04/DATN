@@ -40,6 +40,9 @@ public class DiaChi {
     @Column(name = "DiaChiCuThe")
     private String diaChiCuThe;
 
+    @Column(name = "Loai")
+    private Integer loai;
+
     public DiaChi newDiaChi(DiaChi diaChi) {
         diaChi.setTen(this.ten);
         diaChi.setSdt(this.sdt);
@@ -47,6 +50,7 @@ public class DiaChi {
         diaChi.setIdHuyen(this.idHuyen);
         diaChi.setIdXa(this.idXa);
         diaChi.setDiaChiCuThe(this.diaChiCuThe);
+        diaChi.setLoai(this.loai);
         return diaChi;
     }
 }

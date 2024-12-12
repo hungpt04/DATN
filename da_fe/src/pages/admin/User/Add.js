@@ -12,13 +12,12 @@ function AddUser() {
     const [selectedWard, setSelectedWard] = useState('');
     const [previewImage, setPreviewImage] = useState(null);
 
-    // Form data states
     const [formData, setFormData] = useState({
+        ma: '',
         hoTen: '',
         sdt: '',
         email: '',
-        matKhau: '123456', // Default password
-        gioiTinh: 0, // Default gender to 0 (Nam)
+        gioiTinh: 0,
         vaiTro: 'User',
         avatar: null,
         ngaySinh: '',
@@ -27,21 +26,23 @@ function AddUser() {
     });
 
     const [diaChiData, setDiaChiData] = useState({
+        ten: '',
+        sdt: '',
         diaChiCuThe: '',
         idTinh: '',
         idHuyen: '',
         idXa: '',
+        loai: '',
+        idTaiKhoan: ''
     });
 
     useEffect(() => {
-        // Fetch provinces when component mounts
         fetch('https://provinces.open-api.vn/api/p/')
             .then((response) => response.json())
             .then((data) => setProvinces(data));
     }, []);
 
     useEffect(() => {
-        // Fetch districts when province changes
         if (selectedProvince) {
             fetch(`https://provinces.open-api.vn/api/p/${selectedProvince}?depth=2`)
                 .then((response) => response.json())
@@ -51,7 +52,6 @@ function AddUser() {
     }, [selectedProvince]);
 
     useEffect(() => {
-        // Fetch wards when district changes
         if (selectedDistrict) {
             fetch(`https://provinces.open-api.vn/api/d/${selectedDistrict}?depth=2`)
                 .then((response) => response.json())
@@ -90,10 +90,8 @@ function AddUser() {
     const handleAddUser = async (e) => {
         e.preventDefault();
 
-        // Tạo FormData
         const formDataToSend = new FormData();
 
-        // Thêm các trường thông tin
         formDataToSend.append('hoTen', formData.hoTen);
         formDataToSend.append('sdt', formData.sdt);
         formDataToSend.append('email', formData.email);
@@ -104,62 +102,58 @@ function AddUser() {
         formDataToSend.append('cccd', formData.cccd);
         formDataToSend.append('trangThai', formData.trangThai);
 
-        // Thêm avatar nếu có
         if (formData.avatar) {
             formDataToSend.append('avatar', formData.avatar);
         }
 
         try {
-            const taiKhoanResponse = await fetch('http://localhost:8080/api/tai-khoan/create', {
+            const taiKhoanResponse = await fetch('http://localhost:8080/api/nhan-vien/add', {
                 method: 'POST',
-                body: formDataToSend, // Sử dụng FormData thay vì JSON
-                // Không cần set Content-Type, để trình duyệt tự động set boundary
+                body: formDataToSend,
             });
 
             if (!taiKhoanResponse.ok) {
                 throw new Error('Failed to create user account');
             }
 
-            const taiKhoan = await taiKhoanResponse.json();
+            const taiKhoanData = await taiKhoanResponse.json();
+            const idTaiKhoan = taiKhoanData.id;
 
-            //Sau đó tạo địa chỉ với ID tài khoản vừa tạo
-            const diaChiPayload = {
-                taiKhoan: { id: taiKhoan.id },
-                ten: formData.hoTen,
-                sdt: formData.sdt,
+            const obj = {
+                ten: diaChiData.ten,
+                sdt: taiKhoanData.sdt,
                 idTinh: diaChiData.idTinh,
                 idHuyen: diaChiData.idHuyen,
                 idXa: selectedWard,
+                idTaiKhoan: idTaiKhoan,
+                loai: 0,
                 diaChiCuThe: diaChiData.diaChiCuThe,
-            };
+            }
 
-            const diaChiResponse = await fetch('http://localhost:8080/api/dia-chi/add', {
+            const diaChiResponse = await fetch('http://localhost:8080/api/dia-chi/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(diaChiPayload),
+                body: JSON.stringify(obj),
             });
 
             if (!diaChiResponse.ok) {
                 throw new Error('Failed to create address');
             }
 
-            // Hiển thị thông báo thành công và điều hướng về trang khác
             swal({
                 title: "Thành công!",
                 text: "Thêm nhân viên thành công!",
                 icon: "success",
                 buttons: false,
-                timer: 2000, // Tự động đóng sau 2 giây
+                timer: 2000,
             }).then(() => {
-                navigate('/admin/tai-khoan/nhan-vien'); // Điều hướng về trang quản lý nhân viên
+                navigate('/admin/tai-khoan/nhan-vien');
             });
 
         } catch (error) {
             console.error('Error:', error);
-
-            // Hiển thị thông báo lỗi
             swal({
                 title: "Lỗi!",
                 text: "Có lỗi xảy ra khi thêm nhân viên!",
@@ -172,7 +166,6 @@ function AddUser() {
     const handleNavigateToSale = () => {
         navigate('/admin/tai-khoan/nhan-vien');
     };
-
 
     return (
         <div>
@@ -262,7 +255,6 @@ function AddUser() {
                                 </div>
                             </div>
                         </div>
-
                         {/* Ngày sinh và Email */}
                         <div className="grid grid-cols-2 gap-4 mt-4">
                             <div>
@@ -289,7 +281,6 @@ function AddUser() {
                                 />
                             </div>
                         </div>
-
                         {/* Tỉnh/Thành phố, Quận/Huyện, Xã/Phường */}
                         <div className="grid grid-cols-3 gap-4 mt-4">
                             <div>
@@ -343,7 +334,6 @@ function AddUser() {
                                 </select>
                             </div>
                         </div>
-
                         {/* Số điện thoại và Địa chỉ cụ thể */}
                         <div className="grid grid-cols-2 gap-4 mt-4">
                             <div>
@@ -374,7 +364,6 @@ function AddUser() {
                         </div>
                     </div>
                 </div>
-
                 {/* Nút Thêm Nhân Viên */}
                 <div className="mt-8 flex justify-end">
                     <button

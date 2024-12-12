@@ -151,68 +151,6 @@ public class TaiKhoanController {
         return new ResponseEntity<>(taiKhoan, HttpStatus.OK);
     }
 
-    @GetMapping("/searchNhanVien")
-    public Map<String, Object> searchNhanVien(
-            @RequestParam(required = false) String tenSearch,
-            @RequestParam(required = false) String emailSearch,
-            @RequestParam(required = false) String sdtSearch,
-            @RequestParam(required = false) Integer gioiTinhSearch,
-            @RequestParam(required = false) Integer trangThaiSearch,
-            @RequestParam(value = "currentPage", defaultValue = "0") Integer currentPage,
-            @RequestParam(value = "size", defaultValue = "5") Integer size
-    ) {
-        NhanVienSearch search = new NhanVienSearch();
-        search.setTenSearch(tenSearch);
-        search.setEmailSearch(emailSearch);
-        search.setSdtSearch(sdtSearch);
-        search.setGioiTinhSearch(gioiTinhSearch);
-        search.setTrangThaiSearch(trangThaiSearch);
-
-        Pageable pageable = PageRequest.of(currentPage, size);
-
-        Page<TaiKhoan> pageResult = taiKhoanService.searchNhanVien(search, pageable);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("content", pageResult.getContent());
-        response.put("totalPages", pageResult.getTotalPages());
-        response.put("totalElements", pageResult.getTotalElements());
-        response.put("currentPage", pageResult.getNumber());
-        response.put("size", pageResult.getSize());
-
-        return response;
-    }
-
-    @GetMapping("/searchKhachHang")
-    public Map<String, Object> searchKhachHang(
-            @RequestParam(required = false) String tenSearch,
-            @RequestParam(required = false) String emailSearch,
-            @RequestParam(required = false) String sdtSearch,
-            @RequestParam(required = false) Integer gioiTinhSearch,
-            @RequestParam(required = false) Integer trangThaiSearch,
-            @RequestParam(value = "currentPage", defaultValue = "0") Integer currentPage,
-            @RequestParam(value = "size", defaultValue = "5") Integer size
-    ) {
-        KhachHangSearch search = new KhachHangSearch();
-        search.setTenSearch(tenSearch);
-        search.setEmailSearch(emailSearch);
-        search.setSdtSearch(sdtSearch);
-        search.setGioiTinhSearch(gioiTinhSearch);
-        search.setTrangThaiSearch(trangThaiSearch);
-
-        Pageable pageable = PageRequest.of(currentPage, size);
-
-        Page<TaiKhoan> pageResult = taiKhoanService.searchKhachHang(search, pageable);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("content", pageResult.getContent());
-        response.put("totalPages", pageResult.getTotalPages());
-        response.put("totalElements", pageResult.getTotalElements());
-        response.put("currentPage", pageResult.getNumber());
-        response.put("size", pageResult.getSize());
-
-        return response;
-    }
-
     @GetMapping("/my-info")
     public ResponseEntity<TaiKhoan> getInfo(@RequestHeader("Authorization") String token) {
         String jwtToken = token.startsWith("Bearer ") ? token.substring(7) : token;

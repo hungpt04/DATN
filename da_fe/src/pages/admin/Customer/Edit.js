@@ -3,6 +3,9 @@ import { useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function EditCustomer() {
     const navigate = useNavigate();
@@ -13,6 +16,7 @@ function EditCustomer() {
     const [selectedDistrict, setSelectedDistrict] = useState('');
     const [selectedWard, setSelectedWard] = useState('');
     const [previewImage, setPreviewImage] = useState(null);
+    const [diaChi, setDiaChi] = useState([])
     const { id } = useParams();
 
     const [formData, setFormData] = useState({
@@ -23,63 +27,42 @@ function EditCustomer() {
         vaiTro: 'Customer',
         avatar: null,
         ngaySinh: '',
-        cccd: '',
         trangThai: 1,
     });
 
     const [diaChiData, setDiaChiData] = useState({
+        ten: '',
+        sdt: '',
         diaChiCuThe: '',
         idTinh: '',
         idHuyen: '',
         idXa: '',
+        idTaiKhoan: id,
     });
 
-    const getDiaChilenForm = async (id) => {
-        try {
-            const response = await axios.get(`http://localhost:8080/api/dia-chi/tai-khoan/${id}`);
-            const data = response.data[0];
-
-            if (!data) throw new Error('Không tìm thấy thông tin địa chỉ');
-
-            // Cập nhật giá trị tỉnh, huyện, xã
-            setSelectedProvince(data.idTinh || '');
-            setSelectedDistrict(data.idHuyen || '');
-            setSelectedWard(data.idXa || '');
-
-            // Gọi API phụ để cập nhật danh sách huyện và xã
-            if (data.idTinh) await fetchDistricts(data.idTinh);
-            if (data.idHuyen) await fetchWards(data.idHuyen);
-
-            // Cập nhật thông tin địa chỉ chi tiết
-            setDiaChiData({
-                diaChiCuThe: data.diaChiCuThe || '',
-                idTinh: data.idTinh || '',
-                idHuyen: data.idHuyen || '',
-                idXa: data.idXa || '',
+    const loadDiaChi = (id) => {
+        axios
+            .get(`http://localhost:8080/api/dia-chi/getAllDiaChi`, {
+                params: { idTaiKhoan: id },
+            })
+            .then((response) => {
+                setDiaChi(response.data.content);
+            })
+            .catch((error) => {
+                console.error("Lỗi khi gọi API:", error);
             });
-        } catch (error) {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi!',
-                text: 'Có lỗi xảy ra khi tải thông tin địa chỉ! ' + error.message,
-            });
-        }
     };
 
     useEffect(() => {
         if (id) {
-            getDiaChilenForm(id);
+            loadDiaChi(id);
         }
     }, [id]);
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const [userResponse, addressResponse] = await Promise.all([
-                    fetch(`http://localhost:8080/api/tai-khoan/${id}`),
-                    fetch(`http://localhost:8080/api/dia-chi/tai-khoan/${id}`)
-                ]);
+                const [userResponse, addressResponse] = await Promise.all([fetch(`http://localhost:8080/api/tai-khoan/${id}`), fetch(`http://localhost:8080/api/dia-chi/tai-khoan/${id}`)]);
 
                 const userData = await userResponse.json();
                 const addressData = await addressResponse.json();
@@ -126,9 +109,7 @@ function EditCustomer() {
             } catch (error) {
                 console.error('Error fetching user data:', error);
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi!',
-                    text: 'Có lỗi xảy ra khi tải dữ liệu! ' + error.message,
+                    icon: 'error', title: 'Lỗi!', text: 'Có lỗi xảy ra khi tải dữ liệu! ' + error.message,
                 });
             }
         };
@@ -146,9 +127,7 @@ function EditCustomer() {
                 setProvinces(data || []);
             } catch {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi!',
-                    text: 'Có lỗi xảy ra khi tải danh sách tỉnh/thành!',
+                    icon: 'error', title: 'Lỗi!', text: 'Có lỗi xảy ra khi tải danh sách tỉnh/thành!',
                 });
             }
         };
@@ -204,9 +183,7 @@ function EditCustomer() {
             }
 
             // Đảm bảo dữ liệu ward hợp lệ
-            const validWards = data.wards.filter(ward =>
-                ward && ward.code && ward.name
-            );
+            const validWards = data.wards.filter(ward => ward && ward.code && ward.name);
 
             setWards(validWards);
 
@@ -289,8 +266,7 @@ function EditCustomer() {
 
             // Update user account
             const userResponse = await fetch(`http://localhost:8080/api/tai-khoan/updateTaiKhoan/${id}`, {
-                method: 'PUT',
-                body: formDataToSend
+                method: 'PUT', body: formDataToSend
             });
 
             if (!userResponse.ok) {
@@ -315,11 +291,9 @@ function EditCustomer() {
             console.log('DiaChi Payload:', diaChiPayload); // Log payload để kiểm tra
 
             const addressResponse = await fetch(`http://localhost:8080/api/dia-chi/update/${addressId}`, {
-                method: 'PUT',
-                headers: {
+                method: 'PUT', headers: {
                     'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(diaChiPayload),
+                }, body: JSON.stringify(diaChiPayload),
             });
 
             if (!addressResponse.ok) {
@@ -332,18 +306,14 @@ function EditCustomer() {
             console.log('Address Update Response:', responseData);
 
             Swal.fire({
-                icon: 'success',
-                title: 'Thành công!',
-                text: 'Cập nhật khách hàng thành công!',
+                icon: 'success', title: 'Thành công!', text: 'Cập nhật khách hàng thành công!',
             }).then(() => {
                 navigate('/admin/tai-khoan/khach-hang');
             });
         } catch (error) {
             console.error('Error:', error);
             Swal.fire({
-                icon: 'error',
-                title: 'Lỗi!',
-                text: error.message || 'Có lỗi xảy ra khi cập nhật khách hàng!',
+                icon: 'error', title: 'Lỗi!', text: error.message || 'Có lỗi xảy ra khi cập nhật khách hàng!',
             });
         }
     };
@@ -352,238 +322,303 @@ function EditCustomer() {
         navigate('/admin/tai-khoan/khach-hang');
     };
 
-    return (
-        <div>
-            <div className="font-bold text-sm">
-                <span
-                    className="cursor-pointer"
-                    onClick={handleNavigateToSale}
-                >
-                    Khách hàng
-                </span>
-                <span className="text-gray-400 ml-2">/ Chỉnh sửa khách hàng</span>
-            </div>
-            <div className="bg-white p-4 rounded-md shadow-lg">
-                <div className='flex'>
-                    <div className="w-1/4 pr-4">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-8">Thông tin khách hàng</h2>
-                        <hr />
-                        {/* Ảnh đại diện */}
-                        <div className="flex justify-center items-center mt-4">
-                            <label className="cursor-pointer">
-                                <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                                <div className="w-32 h-32 border-4 border-dashed border-gray-400 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 overflow-hidden">
-                                    {previewImage ? (
-                                        <img src={previewImage || formData.avatar} alt="Preview" className="w-full h-full object-cover" />
-                                    ) : (
-                                        'Chọn ảnh'
-                                    )}
-                                </div>
+    return (<div>
+        <div className="font-bold text-sm">
+            <span
+                className="cursor-pointer"
+                onClick={handleNavigateToSale}
+            >
+                Khách hàng
+            </span>
+            <span className="text-gray-400 ml-2">/ Chỉnh sửa khách hàng</span>
+        </div>
+        <div className="bg-white p-4 rounded-md shadow-lg">
+            <div className='flex'>
+                <div className="w-1/4 pr-4">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-8">Thông tin khách hàng</h2>
+                    <hr />
+                    {/* Ảnh đại diện */}
+                    <div className="flex justify-center items-center mt-4">
+                        <label className="cursor-pointer">
+                            <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                            <div
+                                className="w-32 h-32 border-4 border-dashed border-gray-400 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 overflow-hidden">
+                                {previewImage ? (<img src={previewImage || formData.avatar} alt="Preview"
+                                    className="w-full h-full object-cover" />) : ('Chọn ảnh')}
+                            </div>
+                        </label>
+                    </div>
+                    {/* Họ và tên */}
+                    <div className="col-span-2 mt-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                            <span className="text-red-500">*</span> Họ Và Tên
+                        </label>
+                        <input
+                            type="text"
+                            name="hoTen"
+                            value={formData.hoTen}
+                            placeholder="Nhập họ và tên"
+                            className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            onChange={handleInputChange}
+                        />
+                    </div>
+
+                    <div className="col-span-2 mt-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                            <span className="text-red-500">*</span> Email
+                        </label>
+                        <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            placeholder="Nhập email"
+                            className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            onChange={handleInputChange}
+                        />
+                    </div>
+
+                    <div className="col-span-2 mt-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                            <span className="text-red-500">*</span> Số Điện Thoại
+                        </label>
+                        <input
+                            type="text"
+                            name="sdt"
+                            value={formData.sdt}
+                            placeholder="Nhập số điện thoại"
+                            className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            onChange={handleInputChange}
+                        />
+                    </div>
+
+                    <div className="col-span-2 mt-4">
+                        <label className="block text-sm font-medium text-gray-700">
+                            <span className="text-red-500">*</span> Ngày sinh
+                        </label>
+                        <input
+                            type="date"
+                            name="ngaySinh"
+                            value={formData.ngaySinh}
+                            className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            onChange={handleInputChange}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                            <span className="text-red-500">*</span> Giới tính
+                        </label>
+                        <div className="mt-2 flex items-center gap-4">
+                            <label className="flex items-center">
+                                <input
+                                    type="radio"
+                                    name="gioiTinh"
+                                    value={0}
+                                    checked={formData.gioiTinh === 0}
+                                    onChange={(e) => setFormData({
+                                        ...formData, gioiTinh: parseInt(e.target.value)
+                                    })}
+                                    className="mr-2"
+                                />
+                                Nam
                             </label>
-                        </div>
-                        {/* Họ và tên */}
-                        <div className="col-span-2 mt-4">
-                            <label className="block text-sm font-medium text-gray-700">
-                                <span className="text-red-500">*</span> Họ Và Tên
+                            <label className="flex items-center">
+                                <input
+                                    type="radio"
+                                    name="gioiTinh"
+                                    value={1}
+                                    checked={formData.gioiTinh === 1}
+                                    onChange={(e) => setFormData({
+                                        ...formData, gioiTinh: parseInt(e.target.value)
+                                    })}
+                                    className="mr-2"
+                                />
+                                Nữ
                             </label>
-                            <input
-                                type="text"
-                                name="hoTen"
-                                value={formData.hoTen}
-                                placeholder="Nhập họ và tên"
-                                className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                onChange={handleInputChange}
-                            />
                         </div>
                     </div>
 
-                    <div className="w-3/4">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-8">Thông tin chi tiết</h2>
-                        <hr />
-
-                        {/* Số CCCD và Giới tính */}
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Số CCCD
-                                </label>
-                                <input
-                                    type="text"
-                                    name="cccd"
-                                    value={formData.cccd}
-                                    placeholder="Nhập số CCCD"
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Giới tính
-                                </label>
-                                <div className="mt-2 flex items-center gap-4">
-                                    <label className="flex items-center">
-                                        <input
-                                            type="radio"
-                                            name="gioiTinh"
-                                            value={0}
-                                            checked={formData.gioiTinh === 0}
-                                            onChange={(e) => setFormData({
-                                                ...formData,
-                                                gioiTinh: parseInt(e.target.value)
-                                            })}
-                                            className="mr-2"
-                                        />
-                                        Nam
-                                    </label>
-                                    <label className="flex items-center">
-                                        <input
-                                            type="radio"
-                                            name="gioiTinh"
-                                            value={1}
-                                            checked={formData.gioiTinh === 1}
-                                            onChange={(e) => setFormData({
-                                                ...formData,
-                                                gioiTinh: parseInt(e.target.value)
-                                            })}
-                                            className="mr-2"
-                                        />
-                                        Nữ
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Ngày sinh và Email */}
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Ngày sinh
-                                </label>
-                                <input
-                                    type="date"
-                                    name="ngaySinh"
-                                    value={formData.ngaySinh}
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Email
-                                </label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    placeholder="Nhập email"
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Tỉnh/Thành phố, Quận/Huyện, Xã/Phường */}
-                        <div className="grid grid-cols-3 gap-4 mt-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Tỉnh/Thành phố
-                                </label>
-                                <select
-                                    value={selectedProvince}
-                                    onChange={(e) => setSelectedProvince(e.target.value)}
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                >
-                                    <option value="">Chọn tỉnh/thành phố</option>
-                                    {provinces.map((province) => (
-                                        <option key={province.code} value={province.code}>
-                                            {province.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Quận/Huyện
-                                </label>
-                                <select
-                                    value={selectedDistrict}
-                                    onChange={(e) => setSelectedDistrict(e.target.value)}
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    disabled={!selectedProvince}
-                                >
-                                    <option value="">Chọn quận/huyện</option>
-                                    {districts.map((district) => (
-                                        <option key={district.code} value={district.code}>
-                                            {district.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Xã/Phường/Thị trấn
-                                </label>
-                                <select
-                                    value={selectedWard}
-                                    onChange={(e) => setSelectedWard(e.target.value)}
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    disabled={!selectedDistrict}
-                                >
-                                    <option value="">Chọn xã/phường</option>
-                                    {wards.map((ward) => (
-                                        <option key={ward.code} value={ward.code}>
-                                            {ward.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* Số điện thoại và Địa chỉ cụ thể */}
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Số Điện Thoại
-                                </label>
-                                <input
-                                    type="text"
-                                    name="sdt"
-                                    value={formData.sdt}
-                                    placeholder="Nhập số điện thoại"
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Địa chỉ cụ thể
-                                </label>
-                                <input
-                                    type="text"
-                                    value={diaChiData.diaChiCuThe}
-                                    placeholder="Nhập địa chỉ cụ thể"
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    onChange={(e) =>
-                                        setDiaChiData((prev) => ({ ...prev, diaChiCuThe: e.target.value }))
-                                    }
-                                />
-                            </div>
-                        </div>
+                    {/* Nút Cập Nhật */}
+                    <div className="mt-8 flex">
+                        <button
+                            onClick={handleUpdateCustomer}
+                            className="bg-[#2f19ae] text-white px-8 py-4 rounded-md shadow-md hover:bg-blue-700 transition duration-300"
+                        >
+                            Cập nhật
+                        </button>
                     </div>
                 </div>
 
-                {/* Nút Cập Nhật */}
-                <div className="mt-8 flex justify-end">
-                    <button
-                        onClick={handleUpdateCustomer}
-                        className="bg-[#2f19ae] text-white px-8 py-4 rounded-md shadow-md hover:bg-blue-700 transition duration-300"
-                    >
-                        Cập nhật
-                    </button>
+                <div className="w-3/4 pl-8">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-8">Danh sách địa chỉ</h2>
+                    <hr />
+                    {diaChi.map((item, index) => {
+                        return (
+                            <div key={index} className="mb-4 mt-6 border border-gray-300 rounded-lg shadow-md">
+                                <div className="p-4 rounded-t-lg">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs font-semibold">Địa chỉ {index + 1}</span>
+                                    </div>
+                                </div>
+
+                                <div className="p-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                <span className="text-red-500">*</span>Tên
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                                name="name"
+                                                value={item.ten}
+                                                onChange={(e) => {
+                                                    const updatedDiaChi = [...diaChi]
+                                                    updatedDiaChi[index].ten = e.target.value
+                                                    setDiaChi(updatedDiaChi)
+                                                }}
+                                            />
+
+                                        </div>
+
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                <span className="text-red-500">*</span>Số điện thoại
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                                name="phoneNumber"
+                                                value={item.sdt}
+                                                onChange={(e) => {
+                                                    const updatedDiaChi = [...diaChi]
+                                                    updatedDiaChi[index].sdt = e.target.value
+                                                    setDiaChi(updatedDiaChi)
+                                                }}
+                                            />
+
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                <span className="text-red-500">*</span>Tỉnh/thành phố
+                                            </label>
+                                            <select
+                                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                                value={item.idTinh}
+                                            // onChange={(e) => handleTinhChange(e.target.value, index)}
+                                            >
+                                                <option value="">Chọn tỉnh/thành phố</option>
+                                                {provinces.map((province) => (
+                                                    <option key={province.code} value={province.code}>
+                                                        {province.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                <span className="text-red-500">*</span>Quận/huyện
+                                            </label>
+                                            <select
+                                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                                value={item.idHuyen}
+                                            // onChange={(e) => handleHuyenChange(e.target.value, index)}
+                                            >
+                                                <option value="">Chọn quận/huyện</option>
+                                                {districts.map((district) => (
+                                                    <option key={district.code} value={district.code}>
+                                                        {district.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                <span className="text-red-500">*</span>Xã/phường/thị trấn
+                                            </label>
+                                            <select
+                                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                                value={item.idXa}
+                                            // onChange={(e) => handleXaChange(e.target.value, index)}
+                                            
+                                            >
+                                                <option value="">Chọn xã/phường</option>
+                                                {wards.map((ward) => (
+                                                    <option key={ward.code} value={ward.code}>
+                                                        {ward.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-4">
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            <span className="text-red-500">*</span>Địa chỉ cụ thể
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                            name="specificAddress"
+                                            value={item.diaChiCuThe}
+                                            onChange={(e) => {
+                                                const updatedDiaChi = [...diaChi]
+                                                updatedDiaChi[index].diaChiCuThe = e.target.value
+                                                setDiaChi(updatedDiaChi)
+                                            }}
+                                        />
+
+                                    </div>
+
+                                    <div className="mt-4 flex justify-between w-full">
+                                        <button
+                                            // onClick={() => handleUpdateType(item.id)}
+                                            className="mr-2 text-3xl text-yellow-500 hover:text-yellow-600"
+                                            disabled={item.loai === 0}
+                                        >
+                                            {item.loai === 0 ? "★" : "☆"}
+                                        </button>
+
+                                        <div className="flex justify-end">
+                                            {item.loai === null ? (
+                                                <button
+                                                    // onClick={() => onUpdateDiaChi(item)}
+                                                    className="ml-4 text-green-500 hover:text-green-600"
+                                                >
+                                                    <AddIcon />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    // onClick={() => onUpdateDiaChi(item)}
+                                                    className="ml-4 text-blue-500 hover:text-blue-600"
+                                                >
+                                                    <EditIcon />
+                                                </button>
+                                            )}
+
+                                            <button
+                                                // onClick={() => deleteDiaChi(item.id)}
+                                                className="ml-4 text-red-500 hover:text-red-600"
+                                                disabled={item.type === 0}
+                                            >
+                                                <DeleteIcon />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>
-    );
+    </div>);
 }
 
 export default EditCustomer;

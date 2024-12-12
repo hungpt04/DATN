@@ -34,7 +34,7 @@ public interface VoucherRepository extends JpaRepository<Voucher, Integer> {
 
     @Query(
             """
-            SELECT new com.example.da_be.response.KhachHangResponse(tk.id, tk.hoTen, tk.sdt, tk.email, tk.ngaySinh)
+            SELECT new com.example.da_be.response.KhachHangResponse(tk.id, tk.ma, tk.hoTen, tk.sdt, tk.email, tk.matKhau, tk.gioiTinh, tk.vaiTro, tk.avatar, tk.ngaySinh, tk.cccd, tk.trangThai)
             from TaiKhoan tk
             where tk.vaiTro = 'Customer' and tk.trangThai = 1
 """

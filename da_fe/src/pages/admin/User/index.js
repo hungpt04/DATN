@@ -8,7 +8,6 @@ import swal from 'sweetalert';
 import { Avatar } from '@mui/material';
 import ReactPaginate from 'react-paginate';
 
-
 function User() {
     const [users, setUsers] = useState([]);
     const navigate = useNavigate();
@@ -24,15 +23,6 @@ function User() {
         trangThaiSearch: ""
     })
 
-    // const loadUsers = async () => {
-    //     try {
-    //         const response = await axios.get('http://localhost:8080/api/tai-khoan');
-    //         setUsers(response.data);
-    //     } catch (error) {
-    //         console.error('Failed to fetch Users', error);
-    //     }
-    // };
-
     const loadNhanVienSearch = (searchNhanVien, currentPage) => {
         const params = new URLSearchParams({
             tenSearch: searchNhanVien.tenSearch,
@@ -43,7 +33,7 @@ function User() {
             size: size,
             currentPage: currentPage
         })
-        axios.get(`http://localhost:8080/api/tai-khoan/searchNhanVien?${params.toString()}`)
+        axios.get(`http://localhost:8080/api/nhan-vien/searchNhanVien?${params.toString()}`)
         .then((response) => {
             setUsers(response.data.content);
             setPageCount(response.data.totalPages);
@@ -59,10 +49,6 @@ function User() {
         loadNhanVienSearch(searchNhanVien, 0)
     }, [searchNhanVien])
 
-    // useEffect(() => {
-    //     loadUsers();
-    // }, []);
-
     const handleDelete = async (id) => {
         const title = 'Xác nhận thay đổi trạng thái hoạt động?'
         const text = 'Bạn có chắc chắn muốn thay đổi trạng thái hoạt động?'
@@ -77,15 +63,14 @@ function User() {
             },
         }).then((willConfirm) => {
             if (willConfirm) {
-                // Thực hiện gọi API với axios
-                axios.put(`http://localhost:8080/api/tai-khoan/delete/${id}`, {
+                axios.put(`http://localhost:8080/api/nhan-vien/delete/${id}`, {
                     headers: {
                         'Content-Type': 'application/json',
                     },
                 })
                     .then(() => {
                         swal("Thành công!", "Thay đổi trạng thái thành công", "success")
-                        loadNhanVienSearch(searchNhanVien, currentPage) // Gọi lại hàm loadVoucher để làm mới danh sách
+                        loadNhanVienSearch(searchNhanVien, currentPage)
                     })
                     .catch((error) => {
                         console.error("Lỗi cập nhật:", error);
@@ -93,19 +78,15 @@ function User() {
                     });
             }
         });
-
     };
 
     const handleEdit = (id) => {
         navigate(`/admin/tai-khoan/nhan-vien/edit/${id}`);
     };
 
-    // Lọc ra những tài khoản có vai trò là "User"
-    const filteredUsers = users.filter((user) => user.vaiTro === 'User');
-
     const handlePageClick = (event) => {
         const selectedPage = event.selected;
-        loadNhanVienSearch(searchNhanVien, selectedPage); // Gọi hàm tìm kiếm với trang mới
+        loadNhanVienSearch(searchNhanVien, selectedPage);
         console.log(`User  requested page number ${selectedPage + 1}`);
     };
 
@@ -131,7 +112,7 @@ function User() {
                             loadNhanVienSearch({
                                 ...searchNhanVien,
                                 tenSearch: newTenSearch
-                            }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
+                            }, 0);
                         }}
                     />
                     <div className="ml-auto flex space-x-4">
@@ -156,7 +137,7 @@ function User() {
                                 loadNhanVienSearch({
                                     ...searchNhanVien,
                                     gioiTinhSearch: newGioiTinhSearch
-                                }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
+                                }, 0);
                             }}
                             className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-200"
                         >
@@ -181,7 +162,7 @@ function User() {
                                 loadNhanVienSearch({
                                     ...searchNhanVien,
                                     trangThaiSearch: newTrangThaiSearch
-                                }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
+                                }, 0);
                             }}
                             className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-200"
                         >
@@ -199,6 +180,7 @@ function User() {
                         <tr className="bg-gray-100 text-gray-700">
                             <th className="py-2 px-4 text-center border-b">STT</th>
                             <th className="py-2 px-4 text-center border-b">Ảnh</th>
+                            <th className="py-2 px-4 text-center border-b">Mã</th>
                             <th className="py-2 px-4 text-center border-b">Họ tên</th>
                             <th className="py-2 px-4 text-center border-b">Email</th>
                             <th className="py-2 px-4 text-center border-b">SĐT</th>
@@ -209,9 +191,7 @@ function User() {
                         </tr>
                     </thead>
                     <tbody>
-                        
-                        {filteredUsers.map((user, index) => (
-                            
+                        {users.map((user, index) => (
                             <tr key={user.id} className="hover:bg-gray-100">
                                 
                                 <td className="py-2 px-4 border-b">{(currentPage * 5) + index + 1}</td>
@@ -222,7 +202,7 @@ function User() {
                                         <Avatar />
                                     )}
                                 </td>
-
+                                <td className="py-2 px-4 border-b">{user.ma}</td>
                                 <td className="py-2 px-4 border-b">{user.hoTen}</td>
                                 <td className="py-2 px-4 border-b">{user.email}</td>
                                 <td className="py-2 px-4 border-b">{user.sdt}</td>

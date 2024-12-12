@@ -2,6 +2,9 @@ package com.example.da_be.repository;
 
 import com.example.da_be.entity.DiaChi;
 
+import com.example.da_be.response.DiaChiResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,6 +23,14 @@ public interface DiaChiRepository extends JpaRepository<DiaChi, Long> {
             where dc.taiKhoan.id = :idTaiKhoan
 """
     )
-
     Long getIdDiaChiByIdTaiKhoan(@Param("idTaiKhoan") Integer idTaiKhoan);
+
+    @Query(
+            """
+            select new com.example.da_be.response.DiaChiResponse(dc.id, dc.ten, dc.sdt, dc.idTinh, dc.idHuyen, dc.idXa, dc.diaChiCuThe, dc.loai)
+            from DiaChi dc
+            where dc.taiKhoan.id = :idTaiKhoan
+"""
+    )
+    Page<DiaChiResponse> getPageDiaChiByIdTaiKhoan(Pageable pageable, @Param("idTaiKhoan") Integer idTaiKhoan);
 }

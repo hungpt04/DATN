@@ -132,7 +132,7 @@ const SaleDetail = () => {
 
     const getProductDetailById = (fillterSanPhamChiTiet, selectedProductIds) => {
         const params = new URLSearchParams({
-            id: selectedProductIds.join(','), // Chuyển mảng thành chuỗi
+            id: selectedProductIds, // Chuyển mảng thành chuỗi
             tenSearch: fillterSanPhamChiTiet.tenSearch || '',
             idThuongHieuSearch: fillterSanPhamChiTiet.idThuongHieuSearch || '',
             idChatLieuSearch: fillterSanPhamChiTiet.idChatLieuSearch || '',
@@ -163,10 +163,6 @@ const SaleDetail = () => {
     const handleNavigateToSale = () => {
         navigate('/admin/giam-gia/dot-giam-gia');
     };
-
-    const handleInputChange = (event) => {
-        setUpdateKhuyenMai({ ...updateKhuyenMai, [event.target.name]: event.target.value })
-    }
 
     const fetchData = async () => {
         try {

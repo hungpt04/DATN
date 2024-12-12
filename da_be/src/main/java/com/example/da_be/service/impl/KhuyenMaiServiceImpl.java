@@ -3,12 +3,10 @@ package com.example.da_be.service.impl;
 import com.example.da_be.entity.KhuyenMai;
 import com.example.da_be.entity.SanPhamCT;
 import com.example.da_be.entity.SanPhamKhuyenMai;
-import com.example.da_be.repository.KhachHangRepository;
 import com.example.da_be.repository.KhuyenMaiRepository;
 import com.example.da_be.repository.SanPhamCTRepository;
 import com.example.da_be.repository.SanPhamKhuyenMaiRepository;
 import com.example.da_be.request.*;
-import com.example.da_be.response.KhachHangResponse;
 import com.example.da_be.response.KhuyenMaiResponse;
 import com.example.da_be.response.SanPhamCTResponse;
 import com.example.da_be.response.SanPhamResponse;
@@ -24,7 +22,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class KhuyenMaiServiceImpl implements KhuyenMaiService {

@@ -12,15 +12,26 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaiKhoanRequest {
+public class NhanVienRequest {
     private String hoTen;
     private String sdt;
     private String email;
-    private String matKhau;
     private Integer gioiTinh;
     private String vaiTro;
     private MultipartFile avatar;
     private LocalDate ngaySinh;
     private String cccd;
     private Integer trangThai;
+
+    public TaiKhoan tranStaff(TaiKhoan nv) throws ParseException {
+        nv.setHoTen(this.getHoTen());
+        nv.setSdt(this.getSdt());
+        nv.setEmail(this.getEmail());
+        nv.setGioiTinh(this.getGioiTinh());
+        nv.setVaiTro(this.getVaiTro());
+        nv.setNgaySinh(this.getNgaySinh());
+        nv.setCccd(this.getCccd());
+        nv.setTrangThai(this.getTrangThai());
+        return nv;
+    }
 }

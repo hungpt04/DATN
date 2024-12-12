@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class KhachHangResponse {
+public class NhanVienResponse {
     private Integer id;
     private String ma;
     private String hoTen;

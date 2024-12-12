@@ -1,13 +1,19 @@
 package com.example.da_be.controller;
 
 import com.example.da_be.entity.DiaChi;
+import com.example.da_be.request.DiaChiRequest;
+import com.example.da_be.response.DiaChiResponse;
+import com.example.da_be.response.KhuyenMaiResponse;
 import com.example.da_be.service.DiaChiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -89,6 +95,38 @@ public class DiaChiController {
     @GetMapping("/get-id-dia-chi-by-id-tai-khoan/{idTaiKhoan}")
     public Long getIdDiaChiByIdTaiKhoan(@PathVariable Integer idTaiKhoan) {
         return diaChiService.getIdDiaChiByIdTaiKhoan(idTaiKhoan);
+    }
+
+    // lấy tất cả địa chỉ qua idTaiKhoan
+    @GetMapping("/getAllDiaChi")
+    public ResponseEntity<?> getAllDiaChi(
+            @RequestParam Integer idTaiKhoan,
+            @RequestParam(value = "currentPage", defaultValue = "0") Integer currentPage,
+            @RequestParam(value = "size", defaultValue = "5") Integer size) {
+        try {
+            // Tạo Pageable từ currentPage và size
+            Pageable pageable = PageRequest.of(currentPage, size);
+
+            // Gọi dịch vụ để lấy dữ liệu phân trang
+            Page<DiaChiResponse> result  = diaChiService.getAllDiaChiByIdTaiKhoan(pageable, idTaiKhoan);
+
+            // Trả về dữ liệu với HTTP status 200 OK
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            // Xử lý lỗi và trả về HTTP status 500
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Lỗi khi lấy danh sách địa chỉ", "error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<?> createDiaChi(@RequestBody DiaChiRequest diaChiRequest) {
+        return ResponseEntity.ok(diaChiService.add(diaChiRequest));
+    }
+
+    @PutMapping("/updatee/{id}")
+    public ResponseEntity<?> updateDiaChi(@PathVariable Long id, @RequestBody DiaChiRequest diaChiRequest) {
+        return ResponseEntity.ok(diaChiService.update(id, diaChiRequest));
     }
 
 }
