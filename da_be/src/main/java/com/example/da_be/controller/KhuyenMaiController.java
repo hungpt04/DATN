@@ -1,5 +1,6 @@
 package com.example.da_be.controller;
 
+import com.example.da_be.entity.KhuyenMai;
 import com.example.da_be.request.KhuyenMaiRequest;
 import com.example.da_be.request.KhuyenMaiSearch;
 import com.example.da_be.request.SanPhamCTSearch;
@@ -59,7 +60,7 @@ public class KhuyenMaiController {
     }
 
     @GetMapping("/detail/{id}")
-    public KhuyenMaiResponse getKhuyenMaiById(@PathVariable Integer id) {
+    public KhuyenMai getKhuyenMaiById(@PathVariable Integer id) {
         return khuyenMaiService.getKhuyenMaiById(id);
     }
 

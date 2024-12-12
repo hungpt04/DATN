@@ -37,6 +37,16 @@ const SaleDetail = () => {
         tenSearch: "",
     })
 
+    const [updateKhuyenMai, setUpdateKhuyenMai] = useState({
+        ten: '',
+        giaTri: '',
+        loai: true,
+        tgBatDau: '',
+        tgKetThuc: '',
+        trangThai: 0,
+        idProductDetail: selectedRows
+    })
+
     const [fillterSanPhamChiTiet, setFillterSanPhamChiTiet] = useState({
         tenSearch: "",
         idThuongHieuSearch: "",
@@ -106,16 +116,6 @@ const SaleDetail = () => {
             });
     }
 
-    const [updateKhuyenMai, setUpdateKhuyenMai] = useState({
-        ten: '',
-        giaTri: '',
-        loai: true,
-        tgBatDau: '',
-        tgKetThuc: '',
-        trangThai: 0,
-        idProductDetail: selectedRows
-    })
-
     const handleAllTenKhuyenMai = () => {
         axios.get(`http://localhost:8080/api/khuyen-mai/list-ten-khuyen-mai`)
             .then((response) => {
@@ -128,7 +128,17 @@ const SaleDetail = () => {
 
     useEffect(() => {
         handleAllTenKhuyenMai()
-    })
+        fetchData(id);
+    }, [id]);
+
+    const fetchData = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/khuyen-mai/detail/${id}`);
+            setUpdateKhuyenMai(response.data);
+        } catch (error) {
+            console.error("Error fetching voucher details:", error);
+        }
+    };
 
     const getListSanPham = (id) => {
         axios.get(`http://localhost:8080/api/khuyen-mai/get-id-san-pham-va-san-pham-chi-tiet-by-id-khuyen-mai/${id}`)
@@ -141,10 +151,6 @@ const SaleDetail = () => {
             })
     }
 
-    useEffect(() => {
-        getListSanPham(id)
-    }, [id])
-
     const getListSanPhamChiTiet = (id) => {
         axios.get(`http://localhost:8080/api/khuyen-mai/get-id-san-pham-chi-tiet-by-id-khuyen-mai/${id}`)
             .then((response) => {
@@ -156,36 +162,55 @@ const SaleDetail = () => {
     }
 
     useEffect(() => {
+        getListSanPham(id)
+    }, [id, fillterSanPhamChiTiet])
+
+    useEffect(() => {
         getListSanPhamChiTiet(id)
     }, [id])
+
+    useEffect(() => {
+        setUpdateKhuyenMai({
+            ...updateKhuyenMai,
+            idProductDetail: selectedRows
+        })
+    }, [updateKhuyenMai, selectedRows])
 
     const khuyenMaiTen = getTenKhuyenMai.map((khuyenMai) => khuyenMai.ten)
 
     const getProductDetailById = (fillterSanPhamChiTiet, selectedProductIds) => {
         const params = new URLSearchParams({
-            id: selectedProductIds, // Chuyển mảng thành chuỗi
-            tenSearch: fillterSanPhamChiTiet.tenSearch || '',
-            idThuongHieuSearch: fillterSanPhamChiTiet.idThuongHieuSearch || '',
-            idChatLieuSearch: fillterSanPhamChiTiet.idChatLieuSearch || '',
-            idMauSacSearch: fillterSanPhamChiTiet.idMauSacSearch || '',
-            idDiemCanBangSearch: fillterSanPhamChiTiet.idDiemCanBangSearch || '',
-            idTrongLuongSearch: fillterSanPhamChiTiet.idTrongLuongSearch || '',
-            idDoCungSearch: fillterSanPhamChiTiet.idDoCungSearch || '',
-            currentPage: fillterSanPhamChiTiet.currentPage || 0,
+            tenSearch: fillterSanPhamChiTiet.tenSearch,
+            idThuongHieuSearch: fillterSanPhamChiTiet.idThuongHieuSearch,
+            idChatLieuSearch: fillterSanPhamChiTiet.idChatLieuSearch,
+            idMauSacSearch: fillterSanPhamChiTiet.idMauSacSearch,
+            idDiemCanBangSearch: fillterSanPhamChiTiet.idDiemCanBangSearch,
+            idTrongLuongSearch: fillterSanPhamChiTiet.idTrongLuongSearch,
+            idDoCungSearch: fillterSanPhamChiTiet.idDoCungSearch,
+            currentPage: fillterSanPhamChiTiet.currentPage,
             size: size
         });
 
-        if (selectedProductIds.length > 0) {
+        if (Array.isArray(selectedProductIds) && selectedProductIds.length > 0) {
+            selectedProductIds.forEach((id) => params.append('id', id));
+        }
+
+        console.log('Params:', params.toString()); // Kiểm tra tham số truyền vào
+
+        if (Array.isArray(selectedProductIds) && selectedProductIds.length > 0) {
             axios.get(`http://localhost:8080/api/khuyen-mai/getSanPhamCTBySanPham?${params.toString()}`)
                 .then((response) => {
+                    console.log('Response:', response.data); // Kiểm tra kết quả trả về từ API
                     setGetProductDetailByProduct(response.data.content);
                     setPageCount(response.data.totalPages);
+                    setCurrentPage(response.data.currentPage);
                 })
                 .catch((error) => {
                     console.error('Error:', error);
                 });
         }
     };
+
 
     useEffect(() => {
         getProductDetailById(fillterSanPhamChiTiet, selectedProductIds);
@@ -195,26 +220,29 @@ const SaleDetail = () => {
         navigate('/admin/giam-gia/dot-giam-gia');
     };
 
-    const fetchData = async () => {
-        try {
-            const response = await axios.get(`http://localhost:8080/api/khuyen-mai/detail/${id}`);
-            setUpdateKhuyenMai(response.data);
-        } catch (error) {
-            console.error("Error fetching voucher details:", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchData(id);
-    }, []);
+    // const handleSelectAllChangeProduct = (event) => {
+    //     const selectedIds = event.target.checked ? getProduct.map((row) => row.id) : []
+    //     setSelectedRowsProduct(selectedIds)
+    //     setSelectedRows(selectedIds)
+    //     setSelectAllProduct(event.target.checked)
+    //     getProductDetailById(fillterSanPhamChiTiet, selectedIds);
+    // }
 
     const handleSelectAllChangeProduct = (event) => {
-        const selectedIds = event.target.checked ? getProduct.map((row) => row.id) : []
-        setSelectedRowsProduct(selectedIds)
-        setSelectedRows(selectedIds)
-        setSelectAllProduct(event.target.checked)
+        const isChecked = event.target.checked;
+        const selectedIds = isChecked ? getProduct.map((row) => row.id) : [];
+
+        // Giữ lại các sản phẩm chi tiết đã chọn
+        const updatedSelectedRows = isChecked
+            ? [...new Set([...selectedRows, ...getProductDetailByProduct.map((row) => row.id)])]
+            : [];
+
+        setSelectedRowsProduct(selectedIds);
+        setSelectedRows(updatedSelectedRows);
+        setSelectAllProduct(isChecked);
         getProductDetailById(fillterSanPhamChiTiet, selectedIds);
-    }
+    };
+
 
     const handleSelectAllChangeProductDetail = (event) => {
         const selectedIds = event.target.checked ? getProductDetailByProduct.map((row) => row.id) : []
@@ -222,28 +250,52 @@ const SaleDetail = () => {
         setSelectAllProductDetail(event.target.checked)
     }
 
+    // const handleCheckboxChange1 = (event, productId) => {
+    //     const selectedIndex = selectedRowsProduct.indexOf(productId)
+    //     let newSelected = []
+    //
+    //     if (selectedIndex === -1) {
+    //         newSelected = [...selectedRowsProduct, productId]
+    //     } else {
+    //         newSelected = [
+    //             ...selectedRowsProduct.slice(0, selectedIndex),
+    //             ...selectedRowsProduct.slice(selectedIndex + 1),
+    //         ]
+    //     }
+    //
+    //     setSelectedRowsProduct(newSelected)
+    //     setSelectAllProduct(newSelected.length === getProduct.length)
+    //
+    //     const selectedProductIds = getProduct
+    //         .filter((row) => newSelected.includes(row.id))
+    //         .map((selectedProduct) => selectedProduct.id);
+    //     setSelectedProductIds(selectedProductIds);
+    //     setSelectedRows(selectedProductIds);
+    //     getProductDetailById(fillterSanPhamChiTiet, selectedProductIds);
+    // }
+
     const handleCheckboxChange1 = (event, productId) => {
-        const selectedIndex = selectedRowsProduct.indexOf(productId)
-        let newSelected = []
+        const selectedIndex = selectedRowsProduct.indexOf(productId);
+        let newSelected = [];
 
         if (selectedIndex === -1) {
-            newSelected = [...selectedRowsProduct, productId]
+            newSelected = [...selectedRowsProduct, productId];
         } else {
-            newSelected = [
-                ...selectedRowsProduct.slice(0, selectedIndex),
-                ...selectedRowsProduct.slice(selectedIndex + 1),
-            ]
+            newSelected = selectedRowsProduct.filter(id => id !== productId);
+
+            // Xóa các sản phẩm chi tiết liên quan đến sản phẩm bị bỏ chọn
+            const relatedDetails = getProductDetailByProduct
+                .filter(detail => detail.productId === productId)
+                .map(detail => detail.id);
+            setSelectedRows(selectedRows.filter(id => !relatedDetails.includes(id)));
         }
 
-        setSelectedRowsProduct(newSelected)
-        setSelectAllProduct(newSelected.length === getProduct.length)
+        setSelectedRowsProduct(newSelected);
+        setSelectAllProduct(newSelected.length === getProduct.length);
+        setSelectedProductIds(newSelected);
+        getProductDetailById(fillterSanPhamChiTiet, newSelected);
+    };
 
-        const selectedProductIds = getProduct
-            .filter((row) => newSelected.includes(row.id))
-            .map((selectedProduct) => selectedProduct.id);
-        setSelectedProductIds(selectedProductIds);
-        setSelectedRows(selectedProductIds);
-    }
 
     const handleCheckboxChange2 = (event, productDetailId) => {
         const selectedIndex = selectedRows.indexOf(productDetailId)
@@ -258,13 +310,6 @@ const SaleDetail = () => {
         setSelectedRows(newSelected)
         setSelectAllProductDetail(newSelected.length === getProductDetailByProduct.length)
     }
-
-    useEffect(() => {
-        setUpdateKhuyenMai(prev => ({
-            ...prev,
-            idProductDetail: selectedRows
-        }))
-    }, [selectedRows])
 
     const validate = () => {
         let check = 0
@@ -455,13 +500,18 @@ const SaleDetail = () => {
     const handlePageClick = (event) => {
         const selectedPage = event.selected;
         loadSanPhamSearch(searchSanPham, selectedPage); // Gọi hàm tìm kiếm với trang mới
-        console.log(`User  requested page number ${selectedPage + 1}`);
     };
 
     const handlePageSPCTClick = (event) => {
         const selectedPage = event.selected;
+
+
+
+        setFillterSanPhamChiTiet((prev) => ({
+            ...prev,
+            currentPage: selectedPage
+        }));
         getProductDetailById(fillterSanPhamChiTiet, selectedPage); // Gọi hàm tìm kiếm với trang mới
-        console.log(`User  requested page number ${selectedPage + 1}`);
     };
 
     return (
@@ -501,7 +551,7 @@ const SaleDetail = () => {
                             </label>
                             <input
                                 type="text"
-                                name="ten"  // Thêm thuộc tính name
+                                name="ten"
                                 id="discount-name"
                                 placeholder="Tên đợt giảm giá"
                                 className="w-full p-2 border rounded mb-4"
@@ -521,7 +571,7 @@ const SaleDetail = () => {
                             </label>
                             <input
                                 type="number"
-                                name="giaTri"  // Thêm thuộc tính name
+                                name="giaTri"
                                 id="discount-value"
                                 placeholder="Giá trị"
                                 className="w-full p-2 border rounded mb-4"
@@ -694,7 +744,7 @@ const SaleDetail = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Thương hiệu:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idThuongHieuSearch || ''}
+                                value={fillterSanPhamChiTiet.idThuongHieuSearch}
                                 onChange={(e) => {
                                     const newIdThuongHieuSearch = e.target.value;
                                     const updatedFilter = {
@@ -720,7 +770,7 @@ const SaleDetail = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Màu sắc:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idMauSac}
+                                value={fillterSanPhamChiTiet.idMauSacSearch}
                                 onChange={(e) => {
                                     const newIdMauSacSearch = e.target.value;
                                     const updatedFilter = {
@@ -747,7 +797,7 @@ const SaleDetail = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Chất liệu:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idChatLieu}
+                                value={fillterSanPhamChiTiet.idChatLieuSearch}
                                 onChange={(e) => {
                                     const newIdChatLieuSearch = e.target.value;
                                     const updatedFilter = {
@@ -773,7 +823,7 @@ const SaleDetail = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Trọng lượng:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idTrongLuong}
+                                value={fillterSanPhamChiTiet.idTrongLuongSearch}
                                 onChange={(e) => {
                                     const newIdTrongLuongSearch = e.target.value;
                                     const updatedFilter = {
@@ -798,7 +848,7 @@ const SaleDetail = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Điểm cân bằng:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idDiemCanBang}
+                                value={fillterSanPhamChiTiet.idDiemCanBangSearch}
                                 onChange={(e) => {
                                     const newIdDiemCanBangSearch = e.target.value;
                                     const updatedFilter = {
@@ -823,7 +873,7 @@ const SaleDetail = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Độ cứng:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idDoCung}
+                                value={fillterSanPhamChiTiet.idDoCungSearch}
                                 onChange={(e) => {
                                     const newIdDoCungSearch = e.target.value;
                                     const updatedFilter = {

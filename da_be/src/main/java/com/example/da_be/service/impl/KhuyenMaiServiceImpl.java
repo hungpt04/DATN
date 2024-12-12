@@ -130,8 +130,8 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
 
 
     @Override
-    public KhuyenMaiResponse getKhuyenMaiById(Integer id) {
-        return khuyenMaiRepository.getKhuyenMaiById(id);
+    public KhuyenMai getKhuyenMaiById(Integer id) {
+        return khuyenMaiRepository.findById(id).orElse(null);
     }
 
     @Override

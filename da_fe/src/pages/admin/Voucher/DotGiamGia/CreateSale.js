@@ -23,6 +23,7 @@ const CreateSale = () => {
     const [errorTgBatDau, setErrorTgBatDau] = useState('')
     const [errorTgKetThuc, setErrorTgKetThuc] = useState('')
     const [getTenKhuyenMai, setGetTenKhuyenMai] = useState([])
+    const [currentPage, setCurrentPage] = useState(0);
     const size = 5;
 
     const [listThuongHieu, setListThuongHieu] = useState([]);
@@ -34,6 +35,16 @@ const CreateSale = () => {
 
     const [searchSanPham, setSearchSanPham] = useState({
         tenSearch: "",
+    })
+
+    const [addKhuyenMai, setAddKhuyenMai] = useState({
+        ten: '',
+        giaTri: '',
+        loai: true,
+        tgBatDau: null,
+        tgKetThuc: null,
+        trangThai: 0,
+        idProductDetail: selectedRows
     })
 
     const [fillterSanPhamChiTiet, setFillterSanPhamChiTiet] = useState({
@@ -102,33 +113,23 @@ const CreateSale = () => {
         }
     }, [debouncedValueSanPham]);
 
-
     const loadSanPhamSearch = (searchSanPham, currentPage) => {
         const params = new URLSearchParams({
             tenSearch: searchSanPham.tenSearch,
-            currentPage: currentPage, // Thêm tham số cho trang
-            size: size // Kích thước trang cũng có thể được truyền vào nếu cần
+            currentPage: currentPage,
+            size: size
         });
 
         axios.get(`http://localhost:8080/api/khuyen-mai/searchSanPham?${params.toString()}`)
             .then((response) => {
                 setGetProduct(response.data.content);
                 setPageCount(response.data.totalPages);
+                setCurrentPage(response.data.currentPage);
             })
             .catch((error) => {
                 console.error('Error:', error);
             });
     }
-
-    const [addKhuyenMai, setAddKhuyenMai] = useState({
-        ten: '',
-        giaTri: '',
-        loai: true,
-        tgBatDau: null,
-        tgKetThuc: null,
-        trangThai: 0,
-        idProductDetail: selectedRows
-    })
 
     const handleNavigateToSale = () => {
         navigate('/admin/giam-gia/dot-giam-gia');
@@ -140,7 +141,7 @@ const CreateSale = () => {
 
     const getProductDetailById = (fillterSanPhamChiTiet, selectedProductIds) => {
         const params = new URLSearchParams({
-            id: selectedProductIds.join(','), // Chuyển mảng thành chuỗi
+            id: selectedProductIds,
             tenSearch: fillterSanPhamChiTiet.tenSearch || '',
             idThuongHieuSearch: fillterSanPhamChiTiet.idThuongHieuSearch || '',
             idChatLieuSearch: fillterSanPhamChiTiet.idChatLieuSearch || '',
@@ -155,8 +156,10 @@ const CreateSale = () => {
         if (selectedProductIds.length > 0) {
             axios.get(`http://localhost:8080/api/khuyen-mai/getSanPhamCTBySanPham?${params.toString()}`)
                 .then((response) => {
+                    console.log('Response:', response.data);
                     setGetProductDetailByProduct(response.data.content);
                     setPageCount(response.data.totalPages);
+                    setCurrentPage(response.data.currentPage);
                 })
                 .catch((error) => {
                     console.error('Error:', error);
@@ -174,7 +177,6 @@ const CreateSale = () => {
         setSelectedRows(selectedIds)
         setSelectAllProduct(event.target.checked)
         getProductDetailById(fillterSanPhamChiTiet, selectedIds);
-        console.log(selectedIds)
     }
 
     const handleSelectAllChangeProductDetail = (event) => {
@@ -409,14 +411,20 @@ const CreateSale = () => {
 
     const handlePageClick = (event) => {
         const selectedPage = event.selected;
-        loadSanPhamSearch(searchSanPham, selectedPage); // Gọi hàm tìm kiếm với trang mới
-        console.log(`User  requested page number ${selectedPage + 1}`);
+        loadSanPhamSearch(searchSanPham, selectedPage);
     };
 
     const handlePageSPCTClick = (event) => {
         const selectedPage = event.selected;
-        getProductDetailById(fillterSanPhamChiTiet, selectedPage); // Gọi hàm tìm kiếm với trang mới
-        console.log(`User  requested page number ${selectedPage + 1}`);
+
+
+
+        setFillterSanPhamChiTiet((prev) => ({
+            ...prev,
+            currentPage: selectedPage
+        }));
+
+        getProductDetailById(fillterSanPhamChiTiet, selectedPage);
     };
 
     return (
@@ -456,11 +464,10 @@ const CreateSale = () => {
                             </label>
                             <input
                                 type="text"
-                                name="ten"  // Thêm thuộc tính name
+                                name="ten"
                                 id="discount-name"
                                 placeholder="Tên đợt giảm giá"
                                 className="w-full p-2 border rounded mb-4"
-                                // onChange={handleInputChange}  // Bỏ arrow function
                                 onChange={(e) => {
                                     handleInputChange(e)
                                     setErrorTen('')
@@ -476,11 +483,10 @@ const CreateSale = () => {
                             </label>
                             <input
                                 type="number"
-                                name="giaTri"  // Thêm thuộc tính name
+                                name="giaTri"
                                 id="discount-value"
                                 placeholder="Giá trị"
                                 className="w-full p-2 border rounded mb-4"
-                                // onChange={handleInputChange}  // Bỏ arrow function
                                 onChange={(e) => {
                                     handleInputChange(e)
                                     setErrorGiaTri('')
@@ -579,7 +585,7 @@ const CreateSale = () => {
                                                 className="align-middle"
                                             />
                                         </td>
-                                        <td className="py-2 px-4 border-b text-center">{index + 1}</td>
+                                        <td className="py-2 px-4 border-b text-center">{(currentPage * 5) + index + 1}</td>
                                         <td className="py-2 px-4 border-b text-center">{sanPham.ten}</td>
                                     </tr>
                                 ))}
@@ -674,7 +680,7 @@ const CreateSale = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Màu sắc:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idMauSac}
+                                value={fillterSanPhamChiTiet.idMauSacSearch}
                                 onChange={(e) => {
                                     const newIdMauSacSearch = e.target.value;
                                     const updatedFilter = {
@@ -701,7 +707,7 @@ const CreateSale = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Chất liệu:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idChatLieu}
+                                value={fillterSanPhamChiTiet.idChatLieuSearch}
                                 onChange={(e) => {
                                     const newIdChatLieuSearch = e.target.value;
                                     const updatedFilter = {
@@ -727,7 +733,7 @@ const CreateSale = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Trọng lượng:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idTrongLuong}
+                                value={fillterSanPhamChiTiet.idTrongLuongSearch}
                                 onChange={(e) => {
                                     const newIdTrongLuongSearch = e.target.value;
                                     const updatedFilter = {
@@ -752,7 +758,7 @@ const CreateSale = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Điểm cân bằng:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idDiemCanBang}
+                                value={fillterSanPhamChiTiet.idDiemCanBangSearch}
                                 onChange={(e) => {
                                     const newIdDiemCanBangSearch = e.target.value;
                                     const updatedFilter = {
@@ -777,7 +783,7 @@ const CreateSale = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Độ cứng:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idDoCung}
+                                value={fillterSanPhamChiTiet.idDoCungSearch}
                                 onChange={(e) => {
                                     const newIdDoCungSearch = e.target.value;
                                     const updatedFilter = {
@@ -827,7 +833,7 @@ const CreateSale = () => {
                                             onChange={(event) => handleCheckboxChange2(event, spct.id)}
                                         />
                                     </td>
-                                    <td className="py-2 px-4 border-b text-center">{index + 1}</td>
+                                    <td className="py-2 px-4 border-b text-center">{(currentPage * 5) + index + 1}</td>
                                     <td className="py-2 px-4 border-b text-center">{spct.tenSanPham}</td>
                                     <td className="py-2 px-4 border-b text-center">{spct.tenThuongHieu}</td>
                                     <td className="py-2 px-4 border-b text-center">{spct.tenMauSac}</td>
