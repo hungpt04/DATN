@@ -8,6 +8,7 @@ import com.example.da_be.request.SanPhamSearch;
 import com.example.da_be.response.KhuyenMaiResponse;
 import com.example.da_be.response.SanPhamCTResponse;
 import com.example.da_be.response.SanPhamResponse;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -72,6 +73,17 @@ public interface KhuyenMaiRepository extends JpaRepository<KhuyenMai, Integer> {
 """
     )
     List<Integer> getIdSanPhamVaSanPhamChiTietByIdKhuyenMai(Integer idKhuyenMai);
+
+    @Query(
+            """
+            SELECT spct.id
+            FROM SanPhamKhuyenMai spkm
+            inner join SanPhamCT spct on spkm.sanPhamCT.id = spct.id
+            inner join SanPham sp on spct.sanPham.id = sp.id
+            where spkm.khuyenMai.id = :idKhuyenMai
+"""
+    )
+    List<Integer> getIdSanPhamChiTietByIdKhuyenMai(Integer idKhuyenMai);
 
     @Query(
             """

@@ -140,6 +140,11 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
     }
 
     @Override
+    public List<Integer> getIdSanPhamChiTietByIdKhuyenMai(Integer idKhuyenMai) {
+        return khuyenMaiRepository.getIdSanPhamChiTietByIdKhuyenMai(idKhuyenMai);
+    }
+
+    @Override
     public KhuyenMai deleteKhuyenMai(Integer id) {
         // Lấy ngày giờ hiện tại (bao gồm cả giờ)
         LocalDateTime currentDateTime = LocalDateTime.now();

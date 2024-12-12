@@ -68,6 +68,11 @@ public class KhuyenMaiController {
         return khuyenMaiService.getIdSanPhamVaSanPhamChiTietByIdKhuyenMai(idKhuyenMai);
     }
 
+    @GetMapping("/get-id-san-pham-chi-tiet-by-id-khuyen-mai/{idKhuyenMai}")
+    public List<Integer> getIdSanPhamChiTietByIdKhuyenMai(@PathVariable Integer idKhuyenMai) {
+        return khuyenMaiService.getIdSanPhamChiTietByIdKhuyenMai(idKhuyenMai);
+    }
+
     @PutMapping("/delete/{id}")
     public void deleteKhuyenMai(@PathVariable Integer id) {
         khuyenMaiService.deleteKhuyenMai(id);

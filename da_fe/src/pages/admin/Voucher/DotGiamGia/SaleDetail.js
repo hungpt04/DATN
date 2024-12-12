@@ -24,6 +24,7 @@ const SaleDetail = () => {
     const [errorTgKetThuc, setErrorTgKetThuc] = useState('')
     const [getTenKhuyenMai, setGetTenKhuyenMai] = useState([])
     const [pageCount, setPageCount] = useState(0);
+    const [currentPage, setCurrentPage] = useState(0);
     const size = 5;
     const [listThuongHieu, setListThuongHieu] = useState([]);
     const [listChatLieu, setListChatLieu] = useState([]);
@@ -98,6 +99,7 @@ const SaleDetail = () => {
             .then((response) => {
                 setGetProduct(response.data.content);
                 setPageCount(response.data.totalPages);
+                setCurrentPage(response.data.currentPage)
             })
             .catch((error) => {
                 console.error('Error:', error);
@@ -127,6 +129,35 @@ const SaleDetail = () => {
     useEffect(() => {
         handleAllTenKhuyenMai()
     })
+
+    const getListSanPham = (id) => {
+        axios.get(`http://localhost:8080/api/khuyen-mai/get-id-san-pham-va-san-pham-chi-tiet-by-id-khuyen-mai/${id}`)
+            .then((response) => {
+                setSelectedRowsProduct(response.data)
+                getProductDetailById(fillterSanPhamChiTiet, response.data)
+            })
+            .catch((error) => {
+                console.error('Error:', error)
+            })
+    }
+
+    useEffect(() => {
+        getListSanPham(id)
+    }, [id])
+
+    const getListSanPhamChiTiet = (id) => {
+        axios.get(`http://localhost:8080/api/khuyen-mai/get-id-san-pham-chi-tiet-by-id-khuyen-mai/${id}`)
+            .then((response) => {
+                setSelectedRows(response.data)
+            })
+            .catch((error) => {
+                console.error('Error:', error)
+            })
+    }
+
+    useEffect(() => {
+        getListSanPhamChiTiet(id)
+    }, [id])
 
     const khuyenMaiTen = getTenKhuyenMai.map((khuyenMai) => khuyenMai.ten)
 
@@ -219,10 +250,8 @@ const SaleDetail = () => {
         let newSelected = []
 
         if (selectedIndex === -1) {
-            // Nếu chưa được chọn thì thêm vào
             newSelected = [...selectedRows, productDetailId]
         } else {
-            // Nếu đã được chọn thì loại bỏ
             newSelected = selectedRows.filter(id => id !== productDetailId)
         }
 
@@ -231,7 +260,6 @@ const SaleDetail = () => {
     }
 
     useEffect(() => {
-        // Khi selectedRows thay đổi, cập nhật lại state của updateKhuyenMai
         setUpdateKhuyenMai(prev => ({
             ...prev,
             idProductDetail: selectedRows
@@ -329,7 +357,6 @@ const SaleDetail = () => {
                 },
             }).then((willConfirm) => {
                 if (willConfirm) {
-                    // Sử dụng trực tiếp updateKhuyenMai và id từ scope
                     const dataToUpdate = {
                         ...updateKhuyenMai,
                         loai: selectedRows.length === 0 ? false : true,
@@ -437,7 +464,6 @@ const SaleDetail = () => {
         console.log(`User  requested page number ${selectedPage + 1}`);
     };
 
-
     return (
         <div>
             <div className="font-bold text-sm">
@@ -514,7 +540,7 @@ const SaleDetail = () => {
                                 <label className="block text-gray-600 mb-1">Từ ngày</label>
                                 <DateTimePicker
                                     format={'DD-MM-YYYY HH:mm:ss'}
-                                
+
                                     slotProps={{
                                         textField: {
                                             size: 'small',
@@ -539,10 +565,10 @@ const SaleDetail = () => {
 
                         <div className='mt-4'>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <label className="block text-gray-600 mb-1">Đến ngày</label>
+                                <label className="block text-gray-600 mb-1">Đến ngày</label>
                                 <DateTimePicker
                                     format={'DD-MM-YYYY HH:mm:ss'}
-                                    
+
                                     slotProps={{
                                         textField: {
                                             size: 'small',
@@ -579,32 +605,32 @@ const SaleDetail = () => {
                     <div className="w-1/2 pr-4">
                         <table className="min-w-full border border-gray-200">
                             <thead>
-                                <tr className="bg-gray-100 text-gray-700">
-                                    <th className="py-2 px-4 border-b text-center">
-                                        <input type="checkbox"
-                                            checked={selectAllProduct}
-                                            onChange={handleSelectAllChangeProduct}
-                                        />
-                                    </th>
-                                    <th className="py-2 px-4 border-b text-center">STT</th>
-                                    <th className="py-2 px-4 border-b text-center">Tên sản phẩm</th>
-                                </tr>
+                            <tr className="bg-gray-100 text-gray-700">
+                                <th className="py-2 px-4 border-b text-center">
+                                    <input type="checkbox"
+                                           checked={selectAllProduct}
+                                           onChange={handleSelectAllChangeProduct}
+                                    />
+                                </th>
+                                <th className="py-2 px-4 border-b text-center">STT</th>
+                                <th className="py-2 px-4 border-b text-center">Tên sản phẩm</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {getProduct.map((sanPham, index) => (
-                                    <tr key={sanPham.id} className="text-left border-b">
-                                        <td className="py-2 px-4 border-b text-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedRowsProduct.indexOf(sanPham.id) !== -1}
-                                                onChange={(event) => handleCheckboxChange1(event, sanPham.id)}
-                                                className="align-middle"
-                                            />
-                                        </td>
-                                        <td className="py-2 px-4 border-b text-center">{index + 1}</td>
-                                        <td className="py-2 px-4 border-b text-center">{sanPham.ten}</td>
-                                    </tr>
-                                ))}
+                            {getProduct.map((sanPham, index) => (
+                                <tr key={sanPham.id} className="text-left border-b">
+                                    <td className="py-2 px-4 border-b text-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedRowsProduct.indexOf(sanPham.id) !== -1}
+                                            onChange={(event) => handleCheckboxChange1(event, sanPham.id)}
+                                            className="align-middle"
+                                        />
+                                    </td>
+                                    <td className="py-2 px-4 border-b text-center">{(currentPage * 5) + index + 1}</td>
+                                    <td className="py-2 px-4 border-b text-center">{sanPham.ten}</td>
+                                </tr>
+                            ))}
                             </tbody>
                         </table>
                         {/* Pagination */}
@@ -821,42 +847,42 @@ const SaleDetail = () => {
 
                     <table className="min-w-full border border-gray-200">
                         <thead>
-                            <tr className="bg-gray-100 text-gray-700">
-                                <th className="py-2 px-4 border-b text-center">
-                                    <input type="checkbox"
-                                        checked={selectAllProductDetail}
-                                        onChange={handleSelectAllChangeProductDetail}
-                                    />
-                                </th>
-                                <th className="py-2 px-4 border-b text-center">STT</th>
-                                <th className="py-2 px-4 border-b text-center">Tên sản phẩm</th>
-                                <th className="py-2 px-4 border-b text-center">Thương hiệu</th>
-                                <th className="py-2 px-4 border-b text-center">Màu sắc</th>
-                                <th className="py-2 px-4 border-b text-center">Chất liệu</th>
-                                <th className="py-2 px-4 border-b text-center">Trọng lượng</th>
-                                <th className="py-2 px-4 border-b text-center">Điểm cân bằng</th>
-                                <th className="py-2 px-4 border-b text-center">Độ cứng</th>
-                            </tr>
+                        <tr className="bg-gray-100 text-gray-700">
+                            <th className="py-2 px-4 border-b text-center">
+                                <input type="checkbox"
+                                       checked={selectAllProductDetail}
+                                       onChange={handleSelectAllChangeProductDetail}
+                                />
+                            </th>
+                            <th className="py-2 px-4 border-b text-center">STT</th>
+                            <th className="py-2 px-4 border-b text-center">Tên sản phẩm</th>
+                            <th className="py-2 px-4 border-b text-center">Thương hiệu</th>
+                            <th className="py-2 px-4 border-b text-center">Màu sắc</th>
+                            <th className="py-2 px-4 border-b text-center">Chất liệu</th>
+                            <th className="py-2 px-4 border-b text-center">Trọng lượng</th>
+                            <th className="py-2 px-4 border-b text-center">Điểm cân bằng</th>
+                            <th className="py-2 px-4 border-b text-center">Độ cứng</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {getProductDetailByProduct.map((spct, index) => (
-                                <tr key={spct.id} className="text-center border-b">
-                                    <td className="py-2 px-4 border-b text-center">
-                                        <input type="checkbox"
-                                            checked={selectedRows.indexOf(spct.id) !== -1}
-                                            onChange={(event) => handleCheckboxChange2(event, spct.id)}
-                                        />
-                                    </td>
-                                    <td className="py-2 px-4 border-b text-center">{index + 1}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenSanPham}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenThuongHieu}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenMauSac}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenChatLieu}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenTrongLuong}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenDiemCanBang}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenDoCung}</td>
-                                </tr>
-                            ))}
+                        {getProductDetailByProduct.map((spct, index) => (
+                            <tr key={spct.id} className="text-center border-b">
+                                <td className="py-2 px-4 border-b text-center">
+                                    <input type="checkbox"
+                                           checked={selectedRows.indexOf(spct.id) !== -1}
+                                           onChange={(event) => handleCheckboxChange2(event, spct.id)}
+                                    />
+                                </td>
+                                <td className="py-2 px-4 border-b text-center">{index + 1}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenSanPham}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenThuongHieu}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenMauSac}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenChatLieu}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenTrongLuong}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenDiemCanBang}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenDoCung}</td>
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
                     <div className="flex justify-end mt-4">
