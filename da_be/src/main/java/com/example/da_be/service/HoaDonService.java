@@ -1,9 +1,12 @@
 package com.example.da_be.service;
 
 import com.example.da_be.entity.HoaDon;
+import com.example.da_be.entity.LichSuDonHang;
 import com.example.da_be.repository.HoaDonRepository;
+import com.example.da_be.repository.LichSuDonHangRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -16,6 +19,8 @@ public class HoaDonService {
 
     @Autowired
     private HoaDonRepository hoaDonRepository;
+    @Autowired
+    private LichSuDonHangRepository lichSuDonHangRepository;
 
     public List<HoaDon> getAllHoaDon() {
         return hoaDonRepository.findAll();
@@ -80,5 +85,11 @@ public class HoaDonService {
     private String getMonth(Date date) {
         SimpleDateFormat sdf = new SimpleDateFormat("MMM");
         return sdf.format(date);
+    }
+
+    @Transactional
+    public void deleteHoaDon(Long id) {
+         lichSuDonHangRepository.deleteByIdHoaDon(Math.toIntExact(id));
+            hoaDonRepository.deleteById(id);
     }
 }

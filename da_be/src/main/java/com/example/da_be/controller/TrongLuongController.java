@@ -1,6 +1,8 @@
 package com.example.da_be.controller;
 
 import com.example.da_be.entity.TrongLuong;
+import com.example.da_be.repository.ThuongHieuRepository;
+import com.example.da_be.repository.TrongLuongRepository;
 import com.example.da_be.service.TrongLuongService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +17,18 @@ public class TrongLuongController {
     @Autowired
     private TrongLuongService trongLuongService;
 
+    @Autowired
+    private TrongLuongRepository trongLuongRepository;
+
     // Lấy danh sách tất cả trọng lượng
     @GetMapping
     public List<TrongLuong> getAllTrongLuong() {
         return trongLuongService.getAllTrongLuong();
+    }
+
+    @GetMapping("/hien-thi")
+    public List<TrongLuong> getAllTrongLuongHienThi() {
+        return trongLuongRepository.getAllTrongLuong();
     }
 
     // Lấy thông tin trọng lượng theo id

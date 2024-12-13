@@ -58,6 +58,10 @@ const CreateVoucher = () => {
     const listTen = []
     allTenVoucher.map((m) => listTen.push(m.toLowerCase()))
 
+    const handleNavigateToDiscountVoucher = () => {
+        navigate('/admin/giam-gia/phieu-giam-gia');
+    };
+
     const [searchKhachHang, setSearchKhachHang] = useState({
         tenSearch: "",
     })
@@ -123,10 +127,6 @@ const CreateVoucher = () => {
                 console.error('Error:', error);
             });
     }
-
-    const handleNavigateToDiscountVoucher = () => {
-        navigate('/admin/giam-gia/phieu-giam-gia');
-    };
 
     useEffect(() => {
         handleAllKhachHang();

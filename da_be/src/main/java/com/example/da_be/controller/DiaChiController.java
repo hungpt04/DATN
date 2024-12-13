@@ -129,4 +129,14 @@ public class DiaChiController {
         return ResponseEntity.ok(diaChiService.update(id, diaChiRequest));
     }
 
+    @DeleteMapping("/delete/{id}")
+    public void delete(@PathVariable Long id) {
+        diaChiService.delete(id);
+    }
+
+    @PutMapping("/status")
+    public ResponseEntity<?> getTrangThaiDiaChiByIdTaiKhoan(@RequestParam Integer idTaiKhoan, @RequestParam Long idDiaChi) {
+        return ResponseEntity.ok(diaChiService.updateDefault(idTaiKhoan, idDiaChi));
+    }
+
 }

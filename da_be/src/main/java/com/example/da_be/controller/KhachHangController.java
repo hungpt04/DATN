@@ -1,5 +1,6 @@
 package com.example.da_be.controller;
 
+import com.example.da_be.entity.TaiKhoan;
 import com.example.da_be.request.KhachHangRequest;
 import com.example.da_be.request.KhachHangSearch;
 import com.example.da_be.response.KhachHangResponse;
@@ -56,5 +57,15 @@ public class KhachHangController {
     @PostMapping("/add")
     public ResponseEntity<?> addKhachHang(KhachHangRequest khachHangRequest) throws ParseException {
         return ResponseEntity.ok(khachHangService.add(khachHangRequest));
+    }
+
+    @GetMapping("/getKhachHangById/{id}")
+    public ResponseEntity<TaiKhoan> getKhachHangById(@PathVariable Integer id) {
+        return ResponseEntity.ok(khachHangService.getKhachHangById(id));
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateKhachHang(@PathVariable Integer id, KhachHangRequest khachHangRequest) throws ParseException {
+        return ResponseEntity.ok(khachHangService.update(id, khachHangRequest));
     }
 }

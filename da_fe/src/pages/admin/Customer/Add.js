@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import swal from 'sweetalert';
 import { useNavigate } from 'react-router-dom';
-import StarIcon from '@mui/icons-material/Star';
 
 function AddCustomer() {
     const navigate = useNavigate();

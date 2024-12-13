@@ -9,6 +9,7 @@ import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { CircularProgress } from '@mui/material';
 
 const VoucherDetail = () => {
     const initialVoucher = {
@@ -103,12 +104,13 @@ const VoucherDetail = () => {
     const [giaTriMaxDefault, setGiaTriMaxDefault] = useState(0)
     const [soLuongDefault, setSoLuongDefault] = useState(0)
     const [dieuKienNhoNhatDefault, setDieuKienNhoNhatDefault] = useState(0)
+    const [loading, setLoading] = useState(false)
+    const [confirmClicked, setConfirmClicked] = useState(false)
 
     const listMa = []
     allMaVoucher.map((m) => listMa.push(m.toLowerCase()))
     const listTen = []
     allTenVoucher.map((m) => listTen.push(m.toLowerCase()))
-
 
     const handleNavigateToDiscountVoucher = () => {
         navigate('/admin/giam-gia/phieu-giam-gia');
@@ -331,6 +333,7 @@ const VoucherDetail = () => {
         setErrorSoLuong(errors.soLuong)
         setErrorNgayBatDau(errors.ngayBatDau)
         setErrorNgayKetThuc(errors.ngayKetThuc)
+        setConfirmClicked(true)
         return check
     }
 
@@ -352,6 +355,7 @@ const VoucherDetail = () => {
                 },
             }).then((willConfirm) => {
                 if (willConfirm) {
+                    setLoading(true)
                     const updatedVoucher = {
                         ...voucherDetail,
                         listIdCustomer: selectedCustomerIds // Gửi danh sách ID khách hàng
@@ -369,7 +373,10 @@ const VoucherDetail = () => {
                         .catch((error) => {
                             console.error("Lỗi cập nhật:", error);
                             swal("Thất bại!", "Cập nhật phiếu giảm giá thất bại!", "error");
-                        });
+                        })
+                        .finally(() => {
+                            setLoading(false)
+                        })
                 }
             });
         } else {
@@ -774,11 +781,24 @@ const VoucherDetail = () => {
                     </div>
                 </div>
                 <div className="pt-4">
-                    {/* Button */}
+                    {confirmClicked && loading && (
+                        <div
+                            style={{
+                                position: 'fixed',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                zIndex: 9999,
+                            }}>
+                            <CircularProgress size={50} />
+                        </div>
+                    )}
+                    {/*Button*/}
                     <button
                         onClick={() => handleVoucherUpdate(id, voucherDetail)}
+                        disabled={loading}
                         className="border border-amber-400 hover:bg-gray-100 text-amber-400 py-2 px-4 rounded-md ml-auto flex items-center">
-                        Cập nhật
+                        {loading ? 'Đang cập nhật...' : 'Cập nhật'}
                     </button>
                 </div>
             </div>

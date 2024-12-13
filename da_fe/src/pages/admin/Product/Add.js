@@ -79,7 +79,7 @@ function AddProduct() {
 
     const loadBrands = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/thuong-hieu');
+            const response = await axios.get('http://localhost:8080/api/thuong-hieu/hien-thi');
             setBrands(response.data);
         } catch (error) {
             console.error('Failed to fetch brands', error);
@@ -88,7 +88,7 @@ function AddProduct() {
 
     const loadMaterials = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/chat-lieu');
+            const response = await axios.get('http://localhost:8080/api/chat-lieu/hien-thi');
             setMaterials(response.data);
         } catch (error) {
             console.error('Failed to fetch Material', error);
@@ -97,7 +97,7 @@ function AddProduct() {
 
     const loadBalances = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/diem-can-bang');
+            const response = await axios.get('http://localhost:8080/api/diem-can-bang/hien-thi');
             setBalances(response.data);
         } catch (error) {
             console.error('Failed to fetch balances', error);
@@ -106,7 +106,7 @@ function AddProduct() {
 
     const loadStiffs = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/do-cung');
+            const response = await axios.get('http://localhost:8080/api/do-cung/hien-thi');
             setStiffs(response.data);
         } catch (error) {
             console.error('Failed to fetch stiffs', error);
@@ -115,7 +115,7 @@ function AddProduct() {
 
     const loadColors = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/mau-sac');
+            const response = await axios.get('http://localhost:8080/api/mau-sac/hien-thi');
             setColors(response.data);
         } catch (error) {
             console.error('Failed to fetch Colors', error);
@@ -124,7 +124,7 @@ function AddProduct() {
 
     const loadWeights = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/trong-luong');
+            const response = await axios.get('http://localhost:8080/api/trong-luong/hien-thi');
             setWeights(response.data);
         } catch (error) {
             console.error('Failed to fetch Weights', error);

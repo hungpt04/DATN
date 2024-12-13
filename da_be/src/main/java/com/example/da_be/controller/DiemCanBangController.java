@@ -1,6 +1,7 @@
 package com.example.da_be.controller;
 
 import com.example.da_be.entity.DiemCanBang;
+import com.example.da_be.repository.DiemCanBangRepository;
 import com.example.da_be.service.DiemCanBangService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +16,18 @@ public class DiemCanBangController {
     @Autowired
     private DiemCanBangService diemCanBangService;
 
+    @Autowired
+    private DiemCanBangRepository diemCanBangRepository;
+
     // Lấy danh sách tất cả điểm cân bằng
     @GetMapping
     public List<DiemCanBang> getAllDiemCanBang() {
         return diemCanBangService.getAllDiemCanBang();
+    }
+
+    @GetMapping("/hien-thi")
+    public List<DiemCanBang> getAllDiemCanBangHienThi() {
+        return diemCanBangRepository.getAllDiemCanBang();
     }
 
     // Lấy thông tin điểm cân bằng theo id

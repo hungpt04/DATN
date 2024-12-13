@@ -99,6 +99,24 @@ public class DiaChiService {
             return false;
         }
     }
+//Delete địa chỉ của Hoàng
+    public void delete(Long id) {
+        diaChiRepository.deleteById(id);
+    }
 
+    public Boolean updateDefault(Integer idTaiKhoan, Long idDiaChi) {
+        List<DiaChi> addressList = diaChiRepository.getTrangThaiDiaChiByIdTaiKhoan(idTaiKhoan);
+        if (!addressList.isEmpty()) {
+            for (DiaChi address : addressList) {
+                address.setLoai(1);
+                if (address.getId().equals(idDiaChi)) {
+                    address.setLoai(0);
+                }
+                diaChiRepository.save(address);
+            }
+            return true;
+        }
+        return false;
+    }
 
 }

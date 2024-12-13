@@ -1,6 +1,7 @@
 package com.example.da_be.controller;
 
 import com.example.da_be.entity.ChatLieu;
+import com.example.da_be.repository.ChatLieuRepository;
 import com.example.da_be.service.ChatLieuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +16,18 @@ public class ChatLieuController {
     @Autowired
     private ChatLieuService chatLieuService;
 
+    @Autowired
+    private ChatLieuRepository chatLieuRepository;
+
     // Lấy danh sách tất cả chất liệu
     @GetMapping
     public List<ChatLieu> getAllChatLieu() {
         return chatLieuService.getAllChatLieu();
+    }
+
+    @GetMapping("/hien-thi")
+    public List<ChatLieu> getAllChatLieuHienThi() {
+        return chatLieuRepository.getAllChatLieu();
     }
 
     // Lấy thông tin chất liệu theo id

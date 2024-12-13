@@ -77,4 +77,10 @@ public class HoaDonController {
         List<Map<String, Object>> monthlySalesData = hoaDonService.getMonthlySalesData();
         return new ResponseEntity<>(monthlySalesData, HttpStatus.OK);
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteHD(@PathVariable Long id) {
+        hoaDonService.deleteHoaDon(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

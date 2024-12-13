@@ -493,12 +493,12 @@ function OfflineSale() {
         // Tính giảm giá từ voucher
         const voucherDiscount = bestVoucher
             ? (() => {
-                  const discountPercentage = bestVoucher.giaTri / 100;
-                  const discountAmount = totalItems * discountPercentage;
+                const discountPercentage = bestVoucher.giaTri / 100;
+                const discountAmount = totalItems * discountPercentage;
 
-                  // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                  return discountAmount > bestVoucher.giaTriMax ? bestVoucher.giaTriMax : discountAmount;
-              })()
+                // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                return discountAmount > bestVoucher.giaTriMax ? bestVoucher.giaTriMax : discountAmount;
+            })()
             : 0;
 
         // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
@@ -663,13 +663,14 @@ function OfflineSale() {
     // Hàm handleDeleteBill đã có, cập nhật lại danh sách hóa đơn trong UI
     const handleDeleteBill = async (billId) => {
         try {
-            await axios.delete(`http://localhost:8080/api/hoa-don/${billId}`);
+            await axios.delete(`http://localhost:8080/api/hoa-don/delete/${billId}`);
 
             // Remove the deleted bill from the list in state
             setBills((prevBills) => prevBills.filter((bill) => bill.id !== billId));
 
             // Optional: Reset UI nếu bạn muốn trở về trạng thái ban đầu
             setSelectedBill(null); // Nếu bạn có một state đang lưu hóa đơn được chọn
+            swal('Thành công', 'Xóa hóa đơn thành công', 'success');
         } catch (error) {
             console.error('Có lỗi xảy ra khi xóa hóa đơn!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi xóa hóa đơn!', 'error');
@@ -746,11 +747,10 @@ function OfflineSale() {
                                 ) => (
                                     <div
                                         key={bill.id}
-                                        className={`flex items-center mr-4 cursor-pointer ${
-                                            selectedBill?.id === bill.id
-                                                ? 'border-b-2 border-blue-800 pb-2 text-blue-500'
-                                                : ''
-                                        }`}
+                                        className={`flex items-center mr-4 cursor-pointer ${selectedBill?.id === bill.id
+                                            ? 'border-b-2 border-blue-800 pb-2 text-blue-500'
+                                            : ''
+                                            }`}
                                         onClick={() => handleBillClick(bill)}
                                     >
                                         <span className="text-sm text-gray-700">
@@ -838,7 +838,7 @@ function OfflineSale() {
                                                                 {detail.hoaDonCT.sanPhamCT.sanPham.ten}
                                                             </div>
                                                             <div className="text-gray-400 line-through">
-                                                                {detail.hoaDonCT.giaBan.toLocaleString()} VND
+                                                                {detail.hoaDonCT.giaBan.toLocaleString()} VNĐ
                                                             </div>
                                                             <div className="text-gray-600">
                                                                 Size: {detail.hoaDonCT.sanPhamCT.trongLuong.ten}
@@ -864,7 +864,7 @@ function OfflineSale() {
                                                         {(
                                                             detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan
                                                         ).toLocaleString()}{' '}
-                                                        VND
+                                                        VNĐ
                                                     </div>
                                                     <button
                                                         className="ml-4 text-red-500"
@@ -912,10 +912,10 @@ function OfflineSale() {
                                                 <hr className="border-gray-300 my-2" />
                                                 <div className="flex justify-between items-center mb-4">
                                                     <div className="flex-1">
-                                                        <label className="block text-gray-700">Tên Khách hàng</label>
+                                                        <label className="block text-gray-700">Tên khách hàng</label>
                                                     </div>
                                                     <div className="flex justify-center flex-1">
-                                                        <span className="bg-gray-200 px-4 py-2 rounded">khách lẻ</span>
+                                                        <span className="bg-gray-200 px-4 py-2 rounded">Khách lẻ</span>
                                                     </div>
                                                     <div className="flex items-center flex-1 justify-end">
                                                         <label className="block text-gray-700 mr-2">Giao hàng</label>
@@ -953,11 +953,11 @@ function OfflineSale() {
                                                                     (acc, detail) =>
                                                                         acc +
                                                                         detail.hoaDonCT.soLuong *
-                                                                            detail.hoaDonCT.giaBan,
+                                                                        detail.hoaDonCT.giaBan,
                                                                     0,
                                                                 )
                                                                 .toLocaleString()}{' '}
-                                                            VND
+                                                            VNĐ
                                                         </div>
                                                     </div>
 
@@ -975,7 +975,7 @@ function OfflineSale() {
                                                     </div>
 
                                                     {/* Giảm giá */}
-                                                    <div className="flex justify-between w-full max-w-[400px] mb-2">
+                                                    {/* <div className="flex justify-between w-full max-w-[400px] mb-2">
                                                         <span className="text-gray-700">Giảm giá:</span>
                                                         <div className="flex items-center">
                                                             <input
@@ -985,7 +985,7 @@ function OfflineSale() {
                                                                         (acc, detail) =>
                                                                             acc +
                                                                             detail.hoaDonCT.soLuong *
-                                                                                detail.hoaDonCT.giaBan,
+                                                                            detail.hoaDonCT.giaBan,
                                                                         0,
                                                                     );
 
@@ -1003,9 +1003,38 @@ function OfflineSale() {
                                                                 className="ml-4 px-2 py-1 rounded bg-gray-100 cursor-not-allowed"
                                                                 readOnly
                                                             />
-                                                            <span className="ml-2">VND</span>
+                                                            <span className="ml-2">VNĐ</span>
+                                                        </div>
+                                                    </div> */}
+
+                                                    {/* Giảm giá */}
+                                                    <div className="flex justify-between w-full max-w-[400px] mb-2">
+                                                        <span className="text-gray-700">Giảm giá:</span>
+                                                        <div className="flex items-center">
+                                                            <span className="ml-4 px-2 py-1 rounded bg-gray-100">
+                                                                {(() => {
+                                                                    const total = uniqueDetails.reduce(
+                                                                        (acc, detail) =>
+                                                                            acc + detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan,
+                                                                        0
+                                                                    );
+
+                                                                    if (!bestVoucher) return 0;
+
+                                                                    // Tính toán giảm giá theo phần trăm
+                                                                    const discountPercentage = bestVoucher.giaTri / 100;
+                                                                    const discountAmount = total * discountPercentage;
+
+                                                                    // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                                                    const amount = discountAmount > bestVoucher.giaTriMax ? bestVoucher.giaTriMax : discountAmount;
+
+                                                                    // Định dạng số với VNĐ
+                                                                    return amount.toLocaleString('vi-VN') + ' VNĐ';
+                                                                })()}
+                                                            </span>
                                                         </div>
                                                     </div>
+
 
                                                     {/* Tổng số tiền */}
                                                     <div className="flex justify-between w-full max-w-[400px] mb-2">
@@ -1016,23 +1045,23 @@ function OfflineSale() {
                                                                     (acc, detail) =>
                                                                         acc +
                                                                         detail.hoaDonCT.soLuong *
-                                                                            detail.hoaDonCT.giaBan,
+                                                                        detail.hoaDonCT.giaBan,
                                                                     0,
                                                                 );
 
                                                                 // Tính toán giảm giá từ voucher (nếu có)
                                                                 const voucherDiscount = bestVoucher
                                                                     ? (() => {
-                                                                          const discountPercentage =
-                                                                              bestVoucher.giaTri / 100;
-                                                                          const discountAmount =
-                                                                              totalItems * discountPercentage;
+                                                                        const discountPercentage =
+                                                                            bestVoucher.giaTri / 100;
+                                                                        const discountAmount =
+                                                                            totalItems * discountPercentage;
 
-                                                                          // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                                                                          return discountAmount > bestVoucher.giaTriMax
-                                                                              ? bestVoucher.giaTriMax
-                                                                              : discountAmount;
-                                                                      })()
+                                                                        // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                                                        return discountAmount > bestVoucher.giaTriMax
+                                                                            ? bestVoucher.giaTriMax
+                                                                            : discountAmount;
+                                                                    })()
                                                                     : 0;
 
                                                                 // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
@@ -1041,7 +1070,7 @@ function OfflineSale() {
 
                                                                 return total.toLocaleString();
                                                             })()}{' '}
-                                                            VND
+                                                            VNĐ
                                                         </span>
                                                     </div>
 
@@ -1057,7 +1086,7 @@ function OfflineSale() {
                                                             </button>
                                                             <span className="text-red-500 text-md font-bold">
                                                                 {calculateTotalFromTransactions().toLocaleString()}
-                                                                {' VND'}
+                                                                {' VNĐ'}
                                                                 {/* Chuyển đổi sang số và gọi toLocaleString */}
                                                             </span>
                                                         </div>
@@ -1129,14 +1158,14 @@ function OfflineSale() {
                                     // Tính giảm giá từ voucher
                                     const voucherDiscount = bestVoucher
                                         ? (() => {
-                                              const discountPercentage = bestVoucher.giaTri / 100;
-                                              const discountAmount = totalItems * discountPercentage;
+                                            const discountPercentage = bestVoucher.giaTri / 100;
+                                            const discountAmount = totalItems * discountPercentage;
 
-                                              // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                                              return discountAmount > bestVoucher.giaTriMax
-                                                  ? bestVoucher.giaTriMax
-                                                  : discountAmount;
-                                          })()
+                                            // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                            return discountAmount > bestVoucher.giaTriMax
+                                                ? bestVoucher.giaTriMax
+                                                : discountAmount;
+                                        })()
                                         : 0;
 
                                     // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
@@ -1144,23 +1173,21 @@ function OfflineSale() {
 
                                     return total.toLocaleString();
                                 })()}{' '}
-                                VND
+                                VNĐ
                             </span>
                         </div>
 
                         <div className="flex justify-center space-x-3 mb-5">
                             <button
-                                className={`py-2 px-4 rounded-full text-sm ${
-                                    paymentMethod === 'transfer' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600'
-                                }`}
+                                className={`py-2 px-4 rounded-full text-sm ${paymentMethod === 'transfer' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600'
+                                    }`}
                                 onClick={() => setPaymentMethod('transfer')}
                             >
                                 CHUYỂN KHOẢN
                             </button>
                             <button
-                                className={`py-2 px-4 rounded-full text-sm ${
-                                    paymentMethod === 'cash' ? 'bg-pink-200 text-pink-600' : 'bg-gray-100 text-gray-600'
-                                }`}
+                                className={`py-2 px-4 rounded-full text-sm ${paymentMethod === 'cash' ? 'bg-pink-200 text-pink-600' : 'bg-gray-100 text-gray-600'
+                                    }`}
                                 onClick={() => setPaymentMethod('cash')}
                             >
                                 TIỀN MẶT
@@ -1301,14 +1328,14 @@ function OfflineSale() {
                                     // Tính giảm giá từ voucher
                                     const voucherDiscount = bestVoucher
                                         ? (() => {
-                                              const discountPercentage = bestVoucher.giaTri / 100;
-                                              const discountAmount = totalItems * discountPercentage;
+                                            const discountPercentage = bestVoucher.giaTri / 100;
+                                            const discountAmount = totalItems * discountPercentage;
 
-                                              // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                                              return discountAmount > bestVoucher.giaTriMax
-                                                  ? bestVoucher.giaTriMax
-                                                  : discountAmount;
-                                          })()
+                                            // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                            return discountAmount > bestVoucher.giaTriMax
+                                                ? bestVoucher.giaTriMax
+                                                : discountAmount;
+                                        })()
                                         : 0;
 
                                     const total = totalItems - voucherDiscount + shippingFee;
@@ -1318,7 +1345,7 @@ function OfflineSale() {
 
                                     return remainingAmount.toLocaleString(); // Hiển thị cả giá trị âm
                                 })()}{' '}
-                                VND
+                                VNĐ
                             </span>
                         </div>
 

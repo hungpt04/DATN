@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class KhachHangServiceImpl implements KhachHangService {
@@ -65,7 +66,18 @@ public class KhachHangServiceImpl implements KhachHangService {
 
     @Override
     public Boolean update(Integer id, KhachHangRequest khachHangRequest) throws ParseException {
-        return null;
+        Optional<TaiKhoan> optionalCustomer = khachHangRepository.findById(id);
+        if (optionalCustomer.isPresent()) {
+            TaiKhoan customer = khachHangRequest.newKhachHang(optionalCustomer.get());
+            if (khachHangRequest.getAvatar() != null) {
+                customer.setAvatar(cloudinaryImage.uploadAvatar(khachHangRequest.getAvatar()));
+            }
+            khachHangRepository.save(customer);
+            return true;
+
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -75,7 +87,7 @@ public class KhachHangServiceImpl implements KhachHangService {
 
     @Override
     public TaiKhoan getKhachHangById(Integer id) {
-        return null;
+        return khachHangRepository.findById(id).orElse(null);
     }
 
     @Override

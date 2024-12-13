@@ -33,4 +33,18 @@ public interface DiaChiRepository extends JpaRepository<DiaChi, Long> {
 """
     )
     Page<DiaChiResponse> getPageDiaChiByIdTaiKhoan(Pageable pageable, @Param("idTaiKhoan") Integer idTaiKhoan);
+
+    @Query(
+            """
+            select dc from DiaChi dc
+            where dc.taiKhoan.id = :idTaiKhoan
+"""
+    )
+    List<DiaChi> getTrangThaiDiaChiByIdTaiKhoan(@Param("idTaiKhoan") Integer idTaiKhoan);
+
+
+
+
+
+
 }
