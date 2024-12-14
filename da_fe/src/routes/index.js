@@ -95,8 +95,8 @@ const publicRoutes = [
     { path: '/gio-hang', component: Cart },
     { path: '/gio-hang/checkout', component: AddAddress },
     { path: '/gio-hang/checkout/order-summary', component: OrderSummary },
-    { path: '/login', component: Login, layout: null },
-    { path: '/forgot-password', component: ForgotPassword, layout: DefaultLayout },
+    { path: '/login', component: Login, layout: DefaultLayout },
+    { path: '/forgot-password', component: ForgotPassword, layout: null },
     { path: '/profile', component: Profile, children: [
         { path: 'user', component: UserProfile, layout: null},
         { path: 'address', component: AddressUser, layout: null },

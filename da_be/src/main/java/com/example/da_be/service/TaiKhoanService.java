@@ -5,21 +5,11 @@ import com.example.da_be.entity.TaiKhoan;
 import com.example.da_be.exception.ResourceNotFoundException;
 import com.example.da_be.repository.TaiKhoanRepository;
 import com.example.da_be.request.ChangeRequest;
-import com.example.da_be.request.KhachHangSearch;
-import com.example.da_be.request.NhanVienSearch;
-import com.example.da_be.request.TaiKhoanRequest;
 import com.google.gson.JsonParseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.SecureRandom;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,23 +71,37 @@ public class TaiKhoanService {
     }
 
     public Boolean changePassword(String email, ChangeRequest request) {
-        TaiKhoan taiKhoan = taiKhoanRepository.findByEmail(email);
+        // Tìm tài khoản theo email
+        Optional<TaiKhoan> taiKhoanOpt = taiKhoanRepository.findByEmail(email);
 
-        if (taiKhoan != null) {
-            if (passwordEncoder.matches(request.getMatKhau(), taiKhoan.getMatKhau())) {
-                String hashedMatKhauMoi = passwordEncoder.encode(request.getMatKhauMoi());
-                taiKhoan.setMatKhau(hashedMatKhauMoi);
-                taiKhoanRepository.save(taiKhoan);
-                System.out.println("Thành công");
-                return true;
-            } else {
-                System.out.println("Thất bại");
-                return false;
-            }
+        if (taiKhoanOpt.isEmpty()) {
+            System.out.println("Không tìm thấy tài khoản");
+            return false;
         }
 
-        return null;
+        TaiKhoan taiKhoan = taiKhoanOpt.get();
+
+        // Kiểm tra mật khẩu cũ có khớp không
+        if (!passwordEncoder.matches(request.getMatKhau(), taiKhoan.getMatKhau())) {
+            System.out.println("Mật khẩu cũ không chính xác");
+            return false;
+        }
+
+        // Kiểm tra mật khẩu mới
+        String matKhauMoi = request.getMatKhauMoi();
+        if (matKhauMoi == null || matKhauMoi.trim().isEmpty()) {
+            System.out.println("Mật khẩu mới không được để trống");
+            return false;
+        }
+
+        // Cập nhật mật khẩu
+        taiKhoan.setMatKhau(passwordEncoder.encode(matKhauMoi));
+        taiKhoanRepository.save(taiKhoan);
+
+        System.out.println("Thay đổi mật khẩu thành công");
+        return true;
     }
+
 
 //    private String generatePassword() {
 //        String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -123,10 +127,10 @@ public class TaiKhoanService {
 //        return taiKhoanRepository.getSearchKhacHangAndPhanTrang(search, pageable);
 //    }
 
-    public TaiKhoan getMyInfo(String token) {
+    public Optional<TaiKhoan> getMyInfo(String token) {
         try {
             String email = jwtTokenProvider.getEmailFromJwtToken(token);
-            TaiKhoan taiKhoan = taiKhoanRepository.findByEmail(email);
+            Optional<TaiKhoan> taiKhoan = taiKhoanRepository.findByEmail(email);
 
             // Kiểm tra xem tài khoản có tồn tại không
             if (taiKhoan == null) {

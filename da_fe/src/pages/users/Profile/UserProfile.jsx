@@ -17,6 +17,18 @@ export default function UserProfile() {
     avatar: "",
   });
 
+  const [errorsKH, setErrorsKH] = useState({
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    dateBirth: "",
+    gender: "",
+    provincedId: "",
+    districtId: "",
+    wardId: "",
+    specificAddress: ""
+  })
+
   useEffect(() => {
     const token = localStorage.getItem('token'); // Lấy token từ localStorage
     if (token) {
@@ -28,6 +40,7 @@ export default function UserProfile() {
             },
           });
           setKhachHang(response.data);
+          setPreviewImage(response.data.avatar)
           console.log('h', response.data)
           console.log('id:', response.data.id)
         } catch (error) {
@@ -38,7 +51,7 @@ export default function UserProfile() {
             text: "Có lỗi xảy ra khi tải dữ liệu!",
           });
         }
-        
+
       };
 
       fetchUserInfo();
@@ -62,14 +75,14 @@ export default function UserProfile() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-        setKhachHang({ ...khachHang, avatar: file })
-        const reader = new FileReader()
-        reader.onload = () => {
-            setPreviewImage(reader.result)
-        }
-        reader.readAsDataURL(file);
+      setKhachHang({ ...khachHang, avatar: file })
+      const reader = new FileReader()
+      reader.onload = () => {
+        setPreviewImage(reader.result)
+      }
+      reader.readAsDataURL(file);
     }
-};
+  };
 
   const handleUpdateCustomer = async (event) => {
     event.preventDefault();
@@ -83,13 +96,10 @@ export default function UserProfile() {
       formDataToSend.append('sdt', khachHang.sdt)
       formDataToSend.append('ngaySinh', khachHang.ngaySinh)
       formDataToSend.append('gioiTinh', khachHang.gioiTinh)
-      
+
       if (khachHang.avatar) {
         formDataToSend.append('avatar', khachHang.avatar);
       }
-
-      // const token = localStorage.getItem('token');
-      // if (!token) throw new Error("Không tìm thấy thông tin người dùng");
 
       // Cập nhật thông tin người dùng
       const userResponse = await axios.put(`http://localhost:8080/api/tai-khoan/updateTaiKhoan/${khachHang.id}`, formDataToSend, {
@@ -99,11 +109,6 @@ export default function UserProfile() {
         },
         // body: formDataToSend
       });
-
-      // if (!userResponse.ok) {
-      //   const errorText = await userResponse.text();
-      //   throw new Error(`Failed to update user account: ${errorText}`);
-      // }
 
       if (userResponse.status !== 200) throw new Error("Cập nhật tài khoản không thành công");
 
@@ -125,7 +130,7 @@ export default function UserProfile() {
   return (
     <div className="mx-2 my-2">
       <p className="text-2xl font-semibold mb-2">Hồ sơ của tôi</p>
-      <p className="text-gray-500 mb-2">Quản lý thông tin hồ sơ tài khoản</p>  
+      <p className="text-gray-500 mb-2">Quản lý thông tin hồ sơ tài khoản</p>
       <hr className="mb-6" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-5">
@@ -224,17 +229,17 @@ export default function UserProfile() {
             )}
           </div> */}
           <div className="flex justify-center items-center mt-4">
-                            <label className="cursor-pointer">
-                                <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                                <div className="w-32 h-32 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 overflow-hidden">
-                                    {previewImage ? (
-                                        <img src={previewImage || khachHang.avatar} alt="Preview" className="w-full h-full object-cover" />
-                                    ) : (
-                                        'Chọn ảnh'
-                                    )}
-                                </div>
-                            </label>
-                        </div>
+            <label className="cursor-pointer">
+              <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+              <div className="w-32 h-32 border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 overflow-hidden">
+                {previewImage ? (
+                  <img src={previewImage || khachHang.avatar} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  'Chọn ảnh'
+                )}
+              </div>
+            </label>
+          </div>
           <input
             hidden
             id="select-avatar"

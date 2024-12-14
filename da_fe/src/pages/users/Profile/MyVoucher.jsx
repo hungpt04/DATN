@@ -142,7 +142,7 @@ export default function MyVoucher() {
               ))
             ) : (
               <div className="col-span-2 text-center text-gray-500">
-                Không có phiếu giảm giá công khai nào.
+                Không có phiếu giảm giá nào
               </div>
             )}
           </div>
@@ -176,7 +176,7 @@ export default function MyVoucher() {
               ))
             ) : (
               <div className="col-span-2 text-center text-gray-500">
-                Không có phiếu giảm giá cá nhân nào.
+                Không có phiếu giảm giá nào
               </div>
             )}
           </div>

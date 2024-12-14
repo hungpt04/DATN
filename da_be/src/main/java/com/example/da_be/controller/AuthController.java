@@ -1,12 +1,11 @@
 package com.example.da_be.controller;
 
 import com.example.da_be.config.JwtTokenProvider;
+import com.example.da_be.email.Email;
 import com.example.da_be.entity.TaiKhoan;
 import com.example.da_be.exception.UserException;
 import com.example.da_be.repository.TaiKhoanRepository;
-import com.example.da_be.request.LoginRequest;
-import com.example.da_be.request.SigninRequest;
-import com.example.da_be.request.SignupRequest;
+import com.example.da_be.request.*;
 import com.example.da_be.response.AuthResponse;
 import com.example.da_be.service.AuthenticationService;
 import com.example.da_be.service.CustomUserDetails;
@@ -23,12 +22,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/auth")
 public class AuthController {
 
@@ -149,6 +149,25 @@ public class AuthController {
 		} catch (AuthenticationException e) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Đăng nhập không thành công! " + e.getMessage());
 		}
+	}
+
+	@GetMapping("/check-mail")
+	public ResponseEntity<?> checkMail(@RequestParam String email) {
+		Optional<TaiKhoan> taiKhoan = authenticationService.checkMail(email);
+		if (taiKhoan != null) {
+			return ResponseEntity.ok(taiKhoan);
+		}
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Email not found");
+	}
+
+	@GetMapping("/send-otp")
+	public ResponseEntity<?> sendOTP(@RequestParam String email) {
+		return new ResponseEntity<>(authenticationService.sendOTP(email), HttpStatus.OK);
+	}
+
+	@PostMapping("/forgot-password")
+	public ResponseEntity<?> change(@RequestBody ForgotPasswordRequest request) {
+		return new ResponseEntity<>(authenticationService.change(request), HttpStatus.OK);
 	}
 
 }

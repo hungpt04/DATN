@@ -47,4 +47,8 @@ public class CustomUserDetails extends User implements UserDetails {
 		return taiKhoan;
 	}
 
+//	public Integer getId() {
+//		return taiKhoan.getId(); // Giả sử TaiKhoan có phương thức getId()
+//	}
+
 }

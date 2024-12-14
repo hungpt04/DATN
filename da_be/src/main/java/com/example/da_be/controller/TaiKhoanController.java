@@ -6,25 +6,14 @@ import com.example.da_be.entity.TaiKhoan;
 import com.example.da_be.exception.ResourceNotFoundException;
 import com.example.da_be.repository.TaiKhoanRepository;
 import com.example.da_be.request.ChangeRequest;
-import com.example.da_be.request.KhachHangSearch;
-import com.example.da_be.request.NhanVienSearch;
-import com.example.da_be.request.TaiKhoanRequest;
 import com.example.da_be.service.TaiKhoanService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.IIOException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.*;
@@ -68,35 +57,35 @@ public class TaiKhoanController {
         return new ResponseEntity<>(createdTaiKhoan, HttpStatus.CREATED);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createUser(
-            @RequestParam("hoTen") String hoTen,
-            @RequestParam("sdt") String sdt,
-            @RequestParam("email") String email,
-            @RequestParam("matKhau") String matKhau,
-            @RequestParam("gioiTinh") Integer gioiTinh,
-            @RequestParam("vaiTro") String vaiTro,
-            @RequestParam(value = "avatar", required = false) MultipartFile avatar,
-            @RequestParam("ngaySinh") LocalDate ngaySinh,
-            @RequestParam("cccd") String cccd,
-            @RequestParam("trangThai") Integer trangThai
-    ) throws ParseException, IOException {
-        // Lưu đường dẫn tương đối vào database
-        TaiKhoan taiKhoan = new TaiKhoan();
-        taiKhoan.setHoTen(hoTen);
-        taiKhoan.setSdt(sdt);
-        taiKhoan.setEmail(email);
-        taiKhoan.setMatKhau(matKhau);
-        taiKhoan.setGioiTinh(gioiTinh);
-        taiKhoan.setVaiTro(vaiTro);
-        taiKhoan.setNgaySinh(ngaySinh);
-        taiKhoan.setCccd(cccd);
-        taiKhoan.setTrangThai(trangThai);
-
-        taiKhoan.setAvatar(cloudinaryImage.uploadAvatar(avatar));
-
-        return new ResponseEntity<>(taiKhoanService.saveOrUpdateTaiKhoan(taiKhoan), HttpStatus.CREATED);
-    }
+//    @PostMapping("/create")
+//    public ResponseEntity<?> createUser(
+//            @RequestParam("hoTen") String hoTen,
+//            @RequestParam("sdt") String sdt,
+//            @RequestParam("email") String email,
+//            @RequestParam("matKhau") String matKhau,
+//            @RequestParam("gioiTinh") Integer gioiTinh,
+//            //@RequestParam("vaiTro") String vaiTro,
+//            @RequestParam(value = "avatar", required = false) MultipartFile avatar,
+//            @RequestParam("ngaySinh") LocalDate ngaySinh,
+//            @RequestParam("cccd") String cccd,
+//            @RequestParam("trangThai") Integer trangThai
+//    ) throws ParseException, IOException {
+//        // Lưu đường dẫn tương đối vào database
+//        TaiKhoan taiKhoan = new TaiKhoan();
+//        taiKhoan.setHoTen(hoTen);
+//        taiKhoan.setSdt(sdt);
+//        taiKhoan.setEmail(email);
+//        taiKhoan.setMatKhau(matKhau);
+//        taiKhoan.setGioiTinh(gioiTinh);
+//        taiKhoan.setVaiTro(vaiTro);
+//        taiKhoan.setNgaySinh(ngaySinh);
+//        taiKhoan.setCccd(cccd);
+//        taiKhoan.setTrangThai(trangThai);
+//
+//        taiKhoan.setAvatar(cloudinaryImage.uploadAvatar(avatar));
+//
+//        return new ResponseEntity<>(taiKhoanService.saveOrUpdateTaiKhoan(taiKhoan), HttpStatus.CREATED);
+//    }
 
     @PutMapping("/updateTaiKhoan/{id}")
     public ResponseEntity<?> updateUser(
@@ -234,11 +223,11 @@ public class TaiKhoanController {
     }
 
     @GetMapping("/my-info")
-    public ResponseEntity<TaiKhoan> getInfo(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Optional<TaiKhoan>> getInfo(@RequestHeader("Authorization") String token) {
         String jwtToken = token.startsWith("Bearer ") ? token.substring(7) : token;
 
         try {
-            TaiKhoan taiKhoan = taiKhoanService.getMyInfo(jwtToken);
+            Optional<TaiKhoan> taiKhoan = taiKhoanService.getMyInfo(jwtToken);
             return ResponseEntity.ok(taiKhoan);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);

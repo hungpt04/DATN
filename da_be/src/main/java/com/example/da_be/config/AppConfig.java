@@ -1,5 +1,6 @@
 package com.example.da_be.config;
 
+import com.example.da_be.enums.Roles;
 import com.example.da_be.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,8 @@ public class AppConfig {
 				.authorizeHttpRequests(authorize -> authorize
 //						.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
 //						.anyRequest().authenticated())
+						.requestMatchers("/api/admin/**").hasAnyAuthority(Roles.ADMIN.name(), Roles.USER.name())
+						.requestMatchers("/api/tai-khoan/my-info").hasAuthority(Roles.CUSTOMER.name())
 						.anyRequest().permitAll())
 				.addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
 				.csrf(csrf -> csrf.disable())

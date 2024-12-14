@@ -24,7 +24,7 @@ import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
-@RequestMapping("/api/voucher")
+@RequestMapping("/api/admin/voucher")
 public class VoucherController {
     @Autowired
     private VoucherService voucherService;
