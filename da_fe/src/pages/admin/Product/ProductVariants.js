@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
 import { useForm } from 'react-hook-form';
 import swal from 'sweetalert';
 import AddIcon from '@mui/icons-material/Add';
+import { TbEyeEdit } from 'react-icons/tb';
 
 function ProductVariants() {
+    const navigate = useNavigate();
     const { productId } = useParams(); // Lấy ID sản phẩm từ URL
     const [variants, setVariants] = useState([]);
 
@@ -521,9 +523,21 @@ function ProductVariants() {
         loadWeights();
     }, [productId]);
 
+    const handleNavigateToProduct = () => {
+        navigate('/admin/quan-ly-san-pham/san-pham-ct');
+    }
+
     return (
         <div>
-            <h1 className="text-center text-5xl font-bold text-gray-800">Danh sách sản phẩm</h1>
+            <div className="font-bold text-sm">
+                <span
+                    className="cursor-pointer"
+                    onClick={handleNavigateToProduct}
+                >
+                    Sản phẩm
+                </span>
+                <span className="text-gray-400 ml-2">/ Chi tiết sản phẩm</span>
+            </div>
 
             {/* Search and Filter Section */}
             <div className="mb-4">
@@ -586,7 +600,7 @@ function ProductVariants() {
             </div>
 
             <div>
-                <table className="w-full table-auto bg-white rounded-lg shadow-md text-sm">
+                <table className="min-w-full table-auto border-collapse border border-gray-200">
                     <thead>
                         <tr className="bg-gray-200 text-gray-700">
                             <th className="py-2 px-3 text-center whitespace-nowrap">STT</th>
@@ -612,11 +626,10 @@ function ProductVariants() {
                                 <td className="py-2 px-3 whitespace-nowrap text-center">{variant.thuongHieu.ten}</td>
                                 <td className="py-2 px-3 whitespace-nowrap text-center">
                                     <span
-                                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                            variant.trangThai
-                                                ? 'text-green-600 bg-green-100'
-                                                : 'text-red-600 bg-red-100'
-                                        }`}
+                                        className={`px-2 py-1 rounded-full text-xs font-semibold ${variant.trangThai
+                                            ? 'text-green-600 bg-green-100'
+                                            : 'text-red-600 bg-red-100'
+                                            }`}
                                     >
                                         {variant.trangThai ? 'Active' : 'Inactive'}
                                     </span>
@@ -624,9 +637,9 @@ function ProductVariants() {
                                 <td className="py-2 px-3">
                                     <button
                                         onClick={() => handleUpdateClick(variant)}
-                                        className="hover:bg-gray-400 font-medium py-1 px-2 rounded"
+                                        className="text-blue-500 text-2xl font-medium py-2 px-4 rounded"
                                     >
-                                        <PencilIcon className="h-4 w-4" />
+                                        <TbEyeEdit />
                                     </button>
                                 </td>
                             </tr>
@@ -638,320 +651,333 @@ function ProductVariants() {
             {showUpdateModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="bg-white p-8 rounded-lg w-3/4 max-h-[90vh] overflow-auto">
-                        <h2 className="text-2xl font-bold mb-4">Cập nhật sản phẩm</h2>
+                        <h2 className="text-xl text-gray-500 font-bold mb-4">Cập nhật sản phẩm</h2>
+
                         <form onSubmit={handleSubmit(handleUpdateProduct)}>
-                            <div className="mb-2 flex justify-center">
-                                <div className="w-[85%]">
-                                    <label className="block text-sm font-bold text-gray-700" htmlFor="productName">
-                                        Tên sản phẩm (áp dụng cho tất cả biến thể)
+                            <div className="bg-white p-4 rounded-md shadow-lg">
+                                <div className="mb-2 flex justify-center">
+                                    <div className="w-[85%]">
+                                        <label className="block text-sm font-bold text-gray-700" htmlFor="productName">
+                                            <span className="text-red-600">*</span>Tên sản phẩm (áp dụng cho tất cả biến thể)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="productName"
+                                            {...register('productName', { required: true })}
+                                            className="mt-1 block h-10 w-full border border-gray-300 rounded-md p-1 text-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="mb-2 grid grid-cols-2 gap-4 w-[85%] mx-auto">
+                                    <div className="flex items-center">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-bold text-gray-700" htmlFor="brand">
+                                                <span className="text-red-600">*</span>Thương hiệu (áp dụng cho tất cả biến thể)
+                                            </label>
+                                            <div className="flex items-center">
+                                                <select
+                                                    id="brand"
+                                                    {...register('brand', { required: true })}
+                                                    className="mt-1 block w-[90%] h-10 border border-gray-300 rounded-md p-2 text-sm"
+                                                >
+                                                    <option value="">Chọn thương hiệu</option>
+                                                    {brands.map((brand) => (
+                                                        <option key={brand.id} value={brand.id}>
+                                                            {brand.ten}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    onClick={handleAddBrandModal}
+                                                    type="button"
+                                                    className="bg-blue-500 border border-blue-500 text-white hover:bg-white hover:text-blue-500 font-medium py-1 px-2 w-9 h-9 rounded flex items-center justify-center ml-4"
+                                                >
+                                                    <AddIcon />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-bold text-gray-700" htmlFor="material">
+                                                <span className="text-red-600">*</span>Chất liệu
+                                            </label>
+                                            <div className="flex items-center">
+                                                <select
+                                                    id="material"
+                                                    {...register('material', { required: true })}
+                                                    className="mt-1 block w-[90%] h-10 border border-gray-300 rounded-md p-2 text-sm"
+                                                >
+                                                    <option value="">Chọn chất liệu</option>
+                                                    {materials.map((material) => (
+                                                        <option key={material.id} value={material.id}>
+                                                            {material.ten}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    onClick={handleAddMaterialModal}
+                                                    type="button"
+                                                    className="bg-blue-500 border border-blue-500 text-white hover:bg-white hover:text-blue-500 font-medium py-1 px-2 w-9 h-9 rounded flex items-center justify-center ml-4"
+
+                                                >
+                                                    <AddIcon />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-bold text-gray-700" htmlFor="balancePoint">
+                                                <span className="text-red-600">*</span>Điểm cân bằng
+                                            </label>
+                                            <div className="flex items-center">
+                                                <select
+                                                    id="balancePoint"
+                                                    {...register('balancePoint', { required: true })}
+                                                    className="mt-1 block w-[90%] h-10 border border-gray-300 rounded-md p-2 text-sm"
+                                                >
+                                                    <option value="">Chọn điểm cân bằng</option>
+                                                    {balances.map((balance) => (
+                                                        <option key={balance.id} value={balance.id}>
+                                                            {balance.ten}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    onClick={handleAddBalanceModal}
+                                                    type="button"
+                                                    className="bg-blue-500 border border-blue-500 text-white hover:bg-white hover:text-blue-500 font-medium py-1 px-2 w-9 h-9 rounded flex items-center justify-center ml-4"
+
+                                                >
+                                                    <AddIcon />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center">
+                                        <div className="flex-grow">
+                                            <label className="block text-sm font-bold text-gray-700" htmlFor="hardness">
+                                                <span className="text-red-600">*</span>Độ cứng
+                                            </label>
+                                            <div className="flex items-center">
+                                                <select
+                                                    id="hardness"
+                                                    {...register('hardness', { required: true })}
+                                                    className="mt-1 block w-[90%] h-10 border border-gray-300 rounded-md p-2 text-sm"
+                                                >
+                                                    <option value="">Chọn độ cứng</option>
+                                                    {stiffs.map((stiff) => (
+                                                        <option key={stiff.id} value={stiff.id}>
+                                                            {stiff.ten}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    onClick={handleAddStiffModal}
+                                                    type="button"
+                                                    className="bg-blue-500 border border-blue-500 text-white hover:bg-white hover:text-blue-500 font-medium py-1 px-2 w-9 h-9 rounded flex items-center justify-center ml-4"
+                                                >
+                                                    <AddIcon />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mb-2 w-[85%] mx-auto">
+                                    <label className="block text-sm font-bold text-gray-700" htmlFor="status">
+                                        <span className="text-red-600">*</span>Trạng thái
                                     </label>
-                                    <input
-                                        type="text"
-                                        id="productName"
-                                        {...register('productName', { required: true })}
-                                        className="mt-1 block h-10 w-full border border-gray-300 rounded-md p-1 text-sm"
+                                    <select
+                                        id="status"
+                                        {...register('status', { required: true })}
+                                        className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"
+                                    >
+                                        <option value="">Chọn trạng thái</option>
+                                        <option>Active</option>
+                                        <option>Inactive</option>
+                                    </select>
+                                </div>
+
+                                <div className="mb-2 w-[85%] mx-auto">
+                                    <label className="block text-sm font-bold text-gray-700" htmlFor="description">
+                                        <span className="text-red-600">*</span>Mô tả
+                                    </label>
+                                    <textarea
+                                        id="description"
+                                        {...register('description', { required: true })}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md p-1 text-sm h-20"
                                     />
                                 </div>
                             </div>
 
-                            <div className="mb-2 grid grid-cols-2 gap-4 w-[85%] mx-auto">
-                                <div className="flex items-center">
-                                    <div className="flex-grow">
-                                        <label className="block text-sm font-bold text-gray-700" htmlFor="brand">
-                                            Thương hiệu (áp dụng cho tất cả biến thể)
+                            <div className="bg-white p-4 rounded-md shadow-lg mt-4">
+                                {/* Màu sắc */}
+                                <div className="pl-24 mt-6">
+                                    <div className="flex items-center">
+                                        <label className="block text-sm font-bold text-gray-700 w-28" htmlFor="description">
+                                            <span className="text-red-600">*</span>Màu sắc:
                                         </label>
-                                        <div className="flex items-center">
-                                            <select
-                                                id="brand"
-                                                {...register('brand', { required: true })}
-                                                className="mt-1 block w-[90%] h-10 border border-gray-300 rounded-md p-2 text-sm"
-                                            >
-                                                <option value="">Chọn thương hiệu</option>
-                                                {brands.map((brand) => (
-                                                    <option key={brand.id} value={brand.id}>
-                                                        {brand.ten}
-                                                    </option>
-                                                ))}
-                                            </select>
+
+                                        {selectedColors.map((color, index) => (
                                             <button
-                                                onClick={handleAddBrandModal}
-                                                type="button"
-                                                className="ml-2 h-10 w-10 border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium rounded flex items-center justify-center"
-                                            >
-                                                <AddIcon />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                                                key={index}
+                                                className="border font-medium py-1 px-1 rounded w-9 h-6 flex items-center justify-center ml-2"
+                                                style={{
+                                                    backgroundColor: color,
+                                                    color: '#fff',
+                                                    borderColor: color === 'white' ? '#000' : 'transparent',
+                                                }}
+                                            ></button>
+                                        ))}
 
-                                <div className="flex items-center">
-                                    <div className="flex-grow">
-                                        <label className="block text-sm font-bold text-gray-700" htmlFor="material">
-                                            Chất liệu
-                                        </label>
-                                        <div className="flex items-center">
-                                            <select
-                                                id="material"
-                                                {...register('material', { required: true })}
-                                                className="mt-1 block w-[90%] h-10 border border-gray-300 rounded-md p-2 text-sm"
-                                            >
-                                                <option value="">Chọn chất liệu</option>
-                                                {materials.map((material) => (
-                                                    <option key={material.id} value={material.id}>
-                                                        {material.ten}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <button
-                                                onClick={handleAddMaterialModal}
-                                                type="button"
-                                                className="ml-2 h-10 w-10 border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium rounded flex items-center justify-center"
-                                            >
-                                                <AddIcon />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center">
-                                    <div className="flex-grow">
-                                        <label className="block text-sm font-bold text-gray-700" htmlFor="balancePoint">
-                                            Điểm cân bằng
-                                        </label>
-                                        <div className="flex items-center">
-                                            <select
-                                                id="balancePoint"
-                                                {...register('balancePoint', { required: true })}
-                                                className="mt-1 block w-[90%] h-10 border border-gray-300 rounded-md p-2 text-sm"
-                                            >
-                                                <option value="">Chọn điểm cân bằng</option>
-                                                {balances.map((balance) => (
-                                                    <option key={balance.id} value={balance.id}>
-                                                        {balance.ten}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <button
-                                                onClick={handleAddBalanceModal}
-                                                type="button"
-                                                className="ml-2 h-10 w-10 border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium rounded flex items-center justify-center"
-                                            >
-                                                <AddIcon />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center">
-                                    <div className="flex-grow">
-                                        <label className="block text-sm font-bold text-gray-700" htmlFor="hardness">
-                                            Độ cứng
-                                        </label>
-                                        <div className="flex items-center">
-                                            <select
-                                                id="hardness"
-                                                {...register('hardness', { required: true })}
-                                                className="mt-1 block w-[90%] h-10 border border-gray-300 rounded-md p-2 text-sm"
-                                            >
-                                                <option value="">Chọn độ cứng</option>
-                                                {stiffs.map((stiff) => (
-                                                    <option key={stiff.id} value={stiff.id}>
-                                                        {stiff.ten}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <button
-                                                onClick={handleAddStiffModal}
-                                                type="button"
-                                                className="ml-2 h-10 w-10 border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium rounded flex items-center justify-center"
-                                            >
-                                                <AddIcon />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mb-2 w-[85%] mx-auto">
-                                <label className="block text-sm font-bold text-gray-700" htmlFor="status">
-                                    Trạng thái
-                                </label>
-                                <select
-                                    id="status"
-                                    {...register('status', { required: true })}
-                                    className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"
-                                >
-                                    <option value="">Chọn trạng thái</option>
-                                    <option>Active</option>
-                                    <option>Inactive</option>
-                                </select>
-                            </div>
-
-                            <div className="mb-2 w-[85%] mx-auto">
-                                <label className="block text-sm font-bold text-gray-700" htmlFor="description">
-                                    Mô tả
-                                </label>
-                                <textarea
-                                    id="description"
-                                    {...register('description', { required: true })}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md p-1 text-sm h-20"
-                                />
-                            </div>
-
-                            {/* Màu sắc */}
-                            <div className="mb-2 mt-[100px] ml-[74px]">
-                                <div className="flex items-center">
-                                    <span className="block text-xl font-bold text-gray-700 mr-2">Màu sắc:</span>
-
-                                    {selectedColors.map((color, index) => (
                                         <button
-                                            key={index}
-                                            className="border font-medium py-1 px-1 rounded ml-2 w-9 h-9"
-                                            style={{
-                                                backgroundColor: color,
-                                                color: '#fff',
-                                                borderColor: color === 'white' ? '#000' : 'transparent',
-                                            }}
-                                        ></button>
-                                    ))}
-
-                                    <button
-                                        onClick={handleColorModal}
-                                        type="button"
-                                        className="border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium py-1 px-2 rounded ml-[60px]"
-                                    >
-                                        <AddIcon />
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Trọng lượng */}
-                            <div className="mb-2 mt-[40px] ml-[74px]">
-                                <div className="flex items-center">
-                                    <span className="block text-xl font-bold text-gray-700 mr-2">Trọng lượng:</span>
-                                    {selectedWeights.map((weight, index) => (
-                                        <button
-                                            key={index}
-                                            className="border font-medium py-1 px-1 rounded ml-2 w-9 h-9"
-                                            style={{
-                                                backgroundColor: 'black',
-                                                color: 'white',
-                                                borderColor: 'black',
-                                            }}
+                                            onClick={handleColorModal}
+                                            type="button"
+                                            className="bg-blue-500 border border-blue-500 text-white hover:bg-white hover:text-blue-500 font-medium py-1 px-2 w-9 h-6 rounded flex items-center justify-center ml-6"
                                         >
-                                            {weight}
+                                            <AddIcon />
                                         </button>
-                                    ))}
-
-                                    <button
-                                        onClick={handleWeightModal}
-                                        type="button"
-                                        className="border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium py-1 px-2 rounded ml-[20px]"
-                                    >
-                                        <AddIcon />
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Thêm các trường giá và số lượng */}
-                            <div className="mb-2 grid grid-cols-2 gap-4 w-[85%] mx-auto">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700" htmlFor="price">
-                                        Giá sản phẩm
-                                    </label>
-                                    <input
-                                        type="number"
-                                        id="price"
-                                        {...register('price', {
-                                            required: 'Giá sản phẩm là bắt buộc',
-                                            min: {
-                                                value: 1000, // Giá tối thiểu 1,000 VND
-                                                message: 'Giá sản phẩm phải lớn hơn 1,000 VND',
-                                            },
-                                            max: {
-                                                value: 1000000000, // Giá tối đa 1 tỷ VND
-                                                message: 'Giá sản phẩm không được vượt quá 1 tỷ VND',
-                                            },
-                                        })}
-                                        className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"
-                                    />
-                                    {errors.price && <span className="text-red-500">{errors.price.message}</span>}
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700" htmlFor="quantity">
-                                        Số lượng
-                                    </label>
-                                    <input
-                                        type="number"
-                                        id="quantity"
-                                        {...register('quantity', {
-                                            required: true,
-                                            min: {
-                                                value: 0,
-                                                message: 'Số lượng phải lớn hơn hoặc bằng 0',
-                                            },
-                                        })}
-                                        className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"
-                                    />
-                                    {errors.quantity && <span className="text-red-500">{errors.quantity.message}</span>}
-                                </div>
-                            </div>
-
-                            {/* Quản lý ảnh */}
-                            {/* Quản lý ảnh */}
-                            <div className="mb-4 w-[85%] mx-auto">
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Hình ảnh</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {/* Hiển thị ảnh hiện tại */}
-                                    {currentImages.map((image, index) => (
-                                        <div key={index} className="relative">
-                                            <img
-                                                src={image}
-                                                alt={`Current ${index}`}
-                                                className="w-20 h-20 object-cover rounded"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveImage(index, false)} // Gọi hàm xóa với isPreview là false
-                                                className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ))}
-
-                                    {/* Hiển thị ảnh preview mới */}
-                                    {previewImages.map((preview, index) => (
-                                        <div key={index} className="relative">
-                                            <img
-                                                src={preview}
-                                                alt={`Preview ${index}`}
-                                                className="w-20 h-20 object-cover rounded"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveImage(index, true)} // Gọi hàm xóa với isPreview là true
-                                                className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ))}
-
-                                    {/* Nút chọn ảnh */}
-                                    {currentImages.length + previewImages.length < 5 && (
-                                        <label className="border-2 border-dashed w-20 h-20 flex items-center justify-center rounded cursor-pointer">
-                                            <input
-                                                type="file"
-                                                multiple
-                                                accept="image/jpeg,image/png,image/gif"
-                                                className="hidden"
-                                                onChange={handleImageChange} // Thêm sự kiện onChange
-                                            />
-                                            <span className="text-2xl text-gray-500">+</span>
+                                {/* Trọng lượng */}
+                                <div className="pl-24 mt-6 mb-6">
+                                    <div className="flex items-center">
+                                        <label className="block text-sm font-bold text-gray-700 w-28" htmlFor="description">
+                                            <span className="text-red-600">*</span>Trọng lượng:
                                         </label>
-                                    )}
+                                        {selectedWeights.map((weight, index) => (
+                                            <button
+                                                key={index}
+                                                className="border font-medium text-xs py-1 px-1 rounded w-9 h-6 flex items-center justify-center ml-2"
+                                                style={{
+                                                    backgroundColor: 'black',
+                                                    color: 'white',
+                                                    borderColor: 'black',
+                                                }}
+                                            >
+                                                {weight}
+                                            </button>
+                                        ))}
+
+                                        <button
+                                            onClick={handleWeightModal}
+                                            type="button"
+                                            className="bg-blue-500 border border-blue-500 text-white hover:bg-white hover:text-blue-500 font-medium py-1 px-2 w-9 h-6 rounded flex items-center justify-center ml-6"
+                                        >
+                                            <AddIcon />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-4 rounded-md shadow-lg mt-4">
+                                {/* Thêm các trường giá và số lượng */}
+                                <div className="mb-2 grid grid-cols-2 gap-4 w-[85%] mx-auto">
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700" htmlFor="price">
+                                            <span className="text-red-600">*</span>Giá sản phẩm
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="price"
+                                            {...register('price', {
+                                                required: 'Giá sản phẩm là bắt buộc',
+                                                min: {
+                                                    value: 1000, // Giá tối thiểu 1,000 VND
+                                                    message: 'Giá sản phẩm phải lớn hơn 1,000 VND',
+                                                },
+                                                max: {
+                                                    value: 1000000000, // Giá tối đa 1 tỷ VND
+                                                    message: 'Giá sản phẩm không được vượt quá 1 tỷ VND',
+                                                },
+                                            })}
+                                            className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"
+                                        />
+                                        {errors.price && <span className="text-red-500">{errors.price.message}</span>}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700" htmlFor="quantity">
+                                            <span className="text-red-600">*</span>Số lượng
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="quantity"
+                                            {...register('quantity', {
+                                                required: true,
+                                                min: {
+                                                    value: 0,
+                                                    message: 'Số lượng phải lớn hơn hoặc bằng 0',
+                                                },
+                                            })}
+                                            className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"
+                                        />
+                                        {errors.quantity && <span className="text-red-500">{errors.quantity.message}</span>}
+                                    </div>
+                                </div>
+
+                                {/* Quản lý ảnh */}
+                                {/* Quản lý ảnh */}
+                                <div className="mb-4 w-[85%] mx-auto">
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Hình ảnh</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {/* Hiển thị ảnh hiện tại */}
+                                        {currentImages.map((image, index) => (
+                                            <div key={index} className="relative">
+                                                <img
+                                                    src={image}
+                                                    alt={`Current ${index}`}
+                                                    className="w-20 h-20 object-cover rounded"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveImage(index, false)} // Gọi hàm xóa với isPreview là false
+                                                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        ))}
+
+                                        {/* Hiển thị ảnh preview mới */}
+                                        {previewImages.map((preview, index) => (
+                                            <div key={index} className="relative">
+                                                <img
+                                                    src={preview}
+                                                    alt={`Preview ${index}`}
+                                                    className="w-20 h-20 object-cover rounded"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveImage(index, true)} // Gọi hàm xóa với isPreview là true
+                                                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        ))}
+
+                                        {/* Nút chọn ảnh */}
+                                        {currentImages.length + previewImages.length < 5 && (
+                                            <label className="border-2 border-dashed w-20 h-20 flex items-center justify-center rounded cursor-pointer">
+                                                <input
+                                                    type="file"
+                                                    multiple
+                                                    accept="image/jpeg,image/png,image/gif"
+                                                    className="hidden"
+                                                    onChange={handleImageChange} // Thêm sự kiện onChange
+                                                />
+                                                <span className="text-2xl text-gray-500">+</span>
+                                            </label>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -989,9 +1015,8 @@ function ProductVariants() {
                                             setSelectedColors([...selectedColors, color.ten]);
                                         }
                                     }}
-                                    className={`hover:bg-slate-700 text-white py-1 px-1 rounded-lg h-8 w-[65px] text-[11px] mr-3 mb-3 ${
-                                        selectedColors.includes(color.ten) ? 'bg-white text-black border-2' : ''
-                                    }`}
+                                    className={`hover:bg-slate-700 text-white py-1 px-1 rounded-lg h-8 w-[65px] text-[11px] mr-3 mb-3 ${selectedColors.includes(color.ten) ? 'bg-white text-black border-2' : ''
+                                        }`}
                                     style={{
                                         backgroundColor: selectedColors.includes(color.ten) ? 'white' : color.ten,
                                         color: selectedColors.includes(color.ten) ? 'black' : 'white',
@@ -1038,9 +1063,8 @@ function ProductVariants() {
                                             setSelectedWeights([...selectedWeights, weight.ten]);
                                         }
                                     }}
-                                    className={`bg-slate-950 hover:bg-slate-700 text-white py-1 px-1 rounded-lg h-8 w-[65px] text-[11px] mr-3 mb-3 ${
-                                        selectedWeights.includes(weight.ten) ? 'bg-white text-black border-2' : ''
-                                    }`}
+                                    className={`bg-slate-950 hover:bg-slate-700 text-white py-1 px-1 rounded-lg h-8 w-[65px] text-[11px] mr-3 mb-3 ${selectedWeights.includes(weight.ten) ? 'bg-white text-black border-2' : ''
+                                        }`}
                                     style={{
                                         backgroundColor: selectedWeights.includes(weight.ten) ? 'white' : 'black',
                                         color: selectedWeights.includes(weight.ten) ? 'black' : 'white',
@@ -1079,9 +1103,8 @@ function ProductVariants() {
                                 <label className="block text-gray-700">Tên màu sắc</label>
                                 <input
                                     type="text"
-                                    className={`border border-gray-300 p-2 w-full rounded-lg ${
-                                        errors.colorName ? 'border-red-500' : ''
-                                    }`}
+                                    className={`border border-gray-300 p-2 w-full rounded-lg ${errors.colorName ? 'border-red-500' : ''
+                                        }`}
                                     {...register('colorName', {
                                         required: 'Tên màu sắc là bắt buộc',
                                         validate: (value) => {
@@ -1145,9 +1168,8 @@ function ProductVariants() {
                                 <label className="block text-gray-700">Tên trọng lượng</label>
                                 <input
                                     type="text"
-                                    className={`border border-gray-300 p-2 w-full rounded-lg ${
-                                        errors.weightName ? 'border-red-500' : ''
-                                    }`}
+                                    className={`border border-gray-300 p-2 w-full rounded-lg ${errors.weightName ? 'border-red-500' : ''
+                                        }`}
                                     {...register('weightName', {
                                         required: 'Tên trọng lượng là bắt buộc',
                                         validate: (value) => {
@@ -1211,9 +1233,8 @@ function ProductVariants() {
                                 <label className="block text-gray-700">Tên thương hiệu</label>
                                 <input
                                     type="text"
-                                    className={`border border-gray-300 p-2 w-full rounded-lg ${
-                                        errors.brandName ? 'border-red-500' : ''
-                                    }`}
+                                    className={`border border-gray-300 p-2 w-full rounded-lg ${errors.brandName ? 'border-red-500' : ''
+                                        }`}
                                     {...register('brandName', { required: true })}
                                 />
                                 {errors.brandName && <span className="text-red-500">Tên thương hiệu là bắt buộc.</span>}
@@ -1270,9 +1291,8 @@ function ProductVariants() {
                                 <label className="block text-gray-700">Tên chất liệu</label>
                                 <input
                                     type="text"
-                                    className={`border border-gray-300 p-2 w-full rounded-lg ${
-                                        errors.materialName ? 'border-red-500' : ''
-                                    }`}
+                                    className={`border border-gray-300 p-2 w-full rounded-lg ${errors.materialName ? 'border-red-500' : ''
+                                        }`}
                                     {...register('materialName', { required: true })}
                                 />
                                 {errors.materialName && (
@@ -1331,9 +1351,8 @@ function ProductVariants() {
                                 <label className="block text-gray-700">Tên điểm cân bằng</label>
                                 <input
                                     type="text"
-                                    className={`border border-gray-300 p-2 w-full rounded-lg ${
-                                        errors.balanceName ? 'border-red-500' : ''
-                                    }`}
+                                    className={`border border-gray-300 p-2 w-full rounded-lg ${errors.balanceName ? 'border-red-500' : ''
+                                        }`}
                                     {...register('balanceName', { required: true })}
                                 />
                                 {errors.balanceName && (
@@ -1392,9 +1411,8 @@ function ProductVariants() {
                                 <label className="block text-gray-700">Tên độ cứng</label>
                                 <input
                                     type="text"
-                                    className={`border border-gray-300 p-2 w-full rounded-lg ${
-                                        errors.stiffName ? 'border-red-500' : ''
-                                    }`}
+                                    className={`border border-gray-300 p-2 w-full rounded-lg ${errors.stiffName ? 'border-red-500' : ''
+                                        }`}
                                     {...register('stiffName', { required: true })}
                                 />
                                 {errors.stiffName && <span className="text-red-500">Tên độ cứng là bắt buộc.</span>}

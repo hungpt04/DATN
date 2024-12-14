@@ -562,7 +562,7 @@ const SaleDetail = () => {
                                 }}  // Bỏ arrow function
                                 error={errorTen ? 'true' : undefined}
                             />
-                            <span className='text-red-600'>{errorTen}</span>
+                            <span className='text-red-600 text-xs italic'>{errorTen}</span>
                         </div>
 
                         <div>
@@ -582,7 +582,7 @@ const SaleDetail = () => {
                                 }}
                                 error={errorGiaTri ? 'true' : undefined}
                             />
-                            <span className='text-red-600'>{errorGiaTri}</span>
+                            <span className='text-red-600 text-xs italic'>{errorGiaTri}</span>
                         </div>
 
                         <div>
@@ -610,7 +610,7 @@ const SaleDetail = () => {
                                     }}
                                 />
                             </LocalizationProvider>
-                            <span className='text-red-600'>{errorTgBatDau}</span>
+                            <span className='text-red-600 text-xs italic'>{errorTgBatDau}</span>
                         </div>
 
                         <div className='mt-4'>
@@ -638,7 +638,7 @@ const SaleDetail = () => {
                                     }}
                                 />
                             </LocalizationProvider>
-                            <span className='text-red-600'>{errorTgKetThuc}</span>
+                            <span className='text-red-600 text-xs italic'>{errorTgKetThuc}</span>
                         </div>
 
                         {selectedRowsProduct.length > 0 ? (

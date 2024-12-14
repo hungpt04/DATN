@@ -28,6 +28,7 @@ const OrderSummary = () => {
 
     // Lấy id người dùng
     const [customerId, setCustomerId] = useState(null);
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
@@ -191,7 +192,7 @@ const OrderSummary = () => {
             // Tạo hóa đơn
             const hoaDonResponse = await axios.post('http://localhost:8080/api/hoa-don', {
                 // taiKhoan: { id: 1 }, //lấy tài khoản đang đăng nhập qua token Chi sửa lại nhe
-                taiKhoan: customerId,
+                taiKhoan: {id: customerId},
                 soLuong: totalQuantity,
                 loaiHoaDon: 'Trực tuyến',
                 phuongThucThanhToan: 'Thanh toán VNPay',
@@ -289,7 +290,7 @@ const OrderSummary = () => {
             //Thêm thanh toán
             await axios.post('http://localhost:8080/api/thanh-toan', {
                 // taiKhoan: { id: 1 },
-                taiKhoan: customerId,
+                taiKhoan: {id: customerId},
                 hoaDon: { id: createdBill.id },
                 ma: null,
                 tongTien: totalAmount,
@@ -301,7 +302,7 @@ const OrderSummary = () => {
             // Thêm lịch sử đơn hàng
             await axios.post('http://localhost:8080/api/lich-su-don-hang', {
                 // taiKhoan: { id: 1 },
-                taiKhoan: customerId,
+                taiKhoan: {id: customerId},
                 hoaDon: { id: createdBill.id },
                 moTa: 'Đơn hàng đã được tạo',
                 ngayTao: new Date(),

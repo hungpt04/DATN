@@ -419,7 +419,7 @@ const CreateVoucher = () => {
                                     }}
                                     error={errorMa ? 'true' : undefined}
                                 />
-                                <span className='text-red-600'>{errorMa}</span>
+                                <span className='text-red-600 text-xs italic'>{errorMa}</span>
                             </div>
 
                             <div>
@@ -434,7 +434,7 @@ const CreateVoucher = () => {
                                     }}
                                     error={errorTen ? 'true' : undefined}
                                 />
-                                <span className='text-red-600'>{errorTen}</span>
+                                <span className='text-red-600 text-xs italic'>{errorTen}</span>
                             </div>
 
                             <div>
@@ -470,7 +470,7 @@ const CreateVoucher = () => {
                                         />
                                     </div>
                                 </div>
-                                <span className='text-red-600'>{errorGiaTri}</span>
+                                <span className='text-red-600 text-xs italic'>{errorGiaTri}</span>
                             </div>
 
                             <div>
@@ -498,7 +498,7 @@ const CreateVoucher = () => {
                                     />
                                     <span className="flex items-center px-4 bg-gray-200 rounded-r-md">đ</span>
                                 </div>
-                                <span className='text-red-600'>{errorGiaTriMax}</span>
+                                <span className='text-red-600 text-xs italic'>{errorGiaTriMax}</span>
                             </div>
 
                             <div>
@@ -518,7 +518,7 @@ const CreateVoucher = () => {
                                     }}
                                     error={errorSoLuong ? 'true' : undefined}
                                 />
-                                <span className='text-red-600'>{errorSoLuong}</span>
+                                <span className='text-red-600 text-xs italic'>{errorSoLuong}</span>
                             </div>
 
                             <div>
@@ -541,7 +541,7 @@ const CreateVoucher = () => {
                                     />
                                     <span className="flex items-center px-4 bg-gray-200 rounded-r-md">đ</span>
                                 </div>
-                                <span className='text-red-600'>{errorDieuKienNhoNhat}</span>
+                                <span className='text-red-600 text-xs italic'>{errorDieuKienNhoNhat}</span>
                             </div>
 
                             <div>
@@ -567,7 +567,7 @@ const CreateVoucher = () => {
                                         }}
                                     />
                                 </LocalizationProvider>
-                                <span className='text-red-600'>{errorNgayBatDau}</span>
+                                <span className='text-red-600 text-xs italic'>{errorNgayBatDau}</span>
                             </div>
 
                             <div>
@@ -593,7 +593,7 @@ const CreateVoucher = () => {
                                         }}
                                     />
                                 </LocalizationProvider>
-                                <span className='text-red-600'>{errorNgayKetThuc}</span>
+                                <span className='text-red-600 text-xs italic'>{errorNgayKetThuc}</span>
                             </div>
 
                             <div className="col-span-2">
