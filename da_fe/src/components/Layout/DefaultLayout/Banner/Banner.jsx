@@ -19,22 +19,63 @@ const Banner = () => {
     };
 
     return (
-        <div className="w-full mx-auto overflow-hidden">
+        <div
+            style={{
+                width: '100vw', // Chiều rộng toàn màn hình
+                height: '100vh', // Chiều cao toàn màn hình
+                overflow: 'hidden',
+                padding: 0,
+                margin: 0
+            }}
+        >
             <Slider {...settings}>
                 <div>
-                    <img src={banner1} alt="Banner 1" className="w-full h-auto object-cover" />
+                    <img
+                        src={banner1}
+                        alt="Banner 1"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover', // Đảm bảo ảnh đẹp không méo
+                        }}
+                    />
                 </div>
                 <div>
-                    <img src={banner2} alt="Banner 2" className="w-full h-auto object-cover" />
+                    <img
+                        src={banner2}
+                        alt="Banner 2"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                        }}
+                    />
                 </div>
                 <div>
-                    <img src={banner3} alt="Banner 3" className="w-full h-auto object-cover" />
+                    <img
+                        src={banner3}
+                        alt="Banner 3"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                        }}
+                    />
                 </div>
                 <div>
-                    <img src={banner4} alt="Banner 4" className="w-full h-auto object-cover" />
+                    <img
+                        src={banner4}
+                        alt="Banner 4"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                        }}
+                    />
                 </div>
             </Slider>
         </div>
+
     );
 };
 

@@ -17,7 +17,7 @@ public interface NhanVienRepository extends JpaRepository<TaiKhoan, Integer> {
             """
         SELECT new com.example.da_be.response.NhanVienResponse(tk.id, tk.ma, tk.hoTen, tk.sdt, tk.email, tk.matKhau, tk.gioiTinh, tk.vaiTro, tk.avatar, tk.ngaySinh, tk.cccd, tk.trangThai)
         FROM TaiKhoan tk
-        WHERE (tk.vaiTro = 'User' OR tk.vaiTro = 'Admin')
+        WHERE tk.vaiTro = 'User' OR tk.vaiTro = 'Admin'
 """
     )
     List<NhanVienResponse> getAllNhanVien();
@@ -35,7 +35,7 @@ public interface NhanVienRepository extends JpaRepository<TaiKhoan, Integer> {
             """
         SELECT new com.example.da_be.response.NhanVienResponse(tk.id, tk.ma, tk.hoTen, tk.sdt, tk.email, tk.matKhau, tk.gioiTinh, tk.vaiTro, tk.avatar, tk.ngaySinh, tk.cccd, tk.trangThai)
         FROM TaiKhoan tk
-        where (tk.vaiTro = 'User' OR tk.vaiTro = 'Admin')
+        WHERE tk.vaiTro = 'User' OR tk.vaiTro = 'Admin'
         and
         (:#{#search.tenSearch} IS NULL OR tk.hoTen LIKE %:#{#search.tenSearch}%)
         and 
