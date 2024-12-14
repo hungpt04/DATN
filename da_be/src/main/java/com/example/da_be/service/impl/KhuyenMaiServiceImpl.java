@@ -56,35 +56,66 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
 
     @Override
     public KhuyenMai addKhuyenMaiOnProduct(KhuyenMaiRequest khuyenMaiRequest) {
+        // Tạo đối tượng KhuyenMai từ request và lưu vào cơ sở dữ liệu
         KhuyenMai khuyenMai = khuyenMaiRequest.newKhuyenMaiAddSanPham(new KhuyenMai());
         khuyenMaiRepository.save(khuyenMai);
 
+        // Lấy danh sách tất cả sản phẩm chi tiết từ cơ sở dữ liệu
         List<SanPhamCT> spctList = sanPhamChiTietRepository.findAll();
         List<SanPhamKhuyenMai> sanPhamKhuyenMaiList = new ArrayList<>();
 
-        // Nếu type == false: Áp dụng cho TẤT CẢ sản phẩm
+        // Lấy giá trị phần trăm giảm từ request
+        double discountPercent = khuyenMaiRequest.getGiaTri(); // Phần trăm khuyến mãi
+
+        // Nếu loại khuyến mãi là false, áp dụng cho tất cả sản phẩm
         if (khuyenMaiRequest.getLoai() == false) {
             for (SanPhamCT spct : spctList) {
-                SanPhamRequest addRequest = new SanPhamRequest();
-                addRequest.setKhuyenMai(khuyenMai);
-                addRequest.setSanPhamChiTiet(spct);
-                SanPhamKhuyenMai sanPhamKhuyenMai = addRequest.newSanPhamKhuyenMai(new SanPhamKhuyenMai());
+                SanPhamKhuyenMai sanPhamKhuyenMai = new SanPhamKhuyenMai();
+                sanPhamKhuyenMai.setKhuyenMai(khuyenMai);
+                sanPhamKhuyenMai.setSanPhamCT(spct);
+
+                // Tính giá khuyến mãi cho sản phẩm này
+                double originalPrice = spct.getDonGia(); // Giá gốc của sản phẩm (kiểu double)
+                int discountPrice = calculateDiscountPrice(originalPrice, discountPercent); // Tính giá khuyến mãi
+
+                sanPhamKhuyenMai.setGiaKhuyenMai(discountPrice); // Lưu giá khuyến mãi vào bảng
+
                 sanPhamKhuyenMaiList.add(sanPhamKhuyenMai);
             }
-        }
-        // Nếu type == true: Áp dụng cho các sản phẩm ĐƯỢC CHỌN
-        else {
+        } else { // Nếu loại khuyến mãi là true, áp dụng cho các sản phẩm được chọn
             for (Integer idProductDetail : khuyenMaiRequest.getIdProductDetail()) {
                 SanPhamCT spct = sanPhamChiTietRepository.findById(idProductDetail).get();
-                SanPhamRequest addRequest = new SanPhamRequest();
-                addRequest.setKhuyenMai(khuyenMai);
-                addRequest.setSanPhamChiTiet(spct);
-                SanPhamKhuyenMai sanPhamKhuyenMai = addRequest.newSanPhamKhuyenMai(new SanPhamKhuyenMai());
+                SanPhamKhuyenMai sanPhamKhuyenMai = new SanPhamKhuyenMai();
+                sanPhamKhuyenMai.setKhuyenMai(khuyenMai);
+                sanPhamKhuyenMai.setSanPhamCT(spct);
+
+                // Tính giá khuyến mãi cho sản phẩm được chọn
+                double originalPrice = spct.getDonGia(); // Giá gốc của sản phẩm (kiểu double)
+                int discountPrice = calculateDiscountPrice(originalPrice, discountPercent); // Tính giá khuyến mãi
+
+                sanPhamKhuyenMai.setGiaKhuyenMai(discountPrice); // Lưu giá khuyến mãi vào bảng
+
                 sanPhamKhuyenMaiList.add(sanPhamKhuyenMai);
             }
         }
+
+        // Lưu tất cả các sản phẩm khuyến mãi vào cơ sở dữ liệu
         sanPhamKhuyenMaiRepository.saveAll(sanPhamKhuyenMaiList);
+
         return khuyenMai;
+    }
+
+    private int calculateDiscountPrice(double originalPrice, double discountPercent) {
+        // Tính giá khuyến mãi theo phần trăm
+        double discountPrice = originalPrice * (1 - discountPercent / 100.0); // Giảm giá theo phần trăm
+
+        // Đảm bảo giá không âm
+        if (discountPrice < 0) {
+            discountPrice = 0;
+        }
+
+        // Chuyển kết quả từ double sang int (có thể làm tròn nếu cần)
+        return (int) Math.round(discountPrice); // Làm tròn giá sau khi tính toán
     }
 
 

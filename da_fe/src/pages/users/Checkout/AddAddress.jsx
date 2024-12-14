@@ -24,9 +24,34 @@ const AddAddress = () => {
         formState: { errors },
     } = useForm();
 
-    const loadAddress = async (taiKhoanId) => {
+    // Lấy id người dùng
+    const [customerId, setCustomerId] = useState(null);
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const fetchUserInfo = async () => {
+                try {
+                    const response = await axios.get('http://localhost:8080/api/tai-khoan/my-info', {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
+
+                    // Lưu ID người dùng
+                    const userId = response.data.id; // Trong trường hợp này là 11
+                    console.log('User ID:', userId);
+                    setCustomerId(userId);
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            };
+            fetchUserInfo();
+        }
+    }, []);
+
+    const loadAddress = async (customerId) => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/dia-chi/tai-khoan/${taiKhoanId}`);
+            const response = await axios.get(`http://localhost:8080/api/dia-chi/tai-khoan/${customerId}`);
             setAddressList(response.data);
         } catch (error) {
             console.error('Failed to fetch addresses', error);
@@ -79,9 +104,9 @@ const AddAddress = () => {
     };
 
     useEffect(() => {
-        loadAddress(1); // Tải địa chỉ cho tài khoản 1
+        loadAddress(customerId); // Tải địa chỉ cho tài khoản 1
         loadProvinces(); // Tải danh sách tỉnh/thành phố
-    }, []);
+    }, [customerId]);
 
     const handleAddressSelect = (address) => {
         setSelectedAddress(address);
@@ -109,7 +134,7 @@ const AddAddress = () => {
 
         const newAddress = {
             ten: values.addressName,
-            taiKhoan: { id: 1 },
+            taiKhoan: { id: customerId },
             sdt: values.mobile,
             idTinh: selectedProvince.ProvinceName,
             idHuyen: selectedDistrict.DistrictName,
@@ -124,7 +149,7 @@ const AddAddress = () => {
             console.log('Response:', response);
 
             swal('Thành công!', 'Địa chỉ đã được lưu!', 'success');
-            loadAddress(1); // Tải lại danh sách địa chỉ
+            loadAddress(customerId); // Tải lại danh sách địa chỉ
             reset();
         } catch (error) {
             console.error('Có lỗi xảy ra khi lưu địa chỉ!', error.response?.data || error.message);

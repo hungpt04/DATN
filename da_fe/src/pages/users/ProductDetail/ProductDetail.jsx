@@ -26,27 +26,61 @@ export default function ProductDetail() {
 
     const { id } = useParams();
 
+    // Thêm state để lưu thông tin khuyến mãi
+    const [promotion, setPromotion] = useState(null);
+
+    // Thêm useEffect để lấy thông tin khuyến mãi
+    useEffect(() => {
+        const fetchPromotion = async () => {
+            try {
+                if (product && selectedColor && selectedWeight) {
+                    const selectedVariant = product.variants.find(
+                        (v) => v.mauSacTen === selectedColor && v.trongLuongTen === selectedWeight,
+                    );
+                    console.log('Se lech tut variant', selectedVariant.donGia);
+
+                    if (selectedVariant) {
+                        const response = await axios.get(
+                            `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${selectedVariant.id}`,
+                        );
+
+                        if (response.data.length > 0) {
+                            setPromotion(response.data[0]);
+                        } else {
+                            setPromotion(null);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching promotion:', error);
+                setPromotion(null);
+            }
+        };
+
+        fetchPromotion();
+    }, [product, selectedColor, selectedWeight]);
+
     // Lấy id người dùng
-    const [customerId, setCustomerId] = useState(null)
+    const [customerId, setCustomerId] = useState(null);
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
             const fetchUserInfo = async () => {
                 try {
-                    const response = await axios.get("http://localhost:8080/api/tai-khoan/my-info", {
+                    const response = await axios.get('http://localhost:8080/api/tai-khoan/my-info', {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
                     });
-                    
+
                     // Lưu ID người dùng
                     const userId = response.data.id; // Trong trường hợp này là 11
                     console.log('User ID:', userId);
                     setCustomerId(userId);
                 } catch (error) {
-                    console.error("Error fetching user data:", error);
+                    console.error('Error fetching user data:', error);
                 }
-            };   
+            };
             fetchUserInfo();
         }
     }, []);
@@ -146,6 +180,9 @@ export default function ProductDetail() {
             const response = await axios.get('http://localhost:8080/api/gio-hang'); // Lấy giỏ hàng hiện tại
             const cartItems = response.data;
 
+            // Xác định giá để thêm vào giỏ hàng
+            const priceToAdd = promotion ? promotion.giaKhuyenMai : selectedVariant.donGia;
+
             const existingItem = cartItems.find(
                 (item) => item.sanPhamCT.id === selectedVariant.id && item.taiKhoan.id === values.taiKhoanId,
             );
@@ -155,6 +192,7 @@ export default function ProductDetail() {
                 const updatedCartItem = {
                     ...existingItem,
                     soLuong: existingItem.soLuong + quantity,
+                    donGia: priceToAdd, // Cập nhật giá mới
                 };
 
                 await axios.put(`http://localhost:8080/api/gio-hang/${existingItem.id}`, updatedCartItem);
@@ -169,6 +207,7 @@ export default function ProductDetail() {
                         id: values.taiKhoanId,
                     },
                     soLuong: quantity,
+                    donGia: priceToAdd, // Thêm giá mới
                     trangThai: values.trangThai === '1' ? 1 : 0,
                     ngayTao: new Date(),
                     ngaySua: new Date(),
@@ -252,9 +291,22 @@ export default function ProductDetail() {
                         <div className="mt-4 lg:row-span-3 lg:mt-0">
                             <h2 className="sr-only">Product information</h2>
                             <div className="flex space-x-5 items-center text-lg lg:text-xl text-gray-900 mt-6">
-                                <p className="font-semibold text-red-600">
-                                    {currentPrice ? currentPrice.toLocaleString() : product.donGia.toLocaleString()} ₫
-                                </p>
+                                {promotion ? (
+                                    <>
+                                        <p className="font-semibold text-red-600">
+                                            {promotion.giaKhuyenMai.toLocaleString()} ₫
+                                        </p>
+                                        <p className="line-through text-gray-500">{currentPrice.toLocaleString()} ₫</p>
+                                        <p className="text-green-600 font-semibold">
+                                            -{Math.round((1 - promotion.giaKhuyenMai / currentPrice) * 100)}%
+                                        </p>
+                                    </>
+                                ) : (
+                                    <p className="font-semibold text-red-600">
+                                        {currentPrice ? currentPrice.toLocaleString() : product.donGia.toLocaleString()}{' '}
+                                        ₫
+                                    </p>
+                                )}
                             </div>
 
                             {/* Reviews */}

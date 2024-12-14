@@ -126,6 +126,7 @@
 		IdTinh NVARCHAR(255),
 		IdHuyen NVARCHAR(255),
 		IdXa NVARCHAR(255),
+		Loai BIT,
 		DiaChiCuThe NVARCHAR(255),
 		FOREIGN KEY (IdTaiKhoan) REFERENCES TaiKhoan(Id)
 	);
@@ -344,12 +345,12 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc,GiaTri, Loai, TrangThai) VALUE
 	(8, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-bkex-noi-dia-trung-1_1719176469.webp', 1);
 
 
-	INSERT INTO DiaChi (IdTaiKhoan, Ten, Sdt, IdTinh, IdHuyen, IdXa, DiaChiCuThe) VALUES
-	(1, 'Nguyen Van A', '0123456789', 'Hanoi', 'Dong Da', 'Khuong Thuong', 'So 10, Pho ABC'),
-	(2, 'Tran Thi B', '0987654321', 'Ho Chi Minh', 'District 1', 'Ben Nghe', '123 Nguyen Hue'),
-	(3, 'Le Van C', '0912345678', 'Da Nang', 'Hai Chau', 'Thach Thang', '45 Bach Dang'),
-	(4, 'Pham Thi D', '0908765432', 'Can Tho', 'Ninh Kieu', 'An Hoa', '67 Hung Vuong'),
-	(5, 'Hoang Van E', '0897654321', 'Hai Phong', 'Le Chan', 'Niem Nghia', '21 Tran Phu');
+	INSERT INTO DiaChi (IdTaiKhoan, Ten, Sdt, IdTinh, IdHuyen, IdXa,Loai, DiaChiCuThe) VALUES
+	(1, 'Nguyen Van A', '0123456789', 'Hanoi', 'Dong Da', 'Khuong Thuong',0, 'So 10, Pho ABC'),
+	(2, 'Tran Thi B', '0987654321', 'Ho Chi Minh', 'District 1', 'Ben Nghe',1, '123 Nguyen Hue'),
+	(3, 'Le Van C', '0912345678', 'Da Nang', 'Hai Chau', 'Thach Thang',1, '45 Bach Dang'),
+	(4, 'Pham Thi D', '0908765432', 'Can Tho', 'Ninh Kieu', 'An Hoa',0, '67 Hung Vuong'),
+	(5, 'Hoang Van E', '0897654321', 'Hai Phong', 'Le Chan', 'Niem Nghia',1, '21 Tran Phu');
 
 
 	INSERT INTO ThongBao (IdKhachHang, TieuDe, NoiDung, IdRedirect, KieuThongBao, TrangThai) VALUES
