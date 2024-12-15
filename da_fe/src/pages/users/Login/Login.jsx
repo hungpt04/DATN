@@ -326,14 +326,15 @@ const RegisterPanel = () => {
         } else if (!/\S+@\S+\.\S+/.test(user.email.trim())) {
             newErrors.email = "*Địa chỉ email không hợp lệ"
             check++
-        } else {
-            // Kiểm tra email đã tồn tại
-            const isEmailExists = await checkMail(user.email);
-            if (isEmailExists) {
-                newErrors.email = "*Email đã tồn tại trong hệ thống"
-                check++
-            }
-        }
+        } 
+        // else {
+        //     // Kiểm tra email đã tồn tại
+        //     const isEmailExists = await checkMail(user.email);
+        //     if (isEmailExists) {
+        //         newErrors.email = "*Email đã tồn tại trong hệ thống"
+        //         check++
+        //     }
+        // }
 
         if (!user.matKhau || !user.matKhau.trim()) {
             newErrors.passWord = "*Bạn chưa nhập mật khẩu"

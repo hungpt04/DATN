@@ -74,20 +74,17 @@ export default function AddressUser() {
       // Lấy tên tỉnh, huyện, xã cho từng địa chỉ
       const updatedAddresses = await Promise.all(addresses.map(async (address) => {
         try {
-          const provinceResponse = await fetch(`https://provinces.open-api.vn/api/p/${address.idTinh}`);
-          const provinceData = await provinceResponse.json();
-
-          const districtResponse = await fetch(`https://provinces.open-api.vn/api/d/${address.idHuyen}`);
-          const districtData = await districtResponse.json();
-
-          const wardResponse = await fetch(`https://provinces.open-api.vn/api/d/${address.idXa}`);
-          const wardData = await wardResponse.json();
+          const [provinceResponse, districtResponse, wardResponse] = await Promise.all([
+            axios.get(`https://provinces.open-api.vn/api/p/${address.idTinh}`),
+            axios.get(`https://provinces.open-api.vn/api/d/${address.idHuyen}`),
+            axios.get(`https://provinces.open-api.vn/api/w/${address.idXa}`)
+          ]);
 
           return {
             ...address,
-            tenTinh: provinceData.name || '',
-            tenHuyen: districtData.name || '',
-            tenXa: wardData.name || '',
+            tenTinh: provinceResponse.data.name || '',
+            tenHuyen: districtResponse.data.name || '',
+            tenXa: wardResponse.data.name || ''
           };
         } catch (error) {
           console.error('Error fetching address details:', error);
@@ -142,57 +139,80 @@ export default function AddressUser() {
         throw new Error('Failed to fetch districts');
       }
       const data = await response.json();
-      setDistricts(data.districts || []);
-      setSelectedDistrict(""); // Reset huyện khi tỉnh thay đổi
-      setSelectedWard("");    // Reset xã khi tỉnh thay đổi
+
+      const validDistricts = data.districts
+        ? data.districts.filter(district =>
+          district && district.code && district.name)
+        : [];
+      return validDistricts;    // Reset xã khi tỉnh thay đổi
     } catch (error) {
       console.error('Error fetching districts:', error);
-      setDistricts([]);
+      // setDistricts([]);
+      return [];
     }
   };
-
-  useEffect(() => {
-    if (selectedProvince) {
-      fetchDistricts(selectedProvince);
-    } else {
-      setDistricts([]);
-    }
-  }, [selectedProvince]);
 
   const fetchWards = async (districtId) => {
     try {
       if (!districtId) {
-        setWards([]);
-        return;
+        return [];
       }
 
       const response = await fetch(`https://provinces.open-api.vn/api/d/${districtId}?depth=2`);
+
+      if (!response.ok) {
+        throw new Error('Không thể tải xã/phường');
+      }
+
       const data = await response.json();
 
-      if (!data || !data.wards) {
-        setWards([]);
-        return;
-      }
+      const validWards = data.wards
+        ? data.wards.filter(ward =>
+          ward && ward.code && ward.name
+        )
+        : []
 
-      const validWards = data.wards.filter(ward =>
-        ward && ward.code && ward.name
-      );
-
-      setWards(validWards);
-
-      if (validWards.length === 0) {
-        setSelectedWard('');
-      }
+      return validWards;
     } catch (error) {
-      console.error('Error fetching wards:', error);
-      setWards([]);
+      console.error('Lỗi khi tải xã/phường:', error);
+      return [];
+    }
+  }
+
+  useEffect(() => {
+    if (selectedProvince) {
+      fetchDistricts(selectedProvince).
+        then(districts => {
+          setDistricts(districts)
+
+          if (districts.length === 0) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Thông báo',
+              text: 'Không tìm thấy quận/huyện cho tỉnh này',
+            })
+          }
+        })
+    } else {
+      setDistricts([]);
+      setSelectedDistrict('');
       setSelectedWard('');
     }
-  };
+  }, [selectedProvince]);
 
   useEffect(() => {
     if (selectedDistrict) {
-      fetchWards(selectedDistrict);
+      fetchWards(selectedDistrict)
+        .then(wards => {
+          setWards(wards)
+          if (wards.length === 0) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Thông báo',
+              text: 'Không tìm thấy xã/phường cho quận/huyện này',
+            });
+          }
+        })
     } else {
       setWards([]);
       setSelectedWard('');
@@ -203,8 +223,8 @@ export default function AddressUser() {
     setDiaChiData({ ...diaChiData, [event.target.name]: event.target.value });
   };
 
-  const onCreateDiaChi = async (e) => {
-    e.preventDefault();
+  const handleSubmitDiaChi = async (e) => {
+    e.preventDefault()
     const newErrors = {}
     let check = 0
 
@@ -275,100 +295,96 @@ export default function AddressUser() {
         idHuyen: selectedDistrict,
         idXa: selectedWard,
         diaChiCuThe: diaChiData.diaChiCuThe,
-        loai: diaChiData.loai // Gửi loại địa chỉ
-      };
-
-      const diaChiResponse = await fetch('http://localhost:8080/api/dia-chi/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(diaChiPayload),
-      });
-
-      if (!diaChiResponse.ok) {
-        throw new Error('Failed to create address');
+        loai: diaChiData.loai || 0
       }
 
-      const newDiaChi = await diaChiResponse.json();
-      setListDiaChi((prev) => [...prev, newDiaChi]);
+      let response
+      let successMsg
+      // let result
+
+      if (diaChiData.id) {
+        // cập nhật
+        response = await fetch(`http://localhost:8080/api/dia-chi/update/${diaChiData.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            ...diaChiPayload,
+            id: diaChiData.id
+          }),
+        })
+        successMsg = "Cập nhật địa chỉ thành công!"
+      } else {
+        // thêm
+        response = await fetch('http://localhost:8080/api/dia-chi/add', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(diaChiPayload),
+        })
+        successMsg = "Thêm địa chỉ thành công!"
+      }
+
+      // kiểm tra kết quả response
+      if (!response.ok) {
+        throw new Error("Không thành công")
+      }
+
+      // xử lý kết quả
+      const result = await response.json()
+
+      // lấy thông tin tỉnh, huyện, xã
+      // const updatedResult = await fetchAdressDetails(result)
+      const [provinceResponse, districtResponse, wardResponse] = await Promise.all([
+        axios.get(`https://provinces.open-api.vn/api/p/${result.idTinh}`),
+        axios.get(`https://provinces.open-api.vn/api/d/${result.idHuyen}`),
+        axios.get(`https://provinces.open-api.vn/api/w/${result.idXa}`)
+      ]);
+
+      // cập nhật kết quả
+      const updatedResult = {
+        ...result,
+        tenTinh: provinceResponse.data.name,
+        tenHuyen: districtResponse.data.name,
+        tenXa: wardResponse.data.name
+      };
+
+      // cập nhật danh sách địa chỉ
+      setListDiaChi(prev => {
+        if (diaChiData.id) {
+          return prev.map(address =>
+            address.id === updatedResult.id ? updatedResult : address
+          )
+        } else {
+          // thêm mới
+          return [...prev, updatedResult]
+        }
+      })
+
+      // resetAddressState()
+      handleClose()
 
       swal({
         title: "Thành công!",
-        text: "Thêm địa chỉ thành công!",
+        text: successMsg,
         icon: "success",
         buttons: "OK",
         timer: 2000,
-      }).then(() => {
-        handleClose();
-      });
-
+      })
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Lỗi: ", error)
       swal({
         title: "Lỗi!",
-        text: "Có lỗi xảy ra khi thêm địa chỉ!",
+        text: "Có lỗi xảy ra khi thực hiện thao tác!",
         icon: "error",
         button: "OK",
-      });
+      })
     }
-  };
-
-  const onUpdateDiaChi = async (e) => {
-    e.preventDefault();
-
-    try {
-      const diaChiPayload = {
-        id: diaChiData.id,
-        taiKhoan: { id: khachId },
-        ten: diaChiData.ten,
-        sdt: diaChiData.sdt,
-        idTinh: selectedProvince,
-        idHuyen: selectedDistrict,
-        idXa: selectedWard,
-        diaChiCuThe: diaChiData.diaChiCuThe,
-        loai: diaChiData.loai // Cập nhật loại địa chỉ
-      };
-
-      const diaChiResponse = await fetch(`http://localhost:8080/api/dia-chi/update/${diaChiData.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(diaChiPayload),
-      });
-
-      if (!diaChiResponse.ok) {
-        throw new Error('Failed to update address');
-      }
-
-      const updatedDiaChi = await diaChiResponse.json();
-      setListDiaChi((prev) => prev.map(address => address.id === updatedDiaChi.id ? updatedDiaChi : address));
-
-      getDiaChilenForm(khachId);
-
-      swal({
-        title: "Thành công!",
-        text: "Cập nhật địa chỉ thành công!",
-        icon: "success",
-        buttons: "OK",
-        timer: 2000,
-      }).then(() => {
-        handleClose();
-      });
-
-    } catch (error) {
-      console.error('Error:', error);
-      swal({
-        title: "Lỗi!",
-        text: "Có lỗi xảy ra khi cập nhật địa chỉ!",
-        icon: "error",
-        button: "OK",
-      });
-    }
-  };
+  }
 
   const handleDeleteClick = (idDC) => {
     setDeleteId(idDC);
@@ -453,6 +469,72 @@ export default function AddressUser() {
     }
   };
 
+  const handleOpen = async (address) => {
+    if (address) {
+      // Reset state trước khi set giá trị mới
+      setSelectedProvince("");
+      setSelectedDistrict("");
+      setSelectedWard("");
+      setDistricts([]);
+      setWards([]);
+
+      // Set dữ liệu địa chỉ
+      setDiaChiData(address);
+      setOpen(true);
+
+      if (address.idTinh) {
+        try {
+          if (address.idTinh) {
+            setSelectedProvince(address.idTinh)
+          }
+
+          // Fetch districts
+          const districtsResponse = await fetch(`https://provinces.open-api.vn/api/p/${address.idTinh}?depth=2`);
+          const districtsData = await districtsResponse.json();
+
+          const validDistricts = districtsData.districts
+            ? districtsData.districts.filter(district =>
+              district && district.code && district.name)
+            : [];
+
+          setDistricts(validDistricts);
+
+          // Nếu có huyện, set district
+          if (address.idHuyen) {
+            setSelectedDistrict(address.idHuyen);
+
+            // Fetch wards
+            const wardsResponse = await fetch(`https://provinces.open-api.vn/api/d/${address.idHuyen}?depth=2`);
+            const wardsData = await wardsResponse.json();
+
+            const validWards = wardsData.wards
+              ? wardsData.wards.filter(ward =>
+                ward && ward.code && ward.name)
+              : [];
+
+            setWards(validWards);
+
+            // Nếu có xã, set ward
+            if (address.idXa) {
+              setSelectedWard(address.idXa);
+            }
+          }
+        } catch (error) {
+          console.error("Error in handleOpen:", error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: 'Không thể tải thông tin địa chỉ',
+          });
+        }
+      }
+    } else {
+      // Reset form khi không có địa chỉ
+      resetAddressState();
+      setOpen(true);
+    }
+  };
+
   const handleAddAddress = () => {
     resetAddressState();
     handleOpen(null);
@@ -487,29 +569,6 @@ export default function AddressUser() {
     setSelectedWard("");
   };
 
-  const handleOpen = (address) => {
-    if (address) {
-      setDiaChiData(address);
-      setSelectedProvince(address.idTinh || "");
-      setOpen(true);
-
-      if (address.idTinh) {
-        fetchDistricts(address.idTinh).then(() => {
-          setSelectedDistrict(address.idHuyen || "");
-
-          if (address.idHuyen) {
-            fetchWards(address.idHuyen).then(() => {
-              setSelectedWard(address.idXa || "");
-            });
-          }
-        });
-      }
-    } else {
-      resetAddressState();
-      setOpen(true);
-    }
-  };
-
   return (
     <div className="mx-2 my-2">
       <div className='flex justify-between items-center'>
@@ -540,25 +599,25 @@ export default function AddressUser() {
                     value={diaChiData.ten}
                     onChange={(e) => {
                       handleInputChange(e)
-                      setErrors({...errors, fullName: ""})
+                      setErrors({ ...errors, fullName: "" })
                     }}
                   />
-                  {errors.fullName && <p className="text-sm mt-1" style={{color: "red"}}>{errors.fullName}</p>}
+                  {errors.fullName && <p className="text-sm mt-1" style={{ color: "red" }}>{errors.fullName}</p>}
                 </div>
                 <div className='mb-2'>
                   <label className='block mb-1'>Số điện thoại</label>
                   <input
                     type='text'
-                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.phoneNumber ? "border-red-500 hover:border-red-600 focus:outline-red-500": ""}`}
+                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.phoneNumber ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
                     name='sdt'
                     value={diaChiData.sdt}
                     onChange={(e) => {
                       handleInputChange(e)
-                      setErrors({...errors, phoneNumber: ""})
+                      setErrors({ ...errors, phoneNumber: "" })
                     }}
-                    
+
                   />
-                  {errors.phoneNumber && <p className="text-sm mt-1" style={{color: "red"}}>{errors.phoneNumber}</p>}
+                  {errors.phoneNumber && <p className="text-sm mt-1" style={{ color: "red" }}>{errors.phoneNumber}</p>}
                 </div>
               </div>
 
@@ -569,7 +628,7 @@ export default function AddressUser() {
                     value={selectedProvince}
                     onChange={(e) => {
                       setSelectedProvince(e.target.value)
-                      setErrors({...errors, provinceId: ""})
+                      setErrors({ ...errors, provinceId: "" })
                     }}
                   >
                     <option value="">Chọn tỉnh/thành phố</option>
@@ -579,17 +638,17 @@ export default function AddressUser() {
                       </option>
                     ))}
                   </select>
-                  {errors.provinceId && <p className="text-sm mt-1" style={{color: "red"}}>{errors.provinceId}</p>}
+                  {errors.provinceId && <p className="text-sm mt-1" style={{ color: "red" }}>{errors.provinceId}</p>}
                 </div>
 
                 <div className='mb-2'>
                   <label className='block mb-1'>Quận/huyện</label>
                   <select
-                    className={`w-full px-3 py-2 border rounded outline-gray-600 #${errors.districtId ? "border-red-500 focus:outline-red-500 hover:border-red-600": ""}`}
+                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.districtId ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
                     value={selectedDistrict}
                     onChange={(e) => {
                       setSelectedDistrict(e.target.value)
-                      setErrors({...errors, districtId: ""})
+                      setErrors({ ...errors, districtId: "" })
                     }}
                     disabled={!selectedProvince}
                   >
@@ -600,7 +659,7 @@ export default function AddressUser() {
                       </option>
                     ))}
                   </select>
-                  {errors.districtId && <p className="text-sm mt-1" style={{color: "red"}}>{errors.districtId}</p>}
+                  {errors.districtId && <p className="text-sm mt-1" style={{ color: "red" }}>{errors.districtId}</p>}
                 </div>
 
                 <div className='mb-2'>
@@ -610,7 +669,7 @@ export default function AddressUser() {
                     value={selectedWard}
                     onChange={(e) => {
                       setSelectedWard(e.target.value)
-                      setErrors({...errors, wardId: ""})
+                      setErrors({ ...errors, wardId: "" })
                     }}
                     disabled={!selectedDistrict}
                   >
@@ -621,23 +680,23 @@ export default function AddressUser() {
                       </option>
                     ))}
                   </select>
-                  {errors.wardId && <p className="text-sm mt-1" style={{color: "red"}}>{errors.wardId}</p>}
+                  {errors.wardId && <p className="text-sm mt-1" style={{ color: "red" }}>{errors.wardId}</p>}
                 </div>
 
                 <div className='mb-2'>
                   <label className='block mb-1'>Địa chỉ cụ thể</label>
                   <input
                     type='text'
-                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.specificAddress ? "border-red-500 hover:border-red-600 focus:outline-red-500": ""}`}
+                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.specificAddress ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
                     placeholder='Địa chỉ cụ thể'
                     name='diaChiCuThe'
                     value={diaChiData.diaChiCuThe}
                     onChange={(e) => {
                       handleInputChange(e)
-                      setErrors({...errors, specificAddress: ""})
+                      setErrors({ ...errors, specificAddress: "" })
                     }}
                   />
-                  {errors.specificAddress && <p className="text-sm mt-1" style={{color: "red"}}>{errors.specificAddress}</p>}
+                  {errors.specificAddress && <p className="text-sm mt-1" style={{ color: "red" }}>{errors.specificAddress}</p>}
                 </div>
               </div>
 
@@ -649,7 +708,7 @@ export default function AddressUser() {
                   Trở lại
                 </button>
                 <button
-                  onClick={diaChiData.id ? onUpdateDiaChi : onCreateDiaChi}
+                  onClick={handleSubmitDiaChi}
                   className='px-4 py-2 text-white bg-blue-600 rounded-r-sm hover:bg-blue-700'
                 >
                   {diaChiData.id ? 'Cập nhật' : 'Hoàn thành'}

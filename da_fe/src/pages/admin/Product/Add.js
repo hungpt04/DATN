@@ -5,6 +5,7 @@ import swal from 'sweetalert';
 import { useForm } from 'react-hook-form';
 import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 import { useNavigate } from 'react-router-dom';
+import numeral from 'numeral';
 
 function AddProduct() {
     const navigate = useNavigate();
@@ -56,6 +57,10 @@ function AddProduct() {
         setCurrentVariantForImage(color);
         setShowVariantImageModal(true);
     };
+
+    const formatCurrency = (money) => {
+        return numeral(money).format('0,0') + ' ₫'
+    }
 
     const handleSaveVariantImages = () => {
         if (currentVariantForImage && selectedImages.length > 0) {
@@ -601,7 +606,7 @@ function AddProduct() {
             weights: '',
             variants: {}
         };
-    
+
         // Validate Tên sản phẩm
         if (!productName.trim()) {
             errors.productName = 'Tên sản phẩm không được để trống';
@@ -613,37 +618,37 @@ function AddProduct() {
             errors.productName = 'Tên sản phẩm không được vượt quá 100 ký tự';
             check++;
         }
-    
+
         // Validate Thương hiệu
         if (!brand) {
             errors.brand = 'Vui lòng chọn thương hiệu';
             check++;
         }
-    
+
         // Validate Chất liệu
         if (!material) {
             errors.material = 'Vui lòng chọn chất liệu';
             check++;
         }
-    
+
         // Validate Điểm cân bằng
         if (!balancePoint) {
             errors.balancePoint = 'Vui lòng chọn điểm cân bằng';
             check++;
         }
-    
+
         // Validate Độ cứng
         if (!hardness) {
             errors.hardness = 'Vui lòng chọn độ cứng';
             check++;
         }
-    
+
         // Validate Trạng thái
         if (!status) {
             errors.status = 'Vui lòng chọn trạng thái';
             check++;
         }
-    
+
         // Validate Mô tả
         if (!description.trim()) {
             errors.description = 'Mô tả sản phẩm không được để trống';
@@ -655,33 +660,33 @@ function AddProduct() {
             errors.description = 'Mô tả sản phẩm không được vượt quá 1000 ký tự';
             check++;
         }
-    
+
         // Validate Màu sắc
         if (selectedColors.length === 0) {
             errors.colors = 'Vui lòng chọn ít nhất một màu';
             check++;
         }
-    
+
         // Validate Trọng lượng
         if (selectedWeights.length === 0) {
             errors.weights = 'Vui lòng chọn ít nhất một trọng lượng';
             check++;
         }
-    
+
         // Validate Biến thể
-        const colorErrors = {}; 
-    
+        const colorErrors = {};
+
         selectedColors.forEach((color) => {
             const colorVariants = variants.filter((variant) => variant.color === color);
             const variantErrors = [];
-    
+
             if (colorVariants.length === 0) {
                 variantErrors.push(`Phải có ít nhất một biến thể cho màu ${color}`);
                 check++;
             } else {
                 colorVariants.forEach((variant, index) => {
                     const errorsPerVariant = [];
-    
+
                     // Kiểm tra số lượng
                     if (!variant.quantity || Number(variant.quantity) <= 0) {
                         errorsPerVariant.push(`Số lượng biến thể ${index + 1} phải lớn hơn 0.`);
@@ -690,7 +695,7 @@ function AddProduct() {
                         errorsPerVariant.push(`Số lượng biến thể ${index + 1} phải nhỏ hơn 1,000.`);
                         check++;
                     }
-    
+
                     // Kiểm tra giá
                     if (!variant.price || Number(variant.price) <= 0) {
                         errorsPerVariant.push(`Giá biến thể ${index + 1} phải lớn hơn 0.`);
@@ -699,24 +704,24 @@ function AddProduct() {
                         errorsPerVariant.push(`Giá biến thể ${index + 1} phải nhỏ hơn 100 triệu.`);
                         check++;
                     }
-    
+
                     // Kiểm tra ảnh
                     if (!variantImages[color]) {
                         errorsPerVariant.push(`Vui lòng chọn ảnh cho màu ${color}.`);
                         check++;
                     }
-    
+
                     if (errorsPerVariant.length > 0) {
                         variantErrors.push(errorsPerVariant.join(' '));
                     }
                 });
             }
-    
+
             if (variantErrors.length > 0) {
                 colorErrors[color] = variantErrors;
             }
         });
-    
+
         // Cập nhật state errors
         setErrorProductName(errors.productName);
         setErrorBrand(errors.brand);
@@ -728,7 +733,7 @@ function AddProduct() {
         setErrorColors(errors.colors);
         setErrorWeights(errors.weights);
         setErrorVariants(colorErrors);
-    
+
         return check;
     };
 
@@ -1172,18 +1177,19 @@ function AddProduct() {
                                             </td>
                                             <td className="py-2 px-4 border-b text-center">
                                                 <input
-                                                    type="number"
-                                                    value={variant.price}
-                                                    onChange={(e) => {
+                                                    type="text" // Use text type to display formatted currency
+                                                    value={formatCurrency(variant.price)} // Display formatted price
+                                                    onChange={(e => {
+                                                        const newPrice = e.target.value.replace(/,/g, "").replace(/\D/g, ""); // Remove commas from input
                                                         const newVariants = [...variants];
-                                                        const variantIndex = newVariants.findIndex(
-                                                            (v) => v.id === variant.id,
-                                                        );
-                                                        newVariants[variantIndex].price = e.target.value;
-                                                        setVariants(newVariants);
+                                                        const variantIndex = newVariants.findIndex((v) => v.id === variant.id);
 
-                                                    }}
-                                                    className="w-20 h-8 border border-gray-300 rounded-md p-1 text-sm"
+                                                        // Update the price as a raw number
+                                                        newVariants[variantIndex].price = parseInt(newPrice, 10) || 0;
+                                                        setVariants(newVariants);
+                                                    })
+                                                    } // Handle input change
+                                                    className="w-24 h-8 border border-gray-300 rounded-md p-1 text-sm"
                                                 />
                                             </td>
                                             <td className="py-2 px-4 border-b text-sm text-center">

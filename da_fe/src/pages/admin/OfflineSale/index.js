@@ -7,6 +7,7 @@ import swal from 'sweetalert';
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import Swal from 'sweetalert2';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import numeral from 'numeral';
 
 function OfflineSale() {
     const [bills, setBills] = useState([]);
@@ -45,6 +46,15 @@ function OfflineSale() {
 
     const [productPrices, setProductPrices] = useState({});
     const [productPromotions, setProductPromotions] = useState({});
+
+    const formatCurrency = (money) => {
+        return numeral(money).format('0,0') + ' ₫'
+    }
+
+    const handleMoneyChange = (e) => {
+        const value = e.target.value.replace(/,/g, "").replace(/\D/g, ""); // Remove commas and non-numeric characters
+        setCustomerPayment(value ? parseInt(value, 10) : 0);
+    };
 
     const findBestVoucher = (vouchers, totalPrice) => {
         if (!vouchers || vouchers.length === 0) return null;
@@ -348,9 +358,9 @@ function OfflineSale() {
         setShowQuantityModal(true);
     };
 
-    const handleCustomerModal = () => {
-        setShowCustomerModal(true);
-    };
+    // const handleCustomerModal = () => {
+    //     setShowCustomerModal(true);
+    // };
     const openDeleteModal = (detail) => {
         setDeleteDetail(detail); // Gán hóa đơn chi tiết vào state
         setIsModalOpen(true); // Mở modal
@@ -600,7 +610,7 @@ function OfflineSale() {
                 // Cập nhật thông tin hóa đơn
                 const updatedBill = {
                     id: hoaDonId,
-                    idVoucher: bestVoucher.id,
+                    idVoucher: bestVoucher ? bestVoucher.id : null,
                     soLuong: totalQuantity,
                     tongTien: totalAmount,
                     ma: existingBill.ma, // Giữ nguyên mã hóa đơn cũ
@@ -728,15 +738,15 @@ function OfflineSale() {
                         [detail.hoaDonCT.id]:
                             response.data.length > 0
                                 ? {
-                                      originalPrice: detail.hoaDonCT.giaBan,
-                                      discountedPrice: response.data[0].giaKhuyenMai,
-                                      promotion: response.data[0],
-                                  }
+                                    originalPrice: detail.hoaDonCT.giaBan,
+                                    discountedPrice: response.data[0].giaKhuyenMai,
+                                    promotion: response.data[0],
+                                }
                                 : {
-                                      originalPrice: detail.hoaDonCT.giaBan,
-                                      discountedPrice: detail.hoaDonCT.giaBan,
-                                      promotion: null,
-                                  },
+                                    originalPrice: detail.hoaDonCT.giaBan,
+                                    discountedPrice: detail.hoaDonCT.giaBan,
+                                    promotion: null,
+                                },
                     };
                 } catch (error) {
                     console.error('Error fetching product promotion:', error);
@@ -962,7 +972,7 @@ function OfflineSale() {
                                                                                     ((priceInfo.originalPrice -
                                                                                         priceInfo.discountedPrice) /
                                                                                         priceInfo.originalPrice) *
-                                                                                        100,
+                                                                                    100,
                                                                                 )}
                                                                                 % off
                                                                             </div>
@@ -1038,12 +1048,12 @@ function OfflineSale() {
                                             <div className="max-w-full p-4 bg-white mt-20">
                                                 <div className="flex justify-between items-center mb-4">
                                                     <h1 className="text-2xl font-bold text-blue-700">Khách hàng</h1>
-                                                    <button
+                                                    {/* <button
                                                         className="bg-[#2f19ae] text-white px-4 py-2 rounded flex items-center"
                                                         onClick={handleCustomerModal}
                                                     >
                                                         <i className="fas fa-user mr-2"></i> CHỌN KHÁCH HÀNG
-                                                    </button>
+                                                    </button> */}
                                                 </div>
                                                 <hr className="border-gray-300 my-2" />
                                                 <div className="flex justify-between items-center mb-4">
@@ -1053,10 +1063,10 @@ function OfflineSale() {
                                                     <div className="flex justify-center flex-1">
                                                         <span className="bg-gray-200 px-4 py-2 rounded">Khách lẻ</span>
                                                     </div>
-                                                    <div className="flex items-center flex-1 justify-end">
+                                                    {/* <div className="flex items-center flex-1 justify-end">
                                                         <label className="block text-gray-700 mr-2">Giao hàng</label>
                                                         <input type="checkbox" className="toggle-checkbox" />
-                                                    </div>
+                                                    </div> */}
                                                 </div>
                                                 <div className="flex justify-end mb-6">
                                                     <div className="w-[202px] pr-2">
@@ -1091,7 +1101,7 @@ function OfflineSale() {
                                                                         (detail) =>
                                                                             detail.hoaDonCT &&
                                                                             detail.hoaDonCT.hoaDon.id ===
-                                                                                selectedBill.id &&
+                                                                            selectedBill.id &&
                                                                             detail.hoaDonCT.trangThai === 1,
                                                                     )
                                                                     .filter((detail) => {
@@ -1116,7 +1126,7 @@ function OfflineSale() {
                                                                         return (
                                                                             acc +
                                                                             detail.hoaDonCT.soLuong *
-                                                                                priceInfo.discountedPrice
+                                                                            priceInfo.discountedPrice
                                                                         );
                                                                     },
                                                                     0,
@@ -1129,7 +1139,7 @@ function OfflineSale() {
                                                     </div>
 
                                                     {/* Phí vận chuyển */}
-                                                    <div className="flex justify-between w-full max-w-[400px] mb-2">
+                                                    {/* <div className="flex justify-between w-full max-w-[400px] mb-2">
                                                         <span className="text-gray-700">Phí vận chuyển:</span>
                                                         <input
                                                             type="number"
@@ -1139,7 +1149,7 @@ function OfflineSale() {
                                                             }
                                                             className="ml-4 px-2 py-1 rounded"
                                                         />
-                                                    </div>
+                                                    </div> */}
 
                                                     {/* Giảm giá */}
                                                     <div className="flex justify-between w-full max-w-[400px] mb-2">
@@ -1160,7 +1170,7 @@ function OfflineSale() {
                                                                             return (
                                                                                 acc +
                                                                                 detail.hoaDonCT.soLuong *
-                                                                                    priceInfo.discountedPrice
+                                                                                priceInfo.discountedPrice
                                                                             );
                                                                         },
                                                                         0,
@@ -1224,7 +1234,7 @@ function OfflineSale() {
                                                                         (detail) =>
                                                                             detail.hoaDonCT &&
                                                                             detail.hoaDonCT.hoaDon.id ===
-                                                                                selectedBill.id &&
+                                                                            selectedBill.id &&
                                                                             detail.hoaDonCT.trangThai === 1,
                                                                     )
                                                                     .filter((detail) => {
@@ -1250,7 +1260,7 @@ function OfflineSale() {
                                                                         return (
                                                                             acc +
                                                                             detail.hoaDonCT.soLuong *
-                                                                                priceInfo.discountedPrice
+                                                                            priceInfo.discountedPrice
                                                                         );
                                                                     },
                                                                     0,
@@ -1410,8 +1420,8 @@ function OfflineSale() {
                                     type="text"
                                     placeholder="Tiền khách đưa"
                                     className="border-b border-gray-300 focus:border-gray-500 flex-1 p-2 text-sm outline-none"
-                                    value={customerPayment}
-                                    onChange={(e) => setCustomerPayment(e.target.value)}
+                                    value={formatCurrency(customerPayment)}
+                                    onChange={handleMoneyChange}
                                 />
                             ) : (
                                 <>
@@ -1608,97 +1618,6 @@ function OfflineSale() {
                                 XÁC NHẬN
                             </button>
                         </div>
-                    </div>
-                </div>
-            )}
-
-            {showCustomerModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                    {/* Background overlay */}
-                    <div
-                        className="fixed inset-0 bg-gray-800 bg-opacity-50"
-                        onClick={() => setShowCustomerModal(false)} // Đóng modal khi nhấn vào overlay
-                    ></div>
-
-                    {/* Modal content */}
-                    <div className="relative bg-white p-8 rounded-lg shadow-lg z-50 max-w-[1500px] mx-auto w-[1200px]">
-                        {/* Nút thoát modal */}
-                        <button
-                            className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
-                            onClick={() => setShowCustomerModal(false)} // Đóng modal khi nhấn vào nút này
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                            </svg>
-                        </button>
-
-                        <h4 className="text-center text-5xl font-bold text-gray-800 mb-7">Danh sách khách hàng</h4>
-                        <table className="w-full table-auto bg-white rounded-lg shadow-md">
-                            <thead>
-                                <tr className="bg-gray-200 text-gray-700 text-[11px]">
-                                    <th className="py-4 px-6 text-left">STT</th>
-                                    <th className="py-4 px-6 text-left">Ảnh</th>
-                                    <th className="py-4 px-6 text-left">Họ tên</th>
-                                    <th className="py-4 px-6 text-left">Email</th>
-                                    <th className="py-4 px-6 text-left">SDT</th>
-                                    <th className="py-4 px-6 text-left whitespace-nowrap overflow-hidden text-ellipsis">
-                                        Ngày sinh
-                                    </th>
-                                    <th className="py-4 px-6 text-left whitespace-nowrap overflow-hidden text-ellipsis">
-                                        Giới tính
-                                    </th>
-                                    <th className="py-4 px-6 text-left">Trạng thái</th>
-                                    <th className="py-4 px-6 text-left">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredCustomers.map((customer, index) => (
-                                    <tr
-                                        key={customer.id}
-                                        className="border-t border-gray-200 hover:bg-gray-100 text-[10px]"
-                                    >
-                                        <td className="py-4 px-6">{index + 1}</td>
-                                        <td className="py-4 px-4">
-                                            <img
-                                                src={customer.avatar}
-                                                alt="Avatar"
-                                                className="h-10 w-10 rounded-full"
-                                            />
-                                        </td>
-                                        <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
-                                            {customer.hoTen}
-                                        </td>
-                                        <td className="py-4 px-6">{customer.email}</td>
-                                        <td className="py-4 px-6">{customer.sdt}</td>
-                                        <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
-                                            {customer.ngaySinh}
-                                        </td>
-                                        <td className="py-4 px-6">{customer.gioiTinh}</td>
-                                        <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
-                                            {customer.trangThai}
-                                        </td>
-                                        <td className="py-4 px-6">
-                                            <div className="flex">
-                                                <button className="hover:bg-gray-400 font-medium py-2 px-4 rounded">
-                                                    <AddIcon className="h-5 w-5" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             )}

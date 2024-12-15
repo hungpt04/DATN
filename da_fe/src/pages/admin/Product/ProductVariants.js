@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import swal from 'sweetalert';
 import AddIcon from '@mui/icons-material/Add';
 import { TbEyeEdit } from 'react-icons/tb';
+import numeral from 'numeral';
 
 function ProductVariants() {
     const navigate = useNavigate();
@@ -210,7 +211,11 @@ function ProductVariants() {
         reset,
         formState: { errors },
         setValue,
-    } = useForm();
+    } = useForm(
+       
+    );
+
+
 
     const handleCloseModal = () => {
         setShowUpdateModal(false);
@@ -897,7 +902,11 @@ function ProductVariants() {
                                                     value: 1000000000, // Giá tối đa 1 tỷ VND
                                                     message: 'Giá sản phẩm không được vượt quá 1 tỷ VND',
                                                 },
+                                                
                                             })}
+                                           
+                                    
+                                           
                                             className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"
                                         />
                                         {errors.price && <span className="text-red-500">{errors.price.message}</span>}

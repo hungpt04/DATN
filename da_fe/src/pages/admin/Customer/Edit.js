@@ -221,12 +221,11 @@ function EditCustomer() {
         const newDiaChi = {
             ten: '',
             sdt: '',
-            email: '',
             idTinh: '',
             idHuyen: '',
             idXa: '',
             diaChiCuThe: '',
-            loai: '',
+            loai: 1,
             idTaiKhoan: id,
         }
         const updatedDiaChiList = [newDiaChi, ...diaChi]

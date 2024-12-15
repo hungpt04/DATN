@@ -5,6 +5,7 @@ import TimelineEvent from './TimelineEvent';
 import axios from 'axios';
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import swal from 'sweetalert';
+import numeral from 'numeral';
 
 const OrderHistory = () => {
     const location = useLocation();
@@ -26,6 +27,15 @@ const OrderHistory = () => {
     const [usedVoucher, setUsedVoucher] = useState(null);
 
     const [productPrices, setProductPrices] = useState({});
+
+    const formatCurrency = (money) => {
+        return numeral(money).format('0,0') + ' ₫'
+    }
+
+    const handleMoneyChange = (e) => {
+        const value = e.target.value.replace(/,/g, "").replace(/\D/g, ""); // Remove commas and non-numeric characters
+        setCustomerMoney(value ? parseInt(value, 10) : 0);
+    };
 
     useEffect(() => {
         const fetchProductPrices = async () => {
@@ -58,15 +68,15 @@ const OrderHistory = () => {
                         [detail.hoaDonCT.id]:
                             response.data.length > 0
                                 ? {
-                                      originalPrice: detail.hoaDonCT.giaBan,
-                                      discountedPrice: response.data[0].giaKhuyenMai,
-                                      promotion: response.data[0],
-                                  }
+                                    originalPrice: detail.hoaDonCT.giaBan,
+                                    discountedPrice: response.data[0].giaKhuyenMai,
+                                    promotion: response.data[0],
+                                }
                                 : {
-                                      originalPrice: detail.hoaDonCT.giaBan,
-                                      discountedPrice: detail.hoaDonCT.giaBan,
-                                      promotion: null,
-                                  },
+                                    originalPrice: detail.hoaDonCT.giaBan,
+                                    discountedPrice: detail.hoaDonCT.giaBan,
+                                    promotion: null,
+                                },
                     };
                 } catch (error) {
                     console.error('Error fetching product promotion:', error);
@@ -760,7 +770,7 @@ const OrderHistory = () => {
                                                                         ((priceInfo.originalPrice -
                                                                             priceInfo.discountedPrice) /
                                                                             priceInfo.originalPrice) *
-                                                                            100,
+                                                                        100,
                                                                     )}
                                                                     % off
                                                                 </div>
@@ -779,15 +789,14 @@ const OrderHistory = () => {
                                             {/* Phần còn lại của render giữ nguyên */}
                                             <div className="flex items-center ml-auto">
                                                 <button
-                                                    className={`border border-gray-300 px-2 py-1 ${
-                                                        currentOrder.trangThai === 3 ||
-                                                        currentOrder.trangThai === 4 ||
-                                                        currentOrder.trangThai === 5 ||
-                                                        currentOrder.trangThai === 6 ||
-                                                        currentOrder.trangThai === 7
+                                                    className={`border border-gray-300 px-2 py-1 ${currentOrder.trangThai === 3 ||
+                                                            currentOrder.trangThai === 4 ||
+                                                            currentOrder.trangThai === 5 ||
+                                                            currentOrder.trangThai === 6 ||
+                                                            currentOrder.trangThai === 7
                                                             ? 'text-gray-400 cursor-not-allowed'
                                                             : ''
-                                                    }`}
+                                                        }`}
                                                     onClick={() => decreaseQuantity(detail)}
                                                     disabled={
                                                         currentOrder.trangThai === 3 ||
@@ -801,15 +810,14 @@ const OrderHistory = () => {
                                                 </button>
                                                 <span className="mx-2">{detail.hoaDonCT.soLuong}</span>
                                                 <button
-                                                    className={`border border-gray-300 px-2 py-1 ${
-                                                        currentOrder.trangThai === 3 ||
-                                                        currentOrder.trangThai === 4 ||
-                                                        currentOrder.trangThai === 5 ||
-                                                        currentOrder.trangThai === 6 ||
-                                                        currentOrder.trangThai === 7
+                                                    className={`border border-gray-300 px-2 py-1 ${currentOrder.trangThai === 3 ||
+                                                            currentOrder.trangThai === 4 ||
+                                                            currentOrder.trangThai === 5 ||
+                                                            currentOrder.trangThai === 6 ||
+                                                            currentOrder.trangThai === 7
                                                             ? 'text-gray-400 cursor-not-allowed'
                                                             : ''
-                                                    }`}
+                                                        }`}
                                                     onClick={() => increaseQuantity(detail)}
                                                     disabled={
                                                         currentOrder.trangThai === 3 ||
@@ -830,15 +838,14 @@ const OrderHistory = () => {
                                                 VND
                                             </div>
                                             <button
-                                                className={`ml-4 text-red-500 ${
-                                                    currentOrder.trangThai === 3 ||
-                                                    currentOrder.trangThai === 4 ||
-                                                    currentOrder.trangThai === 5 ||
-                                                    currentOrder.trangThai === 6 ||
-                                                    currentOrder.trangThai === 7
+                                                className={`ml-4 text-red-500 ${currentOrder.trangThai === 3 ||
+                                                        currentOrder.trangThai === 4 ||
+                                                        currentOrder.trangThai === 5 ||
+                                                        currentOrder.trangThai === 6 ||
+                                                        currentOrder.trangThai === 7
                                                         ? 'text-gray-400 cursor-not-allowed'
                                                         : ''
-                                                }`}
+                                                    }`}
                                                 onClick={() => handleDeleteDetail(detail.hoaDonCT.id)}
                                                 disabled={
                                                     currentOrder.trangThai === 3 ||
@@ -916,7 +923,7 @@ const OrderHistory = () => {
                                                                         ((priceInfo.originalPrice -
                                                                             priceInfo.discountedPrice) /
                                                                             priceInfo.originalPrice) *
-                                                                            100,
+                                                                        100,
                                                                     )}
                                                                     % off
                                                                 </div>
@@ -935,15 +942,14 @@ const OrderHistory = () => {
                                             {/* Phần còn lại của render giữ nguyên */}
                                             <div className="flex items-center ml-auto">
                                                 <button
-                                                    className={`border border-gray-300 px-2 py-1 ${
-                                                        currentOrder.trangThai === 3 ||
-                                                        currentOrder.trangThai === 4 ||
-                                                        currentOrder.trangThai === 5 ||
-                                                        currentOrder.trangThai === 6 ||
-                                                        currentOrder.trangThai === 7
+                                                    className={`border border-gray-300 px-2 py-1 ${currentOrder.trangThai === 3 ||
+                                                            currentOrder.trangThai === 4 ||
+                                                            currentOrder.trangThai === 5 ||
+                                                            currentOrder.trangThai === 6 ||
+                                                            currentOrder.trangThai === 7
                                                             ? 'text-gray-400 cursor-not-allowed'
                                                             : ''
-                                                    }`}
+                                                        }`}
                                                     onClick={() => decreaseQuantity(detail)}
                                                     disabled={
                                                         currentOrder.trangThai === 3 ||
@@ -957,15 +963,14 @@ const OrderHistory = () => {
                                                 </button>
                                                 <span className="mx-2">{detail.hoaDonCT.soLuong}</span>
                                                 <button
-                                                    className={`border border-gray-300 px-2 py-1 ${
-                                                        currentOrder.trangThai === 3 ||
-                                                        currentOrder.trangThai === 4 ||
-                                                        currentOrder.trangThai === 5 ||
-                                                        currentOrder.trangThai === 6 ||
-                                                        currentOrder.trangThai === 7
+                                                    className={`border border-gray-300 px-2 py-1 ${currentOrder.trangThai === 3 ||
+                                                            currentOrder.trangThai === 4 ||
+                                                            currentOrder.trangThai === 5 ||
+                                                            currentOrder.trangThai === 6 ||
+                                                            currentOrder.trangThai === 7
                                                             ? 'text-gray-400 cursor-not-allowed'
                                                             : ''
-                                                    }`}
+                                                        }`}
                                                     onClick={() => increaseQuantity(detail)}
                                                     disabled={
                                                         currentOrder.trangThai === 3 ||
@@ -986,15 +991,14 @@ const OrderHistory = () => {
                                                 VND
                                             </div>
                                             <button
-                                                className={`ml-4 text-red-500 ${
-                                                    currentOrder.trangThai === 3 ||
-                                                    currentOrder.trangThai === 4 ||
-                                                    currentOrder.trangThai === 5 ||
-                                                    currentOrder.trangThai === 6 ||
-                                                    currentOrder.trangThai === 7
+                                                className={`ml-4 text-red-500 ${currentOrder.trangThai === 3 ||
+                                                        currentOrder.trangThai === 4 ||
+                                                        currentOrder.trangThai === 5 ||
+                                                        currentOrder.trangThai === 6 ||
+                                                        currentOrder.trangThai === 7
                                                         ? 'text-gray-400 cursor-not-allowed'
                                                         : ''
-                                                }`}
+                                                    }`}
                                                 onClick={() => handleDeleteDetail(detail.hoaDonCT.id)}
                                                 disabled={
                                                     currentOrder.trangThai === 3 ||
@@ -1069,9 +1073,9 @@ const OrderHistory = () => {
                         <div className="mb-4">
                             <label className="block text-gray-700">Tiền khách đưa</label>
                             <input
-                                type="number"
-                                value={customerMoney}
-                                onChange={(e) => setCustomerMoney(e.target.value)}
+                                type="text"
+                                value={formatCurrency(customerMoney)}
+                                onChange={handleMoneyChange}
                                 className="w-full p-2 border border-gray-300 rounded mt-1"
                             />
                         </div>
@@ -1079,7 +1083,7 @@ const OrderHistory = () => {
                             <label className="block text-gray-700">Tiền thừa</label>
                             <input
                                 type="text"
-                                value={`${Math.max(0, customerMoney - totalAmount).toLocaleString()} VND`}
+                                value={`${Math.max(0, customerMoney - totalAmount - shippingFee).toLocaleString()} VND`}
                                 className="w-full p-2 border border-gray-300 rounded mt-1"
                                 readOnly
                             />
@@ -1132,9 +1136,8 @@ const OrderHistory = () => {
                                 Đóng
                             </button>
                             <button
-                                className={`bg-orange-500 text-white px-4 py-2 rounded ${
-                                    customerMoney < totalAmount ? 'opacity-50 cursor-not-allowed' : ''
-                                }`}
+                                className={`bg-orange-500 text-white px-4 py-2 rounded ${customerMoney < totalAmount ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
                                 onClick={() => {
                                     if (parseFloat(customerMoney) < totalAmount) {
                                         swal(
