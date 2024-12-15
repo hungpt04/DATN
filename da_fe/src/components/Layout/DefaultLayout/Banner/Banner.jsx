@@ -21,11 +21,12 @@ const Banner = () => {
     return (
         <div
             style={{
-                width: '100%', // Chiều rộng đúng bằng phần tử cha
+                width: '100vw', // Chiều rộng toàn màn hình
                 height: '100vh', // Chiều cao toàn màn hình
-                overflow: 'hidden', // Ẩn phần thừa
-                margin: 0, // Loại bỏ margin nếu có
-                padding: 0, // Loại bỏ padding nếu có
+                overflow: 'hidden',
+                padding: 0,
+                margin: 0
+
             }}
         >
             <Slider {...settings}>

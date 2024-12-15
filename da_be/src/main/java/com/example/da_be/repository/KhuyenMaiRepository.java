@@ -1,12 +1,14 @@
 package com.example.da_be.repository;
 
 import com.example.da_be.entity.KhuyenMai;
+import com.example.da_be.entity.Voucher;
 import com.example.da_be.request.KhuyenMaiSearch;
 import com.example.da_be.request.SanPhamCTSearch;
 import com.example.da_be.request.SanPhamSearch;
 import com.example.da_be.response.KhuyenMaiResponse;
 import com.example.da_be.response.SanPhamCTResponse;
 import com.example.da_be.response.SanPhamResponse;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +16,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -70,6 +73,17 @@ public interface KhuyenMaiRepository extends JpaRepository<KhuyenMai, Integer> {
 """
     )
     List<Integer> getIdSanPhamVaSanPhamChiTietByIdKhuyenMai(Integer idKhuyenMai);
+
+    @Query(
+            """
+            SELECT spct.id
+            FROM SanPhamKhuyenMai spkm
+            inner join SanPhamCT spct on spkm.sanPhamCT.id = spct.id
+            inner join SanPham sp on spct.sanPham.id = sp.id
+            where spkm.khuyenMai.id = :idKhuyenMai
+"""
+    )
+    List<Integer> getIdSanPhamChiTietByIdKhuyenMai(Integer idKhuyenMai);
 
     @Query(
             """
@@ -153,4 +167,15 @@ public interface KhuyenMaiRepository extends JpaRepository<KhuyenMai, Integer> {
 """
     )
     List<String> getAllTenKhuyenMai();
+
+    @Query(
+            """
+            SELECT km
+            FROM KhuyenMai km
+            WHERE (km.tgBatDau > :dateNow and km.trangThai != 0)
+            OR (km.tgKetThuc <= :dateNow and km.trangThai != 2)
+            OR ((km.tgBatDau <= km.tgKetThuc and km.tgKetThuc > :dateNow) and km.trangThai != 1)
+"""
+    )
+    List<KhuyenMai> getAllKhuyenMaiWrong(LocalDateTime dateNow);
 }

@@ -12,6 +12,83 @@ function ReturnOrder() {
     const [bills, setBills] = useState([]);
     const [returnItems, setReturnItems] = useState([]); // Danh sách sản phẩm trả
     const navigate = useNavigate();
+    const [usedVoucher, setUsedVoucher] = useState(null);
+
+    const [productPrices, setProductPrices] = useState({});
+
+    // Thêm hàm lấy giá khuyến mãi
+    const getProductPrice = async (sanPhamCT) => {
+        try {
+            const response = await axios.get(
+                `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${sanPhamCT.id}`,
+            );
+
+            if (response.data.length > 0) {
+                // Nếu có khuyến mãi, sử dụng giá khuyến mãi
+                return {
+                    originalPrice: sanPhamCT.donGia,
+                    discountedPrice: response.data[0].giaKhuyenMai,
+                    promotion: response.data[0],
+                };
+            }
+
+            // Nếu không có khuyến mãi, trả về giá gốc
+            return {
+                originalPrice: sanPhamCT.donGia,
+                discountedPrice: sanPhamCT.donGia,
+                promotion: null,
+            };
+        } catch (error) {
+            console.error('Error fetching product promotion:', error);
+            return {
+                originalPrice: sanPhamCT.donGia,
+                discountedPrice: sanPhamCT.donGia,
+                promotion: null,
+            };
+        }
+    };
+
+    // Thêm useEffect để tìm nạp giá khuyến mãi
+    useEffect(() => {
+        const fetchProductPrices = async () => {
+            if (!billDetails.length) return;
+
+            const uniqueProductIds = new Set();
+            const uniqueDetails = billDetails
+                .filter((detail) => detail.hoaDonCT && detail.hoaDonCT.hoaDon.id === Number(orderId))
+                .filter((detail) => {
+                    const isUnique = !uniqueProductIds.has(detail.hoaDonCT.sanPhamCT.id);
+                    if (isUnique) {
+                        uniqueProductIds.add(detail.hoaDonCT.sanPhamCT.id);
+                    }
+                    return isUnique;
+                });
+
+            const pricePromises = uniqueDetails.map(async (detail) => {
+                try {
+                    const priceInfo = await getProductPrice(detail.hoaDonCT.sanPhamCT);
+                    return {
+                        [detail.hoaDonCT.sanPhamCT.id]: priceInfo,
+                    };
+                } catch (error) {
+                    console.error('Error fetching product price:', error);
+                    return {
+                        [detail.hoaDonCT.sanPhamCT.id]: {
+                            originalPrice: detail.hoaDonCT.giaBan,
+                            discountedPrice: detail.hoaDonCT.giaBan,
+                            promotion: null,
+                        },
+                    };
+                }
+            });
+
+            const priceResults = await Promise.all(pricePromises);
+            const priceMap = priceResults.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+            setProductPrices(priceMap);
+        };
+
+        fetchProductPrices();
+    }, [billDetails, orderId]);
 
     const loadBillDetailsWithImages = async (hoaDonId) => {
         try {
@@ -26,8 +103,20 @@ function ReturnOrder() {
         try {
             const response = await axios.get(`http://localhost:8080/api/hoa-don/${hoaDonId}`);
             setBills(response.data);
+
+            console.log('Hóa đơn: ', response.data);
+            console.log('Vao chờ: ', response.data.idVoucher);
+
+            // Nếu có voucher ID, load thông tin voucher
+            if (response.data.idVoucher) {
+                const voucherResponse = await axios.get(
+                    `http://localhost:8080/api/voucher/by-id/${response.data.idVoucher}`,
+                );
+                console.log('Voucher Response:', voucherResponse.data);
+                setUsedVoucher(voucherResponse.data);
+            }
         } catch (error) {
-            console.error('Failed to fetch BillDetails with images', error);
+            console.error('Failed to fetch Bill Details', error);
         }
     };
 
@@ -135,6 +224,67 @@ function ReturnOrder() {
         }
     };
 
+    useEffect(() => {
+        console.log('voucher: ', usedVoucher);
+    }, []);
+
+    const calculateDiscountAmount = () => {
+        if (!usedVoucher) return 0;
+
+        console.log('Used Voucher:', usedVoucher);
+        console.log('Return Items:', returnItems);
+
+        // Tính tổng tiền gốc của các sản phẩm trả
+        const totalReturnPrice = returnItems.reduce(
+            (total, item) => total + item.hoaDonCT.soLuong * item.hoaDonCT.giaBan,
+            0,
+        );
+
+        console.log('Total Return Price:', totalReturnPrice);
+
+        // Loại bỏ điều kiện kiểm tra dieuKienNhoNhat
+        // Kiểm tra kiểu giảm giá
+        if (usedVoucher.kieuGiaTri === 0) {
+            // Giảm theo %
+            const discountPercentage = usedVoucher.giaTri / 100;
+            const discountAmount = totalReturnPrice * discountPercentage;
+            const finalDiscount = Math.min(discountAmount, usedVoucher.giaTriMax);
+
+            console.log('Discount Percentage:', discountPercentage);
+            console.log('Discount Amount:', discountAmount);
+            console.log('Final Discount:', finalDiscount);
+
+            return finalDiscount;
+        } else if (usedVoucher.kieuGiaTri === 1) {
+            // Giảm cố định
+            return Math.min(usedVoucher.giaTri, totalReturnPrice);
+        }
+
+        return 0;
+    };
+
+    // Sửa đổi các hàm tính toán để sử dụng giá khuyến mãi
+    const calculateTotalReturnPrice = () => {
+        return returnItems.reduce((total, item) => {
+            const priceInfo = productPrices[item.hoaDonCT.sanPhamCT.id] || {
+                discountedPrice: item.hoaDonCT.giaBan,
+            };
+            return total + item.hoaDonCT.soLuong * priceInfo.discountedPrice;
+        }, 0);
+    };
+
+    const calculateRefundAmount = () => {
+        const totalReturnPrice = returnItems.reduce((total, item) => {
+            const priceInfo = productPrices[item.hoaDonCT.sanPhamCT.id] || {
+                discountedPrice: item.hoaDonCT.giaBan,
+            };
+            return total + item.hoaDonCT.soLuong * priceInfo.discountedPrice;
+        }, 0);
+
+        const discountAmount = calculateDiscountAmount(totalReturnPrice);
+        return totalReturnPrice - discountAmount;
+    };
+
     return (
         <div className="p-4">
             <div className="border rounded-lg p-4 mb-4">
@@ -148,32 +298,53 @@ function ReturnOrder() {
                     </thead>
                     <tbody>
                         {uniqueDetails.length > 0 ? (
-                            uniqueDetails.map((item, index) => (
-                                <tr className="border-t" key={item.hoaDonCT.id}>
-                                    <td className="flex items-center py-2">
-                                        <input
-                                            type="checkbox"
-                                            className="mr-2"
-                                            onChange={() => handleCheckboxChange(item)}
-                                        />
-                                        <img
-                                            src={item.link}
-                                            alt={item.hoaDonCT.sanPhamCT.sanPham.ten}
-                                            className="w-12 h-12 mr-2"
-                                        />
-                                        <span>
-                                            {item.hoaDonCT.sanPhamCT.sanPham.ten} [
-                                            {item.hoaDonCT.sanPhamCT.trongLuong.ten}]
-                                        </span>
-                                    </td>
-                                    <td className="text-center">
-                                        <div className="flex items-center justify-center">
-                                            <span className="px-2">{item.hoaDonCT.soLuong} </span>
-                                        </div>
-                                    </td>
-                                    <td className="text-right">{item.hoaDonCT.giaBan.toLocaleString()} đ</td>
-                                </tr>
-                            ))
+                            uniqueDetails.map((item) => {
+                                const priceInfo = productPrices[item.hoaDonCT.sanPhamCT.id] || {
+                                    originalPrice: item.hoaDonCT.giaBan,
+                                    discountedPrice: item.hoaDonCT.giaBan,
+                                    promotion: null,
+                                };
+
+                                return (
+                                    <tr className="border-t" key={item.hoaDonCT.id}>
+                                        <td className="flex items-center py-2">
+                                            <input
+                                                type="checkbox"
+                                                className="mr-2"
+                                                onChange={() => handleCheckboxChange(item)}
+                                            />
+                                            <img
+                                                src={item.link}
+                                                alt={item.hoaDonCT.sanPhamCT.sanPham.ten}
+                                                className="w-12 h-12 mr-2"
+                                            />
+                                            <span>
+                                                {item.hoaDonCT.sanPhamCT.sanPham.ten} [
+                                                {item.hoaDonCT.sanPhamCT.trongLuong.ten}]
+                                            </span>
+                                        </td>
+                                        <td className="text-center">
+                                            <div className="flex items-center justify-center">
+                                                <span className="px-2">{item.hoaDonCT.soLuong} </span>
+                                            </div>
+                                        </td>
+                                        <td className="text-right">
+                                            {priceInfo.promotion ? (
+                                                <>
+                                                    <span className="text-red-500 mr-2">
+                                                        {priceInfo.discountedPrice.toLocaleString()} đ
+                                                    </span>
+                                                    <span className="line-through text-gray-400">
+                                                        {priceInfo.originalPrice.toLocaleString()} đ
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <span>{priceInfo.originalPrice.toLocaleString()} đ</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         ) : (
                             <tr>
                                 <td colSpan="3" className="text-center py-4">
@@ -209,26 +380,57 @@ function ReturnOrder() {
                                     </td>
                                 </tr>
                             ) : (
-                                returnItems.map((item, index) => (
-                                    <tr key={index}>
-                                        <td className="whitespace-nowrap">
-                                            {item.hoaDonCT.sanPhamCT.sanPham.ten}[
-                                            {item.hoaDonCT.sanPhamCT.trongLuong.ten}]
-                                        </td>
-                                        <td className="whitespace-nowrap text-center">{item.hoaDonCT.soLuong}</td>
-                                        <td className="whitespace-nowrap">
-                                            {(item.hoaDonCT.soLuong * item.hoaDonCT.giaBan).toLocaleString()} đ
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="text"
-                                                placeholder="Ghi chú"
-                                                className="border rounded p-1"
-                                                style={{ width: '150px', height: '40px' }} // Điều chỉnh chiều rộng và chiều cao
-                                            />
-                                        </td>
-                                    </tr>
-                                ))
+                                returnItems.map((item, index) => {
+                                    // Lấy thông tin giá từ productPrices
+                                    const priceInfo = productPrices[item.hoaDonCT.sanPhamCT.id] || {
+                                        originalPrice: item.hoaDonCT.giaBan,
+                                        discountedPrice: item.hoaDonCT.giaBan,
+                                        promotion: null,
+                                    };
+
+                                    return (
+                                        <tr key={index}>
+                                            <td className="whitespace-nowrap">
+                                                {item.hoaDonCT.sanPhamCT.sanPham.ten}[
+                                                {item.hoaDonCT.sanPhamCT.trongLuong.ten}]
+                                            </td>
+                                            <td className="whitespace-nowrap text-center">{item.hoaDonCT.soLuong}</td>
+                                            <td className="whitespace-nowrap">
+                                                {priceInfo.promotion ? (
+                                                    <div>
+                                                        <span className="text-red-500 mr-2">
+                                                            {(
+                                                                item.hoaDonCT.soLuong * priceInfo.discountedPrice
+                                                            ).toLocaleString()}{' '}
+                                                            đ
+                                                        </span>
+                                                        <span className="line-through text-gray-400">
+                                                            {(
+                                                                item.hoaDonCT.soLuong * priceInfo.originalPrice
+                                                            ).toLocaleString()}{' '}
+                                                            đ
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span>
+                                                        {(
+                                                            item.hoaDonCT.soLuong * priceInfo.originalPrice
+                                                        ).toLocaleString()}{' '}
+                                                        đ
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Ghi chú"
+                                                    className="border rounded p-1"
+                                                    style={{ width: '150px', height: '40px' }}
+                                                />
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
@@ -253,32 +455,17 @@ function ReturnOrder() {
                     <div className="mb-2">
                         <span>Tổng tiền</span>
                         <span className="float-right">
-                            {(() => {
-                                const total = uniqueDetails.reduce(
-                                    (acc, detail) => acc + detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan,
-                                    0,
-                                );
-                                return total.toLocaleString();
-                            })()}{' '}
-                            đ
+                            {returnItems.length > 0 ? calculateTotalReturnPrice().toLocaleString() : '0'} đ
                         </span>
                     </div>
                     <div className="mb-2">
                         <span>Giảm giá</span>
-                        <span className="float-right text-red-600">13.750 ₫</span>
+                        <span className="float-right text-red-600">{calculateDiscountAmount().toLocaleString()} ₫</span>
                     </div>
                     <div className="mb-2">
                         <div className="mb-2">
                             <span>Số tiền hoàn trả</span>
-                            <span className="float-right">
-                                {(
-                                    returnItems.reduce(
-                                        (total, item) => total + item.hoaDonCT.soLuong * item.hoaDonCT.giaBan,
-                                        0,
-                                    ) - 13750
-                                ).toLocaleString()}{' '}
-                                ₫
-                            </span>
+                            <span className="float-right">{calculateRefundAmount().toLocaleString()} ₫</span>
                         </div>
                     </div>
                     <button className="w-full bg-[#2f19ae] text-white py-2 rounded" onClick={handleReturnOrder}>

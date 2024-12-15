@@ -56,4 +56,5 @@ public interface TaiKhoanRepository extends JpaRepository<TaiKhoan, Integer> {
 //"""
 //    )
 //    Page<TaiKhoan> getSearchKhacHangAndPhanTrang(KhachHangSearch search, Pageable pageable);
+
 }

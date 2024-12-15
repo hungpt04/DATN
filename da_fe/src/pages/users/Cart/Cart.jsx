@@ -16,9 +16,34 @@ const Cart = () => {
 
     const navigate = useNavigate(); // Khởi tạo hàm navigate
 
-    const loadCarts = async (taiKhoanId) => {
+    // Lấy id người dùng
+    const [customerId, setCustomerId] = useState(null);
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const fetchUserInfo = async () => {
+                try {
+                    const response = await axios.get('http://localhost:8080/api/tai-khoan/my-info', {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
+
+                    // Lưu ID người dùng
+                    const userId = response.data.id; // Trong trường hợp này là 11
+                    console.log('User Cart ID:', userId);
+                    setCustomerId(userId);
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            };
+            fetchUserInfo();
+        }
+    }, []);
+
+    const loadCarts = async () => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/gio-hang/with-images/${taiKhoanId}`);
+            const response = await axios.get(`http://localhost:8080/api/gio-hang/with-images/${customerId}`);
             setCarts(response.data);
         } catch (error) {
             console.error('Failed to fetch Carts', error);
@@ -40,14 +65,68 @@ const Cart = () => {
 
     const calculateTotalPrice = (firstCartItems) => {
         return firstCartItems.reduce((total, cart) => {
-            const donGia = cart.gioHang.sanPhamCT.donGia * cart.gioHang.soLuong;
-            return total + donGia;
+            // Kiểm tra xem sản phẩm có khuyến mãi không
+            const fetchPromotion = async () => {
+                try {
+                    const response = await axios.get(
+                        `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${cart.gioHang.sanPhamCT.id}`,
+                    );
+
+                    if (response.data.length > 0) {
+                        // Nếu có khuyến mãi, sử dụng giá khuyến mãi
+                        return response.data[0].giaKhuyenMai * cart.gioHang.soLuong;
+                    }
+                    // Nếu không có khuyến mãi, sử dụng giá gốc
+                    return cart.gioHang.sanPhamCT.donGia * cart.gioHang.soLuong;
+                } catch (error) {
+                    console.error('Error fetching promotion:', error);
+                    return cart.gioHang.sanPhamCT.donGia * cart.gioHang.soLuong;
+                }
+            };
+
+            // Do async nên cần xử lý bất đồng bộ
+            return total + fetchPromotion();
         }, 0);
     };
 
     useEffect(() => {
-        loadCarts(1);
-    }, []);
+        const fetchPromotionsAndCalculateTotal = async () => {
+            if (carts.length > 0) {
+                const firstCartItems = getFirstCartItemPerProduct(carts);
+
+                const totalPromises = firstCartItems.map(async (cart) => {
+                    try {
+                        const response = await axios.get(
+                            `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${cart.gioHang.sanPhamCT.id}`,
+                        );
+
+                        if (response.data.length > 0) {
+                            // Nếu có khuyến mãi, sử dụng giá khuyến mãi
+                            return response.data[0].giaKhuyenMai * cart.gioHang.soLuong;
+                        }
+                        // Nếu không có khuyến mãi, sử dụng giá gốc
+                        return cart.gioHang.sanPhamCT.donGia * cart.gioHang.soLuong;
+                    } catch (error) {
+                        console.error('Error fetching promotion:', error);
+                        return cart.gioHang.sanPhamCT.donGia * cart.gioHang.soLuong;
+                    }
+                });
+
+                // Đợi tất cả các promise hoàn thành
+                const totals = await Promise.all(totalPromises);
+                const total = totals.reduce((sum, current) => sum + current, 0);
+
+                setTotalPrice(total);
+                setTotalAmount(total);
+            }
+        };
+
+        fetchPromotionsAndCalculateTotal();
+    }, [carts]);
+
+    useEffect(() => {
+        loadCarts(customerId);
+    }, [customerId]);
 
     useEffect(() => {
         if (carts.length > 0) {

@@ -15,8 +15,10 @@ function EditUser() {
     const [previewImage, setPreviewImage] = useState(null);
     const [error, setError] = useState('');
     const { id } = useParams();
+    const [diaChi, setDiaChi] = useState([])
 
     const [formData, setFormData] = useState({
+        ma: '',
         hoTen: '',
         sdt: '',
         email: '',
@@ -29,48 +31,32 @@ function EditUser() {
     });
 
     const [diaChiData, setDiaChiData] = useState({
+        ten: '',
+        sdt: '',
         diaChiCuThe: '',
         idTinh: '',
         idHuyen: '',
         idXa: '',
+        idTaiKhoan: id,
+        loai: 0
     });
 
-    const getDiaChilenForm = async (id) => {
-        try {
-            const response = await axios.get(`http://localhost:8080/api/dia-chi/tai-khoan/${id}`);
-            const data = response.data[0];
-
-            if (!data) throw new Error('Không tìm thấy thông tin địa chỉ');
-
-            // Cập nhật giá trị tỉnh, huyện, xã
-            setSelectedProvince(data.idTinh || '');
-            setSelectedDistrict(data.idHuyen || '');
-            setSelectedWard(data.idXa || '');
-
-            // Gọi API phụ để cập nhật danh sách huyện và xã
-            if (data.idTinh) await fetchDistricts(data.idTinh);
-            if (data.idHuyen) await fetchWards(data.idHuyen);
-
-            // Cập nhật thông tin địa chỉ chi tiết
-            setDiaChiData({
-                diaChiCuThe: data.diaChiCuThe || '',
-                idTinh: data.idTinh || '',
-                idHuyen: data.idHuyen || '',
-                idXa: data.idXa || '',
+    const loadDiaChi = (id) => {
+        axios
+            .get(`http://localhost:8080/api/dia-chi/getAllDiaChi`, {
+                params: { idTaiKhoan: id },
+            })
+            .then((response) => {
+                setDiaChi(response.data.content);
+            })
+            .catch((error) => {
+                console.error("Lỗi khi gọi API:", error);
             });
-        } catch (error) {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi!',
-                text: 'Có lỗi xảy ra khi tải thông tin địa chỉ! ' + error.message,
-            });
-        }
     };
 
     useEffect(() => {
         if (id) {
-            getDiaChilenForm(id);
+            loadDiaChi(id);
         }
     }, [id]);
 
@@ -78,44 +64,39 @@ function EditUser() {
         const fetchUserData = async () => {
             try {
                 const [userResponse, addressResponse] = await Promise.all([
-                    fetch(`http://localhost:8080/api/tai-khoan/${id}`),
+                    fetch(`http://localhost:8080/api/nhan-vien/detail/${id}`),
                     fetch(`http://localhost:8080/api/dia-chi/tai-khoan/${id}`)
+
                 ]);
 
                 const userData = await userResponse.json();
                 const addressData = await addressResponse.json();
 
-                // Cập nhật thông tin người dùng
                 setFormData(userData);
 
-                console.log(formData.avatar)
-
-                // Thêm đoạn code này để hiển thị ảnh
                 if (userData.avatar) {
                     setPreviewImage(userData.avatar);
                 }
 
-                // Cập nhật địa chỉ
                 if (addressData && addressData.length > 0) {
                     const address = addressData[0];
                     setDiaChiData({
+                        ten: address.ten || '',
+                        sdt: address.sdt || '',
                         diaChiCuThe: address.diaChiCuThe || '',
                         idTinh: address.idTinh || '',
                         idHuyen: address.idHuyen || '',
                         idXa: address.idXa || '',
                     });
 
-                    // Thiết lập các dropdown địa chỉ
                     setSelectedProvince(address.idTinh || '');
 
-                    // Fetch districts nếu có tỉnh
                     if (address.idTinh) {
                         const districtResponse = await fetch(`https://provinces.open-api.vn/api/p/${address.idTinh}?depth=2`);
                         const districtData = await districtResponse.json();
                         setDistricts(districtData.districts || []);
                         setSelectedDistrict(address.idHuyen || '');
 
-                        // Fetch wards nếu có huyện
                         if (address.idHuyen) {
                             const wardResponse = await fetch(`https://provinces.open-api.vn/api/d/${address.idHuyen}?depth=2`);
                             const wardData = await wardResponse.json();
@@ -156,14 +137,13 @@ function EditUser() {
         fetchProvinces();
     }, []);
 
-    // Hàm để lấy danh sách huyện
     const fetchDistricts = async (provinceId) => {
         try {
             const response = await fetch(`https://provinces.open-api.vn/api/p/${provinceId}?depth=2`);
             const data = await response.json();
             setDistricts(data.districts || []);
-            setSelectedDistrict(''); // Reset huyện khi tỉnh thay đổi
-            setSelectedWard('');    // Reset xã khi tỉnh thay đổi
+            setSelectedDistrict(''); 
+            setSelectedWard(''); 
         } catch (error) {
             console.error('Error fetching districts:', error);
             setDistricts([]);
@@ -181,7 +161,6 @@ function EditUser() {
 
     const fetchWards = async (districtId) => {
         try {
-            // Kiểm tra districtId hợp lệ
             if (!districtId) {
                 console.warn('District ID is empty');
                 setWards([]);
@@ -190,28 +169,24 @@ function EditUser() {
 
             const response = await fetch(`https://provinces.open-api.vn/api/d/${districtId}?depth=2`);
 
-            // Kiểm tra response
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
 
-            // Kiểm tra dữ liệu trả về
             if (!data || !data.wards) {
                 console.warn('No wards data found', data);
                 setWards([]);
                 return;
             }
 
-            // Đảm bảo dữ liệu ward hợp lệ
             const validWards = data.wards.filter(ward =>
                 ward && ward.code && ward.name
             );
 
             setWards(validWards);
 
-            // Reset ward nếu không có ward nào
             if (validWards.length === 0) {
                 setSelectedWard('');
             }
@@ -222,7 +197,6 @@ function EditUser() {
         }
     };
 
-    // Useeffect để fetch wards
     useEffect(() => {
         const safelyFetchWards = async () => {
             if (selectedDistrict) {
@@ -262,19 +236,16 @@ function EditUser() {
         setError('');
 
         try {
-            // Lấy ID địa chỉ trước tiên
             const getAddressIdResponse = await fetch(`http://localhost:8080/api/dia-chi/get-id-dia-chi-by-id-tai-khoan/${id}`);
 
             if (!getAddressIdResponse.ok) {
                 throw new Error('Không thể lấy ID địa chỉ');
             }
 
-            const addressId = await getAddressIdResponse.json(); // Lấy ID địa chỉ
-
-            // Tạo FormData         
+            const addressId = await getAddressIdResponse.json();
+ 
             const formDataToSend = new FormData();
 
-            // Thêm các trường thông tin
             formDataToSend.append('hoTen', formData.hoTen);
             formDataToSend.append('sdt', formData.sdt);
             formDataToSend.append('email', formData.email);
@@ -285,7 +256,6 @@ function EditUser() {
             formDataToSend.append('cccd', formData.cccd);
             formDataToSend.append('trangThai', formData.trangThai);
 
-            // Thêm avatar nếu có
             if (formData.avatar) {
                 formDataToSend.append('avatar', formData.avatar);
             }
@@ -301,23 +271,23 @@ function EditUser() {
                 throw new Error(`Failed to update user account: ${errorText}`);
             }
 
-            // Update address
             const diaChiPayload = {
-                id: addressId, // Sử dụng ID địa chỉ đã lấy được
+                id: addressId,
                 taiKhoan: {
-                    id: id  // This should be the user/customer account ID
+                    id: id  
                 },
-                ten: formData.hoTen,
-                sdt: formData.sdt,
+                ten: diaChiData.ten,
+                sdt: diaChiData.sdt,
                 idTinh: diaChiData.idTinh,
                 idHuyen: diaChiData.idHuyen,
                 idXa: selectedWard,
                 diaChiCuThe: diaChiData.diaChiCuThe,
+                loai: 0
             };
 
-            console.log('DiaChi Payload:', diaChiPayload); // Log payload để kiểm tra
+            console.log('DiaChi Payload:', diaChiPayload);
 
-            const addressResponse = await fetch(`http://localhost:8080/api/dia-chi/update/${addressId}`, {
+            const addressResponse = await fetch(`http://localhost:8080/api/dia-chi/updatee/${addressId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -330,7 +300,6 @@ function EditUser() {
                 throw new Error(`Failed to update address: ${errorText}`);
             }
 
-            // Kiểm tra response
             const responseData = await addressResponse.json();
             console.log('Address Update Response:', responseData);
 
@@ -384,6 +353,17 @@ function EditUser() {
                                 </div>
                             </label>
                         </div>
+
+                        <div className="col-span-2 mt-4 hidden">
+                            <input
+                                type="text"
+                                name="ma"
+                                value={formData.ma}
+                                className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                onChange={handleInputChange}
+                            />
+                        </div>
+
                         {/* Họ và tên */}
                         <div className="col-span-2 mt-4">
                             <label className="block text-sm font-medium text-gray-700">
@@ -398,180 +378,214 @@ function EditUser() {
                                 onChange={handleInputChange}
                             />
                         </div>
+
+                        <div className="col-span-2 mt-4">
+                            <label className="block text-sm font-medium text-gray-700">
+                                <span className="text-red-500">*</span> Số CCCD
+                            </label>
+                            <input
+                                type="text"
+                                name="cccd"
+                                value={formData.cccd}
+                                placeholder="Nhập số CCCD"
+                                className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                onChange={handleInputChange}
+                            />
+                        </div>
+
+                        <div className="col-span-2 mt-4">
+                            <label className="block text-sm font-medium text-gray-700">
+                                <span className="text-red-500">*</span> Email
+                            </label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                placeholder="Nhập email"
+                                className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                onChange={handleInputChange}
+                            />
+                        </div>
+
+                        <div className="col-span-2 mt-4">
+                            <label className="block text-sm font-medium text-gray-700">
+                                <span className="text-red-500">*</span> Số Điện Thoại
+                            </label>
+                            <input
+                                type="text"
+                                name="sdt"
+                                value={formData.sdt}
+                                placeholder="Nhập số điện thoại"
+                                className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                onChange={handleInputChange}
+                            />
+                        </div>
+
+                        <div className="col-span-2 mt-4">
+                            <label className="block text-sm font-medium text-gray-700">
+                                <span className="text-red-500">*</span> Ngày sinh
+                            </label>
+                            <input
+                                type="date"
+                                name="ngaySinh"
+                                value={formData.ngaySinh}
+                                className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                onChange={handleInputChange}
+                            />
+                        </div>
+
+                        <div className="col-span-2 mt-4">
+                            <label className="block text-sm font-medium text-gray-700">
+                                <span className="text-red-500">*</span> Giới tính
+                            </label>
+                            <div className="mt-2 flex items-center gap-4">
+                                <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="gioiTinh"
+                                        value={0}
+                                        checked={formData.gioiTinh === 0}
+                                        onChange={(e) => setFormData({
+                                            ...formData,
+                                            gioiTinh: parseInt(e.target.value)
+                                        })}
+                                        className="mr-2"
+                                    />
+                                    Nam
+                                </label>
+                                <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="gioiTinh"
+                                        value={1}
+                                        checked={formData.gioiTinh === 1}
+                                        onChange={(e) => setFormData({
+                                            ...formData,
+                                            gioiTinh: parseInt(e.target.value)
+                                        })}
+                                        className="mr-2"
+                                    />
+                                    Nữ
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="w-3/4">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-8">Thông tin chi tiết</h2>
-                        <hr />
+                    <div className='w-3/4 pl-8'>
+                        <h3 className="text-xl font-semibold">Thông tin địa chỉ</h3>
+                        <hr className='mt-8' />
+                        {diaChi.map((item, index) => (
+                            <div key={index}>
+                                <div className='mt-4'>
+                                    <span className="font-medium">Địa chỉ</span>
 
-                        {/* Số CCCD và Giới tính */}
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Số CCCD
-                                </label>
-                                <input
-                                    type="text"
-                                    name="cccd"
-                                    value={formData.cccd}
-                                    placeholder="Nhập số CCCD"
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Giới tính
-                                </label>
-                                <div className="mt-2 flex items-center gap-4">
-                                    <label className="flex items-center">
-                                        <input
-                                            type="radio"
-                                            name="gioiTinh"
-                                            value={0}
-                                            checked={formData.gioiTinh === 0}
-                                            onChange={(e) => setFormData({
-                                                ...formData,
-                                                gioiTinh: parseInt(e.target.value)
-                                            })}
-                                            className="mr-2"
-                                        />
-                                        Nam
-                                    </label>
-                                    <label className="flex items-center">
-                                        <input
-                                            type="radio"
-                                            name="gioiTinh"
-                                            value={1}
-                                            checked={formData.gioiTinh === 1}
-                                            onChange={(e) => setFormData({
-                                                ...formData,
-                                                gioiTinh: parseInt(e.target.value)
-                                            })}
-                                            className="mr-2"
-                                        />
-                                        Nữ
-                                    </label>
+                                    <div className="p-4">
+                                        <div className="grid grid-cols-12 gap-6">
+                                            <div className="col-span-6">
+                                                <label className="block font-medium mb-1">
+                                                    <span className="required text-red-500"> *</span>Tên
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="name"
+                                                    placeholder="Nhập tên"
+                                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                                    value={diaChiData.ten}
+                                                    onChange={(e) => setDiaChiData((prev) => ({ ...prev, ten: e.target.value }))}
+                                                />
+                                            </div>
+
+                                            <div className="col-span-6">
+                                                <label className="block font-medium mb-1">
+                                                    <span className="required text-red-500"> *</span>Số điện thoại
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="phoneNumber"
+                                                    placeholder="Nhập số điện thoại"
+                                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                                    value={diaChiData.sdt}
+                                                    onChange={(e) => setDiaChiData((prev) => ({ ...prev, sdt: e.target.value }))}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-12 gap-4 mt-6">
+                                            <div className="col-span-4">
+                                                <label className="block font-medium mb-1">
+                                                    <span className="required text-red-500"> *</span>Tỉnh/thành phố
+                                                </label>
+                                                <select
+                                                    value={selectedProvince}
+                                                    onChange={(e) => setSelectedProvince(e.target.value)}
+                                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                                >
+                                                    <option value="">Chọn tỉnh/thành phố</option>
+                                                    {provinces.map((province) => (
+                                                        <option key={province.code} value={province.code}>
+                                                            {province.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className="col-span-4">
+                                                <label className="block font-medium mb-1">
+                                                    <span className="required text-red-500"> *</span>Quận/huyện
+                                                </label>
+                                                <select
+                                                    value={selectedDistrict}
+                                                    onChange={(e) => setSelectedDistrict(e.target.value)}
+                                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                                    disabled={!selectedProvince}
+                                                >
+                                                    <option value="">Chọn quận/huyện</option>
+                                                    {districts.map((district) => (
+                                                        <option key={district.code} value={district.code}>
+                                                            {district.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className="col-span-4">
+                                                <label className="block font-medium mb-1">
+                                                    <span className="required text-red-500"> *</span>Xã/phường/thị trấn
+                                                </label>
+                                                <select
+                                                    value={selectedWard}
+                                                    onChange={(e) => setSelectedWard(e.target.value)}
+                                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                                    disabled={!selectedDistrict}
+                                                >
+                                                    <option value="">Chọn xã/phường</option>
+                                                    {wards.map((ward) => (
+                                                        <option key={ward.code} value={ward.code}>
+                                                            {ward.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-6">
+                                            <label className="block font-medium mb-1">
+                                                <span className="required text-red-500"> *</span>Địa chỉ cụ thể
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={diaChiData.diaChiCuThe}
+                                                placeholder="Nhập địa chỉ cụ thể"
+                                                className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                                onChange={(e) =>
+                                                    setDiaChiData((prev) => ({ ...prev, diaChiCuThe: e.target.value }))
+                                                }
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Ngày sinh và Email */}
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Ngày sinh
-                                </label>
-                                <input
-                                    type="date"
-                                    name="ngaySinh"
-                                    value={formData.ngaySinh}
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Email
-                                </label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    placeholder="Nhập email"
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Tỉnh/Thành phố, Quận/Huyện, Xã/Phường */}
-                        <div className="grid grid-cols-3 gap-4 mt-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Tỉnh/Thành phố
-                                </label>
-                                <select
-                                    value={selectedProvince}
-                                    onChange={(e) => setSelectedProvince(e.target.value)}
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                >
-                                    <option value="">Chọn tỉnh/thành phố</option>
-                                    {provinces.map((province) => (
-                                        <option key={province.code} value={province.code}>
-                                            {province.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Quận/Huyện
-                                </label>
-                                <select
-                                    value={selectedDistrict}
-                                    onChange={(e) => setSelectedDistrict(e.target.value)}
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    disabled={!selectedProvince}
-                                >
-                                    <option value="">Chọn quận/huyện</option>
-                                    {districts.map((district) => (
-                                        <option key={district.code} value={district.code}>
-                                            {district.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Xã/Phường/Thị trấn
-                                </label>
-                                <select
-                                    value={selectedWard}
-                                    onChange={(e) => setSelectedWard(e.target.value)}
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    disabled={!selectedDistrict}
-                                >
-                                    <option value="">Chọn xã/phường</option>
-                                    {wards.map((ward) => (
-                                        <option key={ward.code} value={ward.code}>
-                                            {ward.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* Số điện thoại và Địa chỉ cụ thể */}
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Số Điện Thoại
-                                </label>
-                                <input
-                                    type="text"
-                                    name="sdt"
-                                    value={formData.sdt}
-                                    placeholder="Nhập số điện thoại"
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <span className="text-red-500">*</span> Địa chỉ cụ thể
-                                </label>
-                                <input
-                                    type="text"
-                                    value={diaChiData.diaChiCuThe}
-                                    placeholder="Nhập địa chỉ cụ thể"
-                                    className="w-full p-4 border-2 border-gray-400 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                    onChange={(e) =>
-                                        setDiaChiData((prev) => ({ ...prev, diaChiCuThe: e.target.value }))
-                                    }
-                                />
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
 

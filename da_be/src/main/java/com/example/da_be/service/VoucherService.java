@@ -23,9 +23,8 @@ public interface VoucherService {
     Boolean deleteVoucher(Integer id);
     Page<VoucherResponse> phanTrangVoucher(Pageable pageable);
     Page<VoucherResponse>getSearchVoucher(VoucherSearch voucherSearch, Pageable pageable);
-
     Page<KhachHangResponse> getSearchKhachHang(KhachHangSearch khachHangSearch, Pageable pageable);
-
     Voucher giamSoLuongVoucher(Integer id);
+
 
 }

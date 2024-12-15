@@ -5,6 +5,7 @@ import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { useNavigate } from 'react-router-dom';
 import swal from 'sweetalert';
+import ExcelJS from 'exceljs'
 
 function Order() {
     const [orders, setOrders] = useState([]);
@@ -17,6 +18,7 @@ function Order() {
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [searchTerm, setSearchTerm] = useState(''); // Trạng thái tìm kiếm
     const navigate = useNavigate();
+    const [excelData, setExcelData] = useState([]); // Dữ liệu excel
 
     const loadOrders = async () => {
         try {
@@ -129,6 +131,95 @@ function Order() {
         { label: 'HOÀN THÀNH', value: '7' },
     ];
 
+    const getAllDonHangExcel = () => {
+        axios.get(`http://localhost:8080/api/hoa-don`)
+            .then((response) => {
+                setExcelData(response.data);
+            })
+            .catch((error) => {
+                console.error("Có lỗi xảy ra:", error);
+            });
+    };
+
+    useEffect(() => {
+        getAllDonHangExcel();
+    }, [])
+
+    const exportToExcel = () => {
+        const workbook = new ExcelJS.Workbook()
+        const worksheet = workbook.addWorksheet('VoucherData')
+
+        const columns = [
+            { header: 'STT', key: 'stt', width: 5 },
+            { header: 'Mã', key: 'ma', width: 8 },
+            { header: 'Tổng sản phẩm', key: 'soLuong', width: 15 },
+            { header: 'Tổng số tiền', key: 'tongTien', width: 15 },
+            { header: 'Tên khách hàng', key: 'hoTen', width: 15 },
+            { header: 'Ngày tạo', key: 'ngayTao', width: 17.5 },
+            { header: 'Loại hóa đơn', key: 'loaiHoaDon', width: 17.5 },
+            { header: 'Trạng thái', key: 'trangThai', width: 20 },
+        ]
+
+        const statusMap = {
+            1: 'Chờ xác nhận',
+            2: 'Chờ giao hàng',
+            3: 'Đang vận chuyển',
+            4: 'Đã giao hàng',
+            5: 'Đã thanh toán',
+            6: 'Chờ thanh toán',
+            7: 'Hoàn thành',
+            8: 'Đã hủy',
+            9: 'Trả hàng'
+          };
+
+        worksheet.columns = columns
+
+        excelData.forEach((item, index) => {
+            worksheet.addRow({
+                stt: index + 1,
+                ma: item.ma,
+                soLuong: item.soLuong,
+                tongTien: item.tongTien,
+                hoTen: item.taiKhoan ? item.taiKhoan.hoTen : 'Khách lẻ',
+                ngayTao: item.ngayTao,
+                loaiHoaDon: item.loaiHoaDon,
+                trangThai: statusMap[item.trangThai],
+            })
+        })
+
+        const titleStyle = {
+            font: { bold: true, color: { argb: 'FFFFFF' } },
+            fill: {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FF008080' },
+            },
+        }
+
+        worksheet.getRow(1).eachCell((cell) => {
+            cell.style = titleStyle
+        })
+
+        worksheet.columns.forEach((column) => {
+            const { width } = column
+            column.width = width
+        })
+
+        const blob = workbook.xlsx.writeBuffer().then(
+            (buffer) =>
+                new Blob([buffer], {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                }),
+        )
+        blob.then((blobData) => {
+            const url = window.URL.createObjectURL(blobData)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = 'DonHang_data.xlsx'
+            link.click()
+        })
+    }
+
     return (
         <div className="p-4">
             <h1 className="text-xl font-bold mb-4">Quản lý đơn hàng</h1>
@@ -140,8 +231,8 @@ function Order() {
                     value={searchTerm}
                     onChange={handleSearchChange}
                 />
-                <button className="border rounded p-2 bg-[#2f19ae] text-white mr-2">Quét mã</button>
-                <button className="border rounded p-2 bg-[#2f19ae] text-white">Tạo hoá đơn</button>
+                {/* <button className="border rounded p-2 bg-[#2f19ae] text-white mr-2">Quét mã</button>
+                <button className="border rounded p-2 bg-[#2f19ae] text-white">Tạo hoá đơn</button> */}
             </div>
             <div className="flex items-center mb-4">
                 <div className="flex items-center mr-4">
@@ -193,7 +284,7 @@ function Order() {
                         Tại quầy
                     </label>
                 </div>
-                <button className="border rounded p-2 bg-[#2f19ae] text-white">Export Excel</button>
+                <button onClick={exportToExcel} className="border rounded p-2 bg-[#2f19ae] text-white">Export Excel</button>
             </div>
 
             <div className="border-b mb-4">
@@ -202,9 +293,8 @@ function Order() {
                         <li
                             key={status.value}
                             onClick={() => setSelectedStatus(status.value)}
-                            className={`mr-4 pb-2 text-xs cursor-pointer ${
-                                selectedStatus === status.value ? 'border-b-2 border-blue-500' : ''
-                            }`}
+                            className={`mr-4 pb-2 text-xs cursor-pointer ${selectedStatus === status.value ? 'border-b-2 border-blue-500' : ''
+                                }`}
                         >
                             {status.label}
                         </li>
@@ -234,7 +324,7 @@ function Order() {
                                 <td className="py-1 px-2 border-b">{index + 1}</td>
                                 <td className="py-1 px-2 border-b">{order.ma}</td>
                                 <td className="py-1 px-2 border-b">{order.soLuong}</td>
-                                <td className="py-1 px-2 border-b">{order.tongTien.toLocaleString()}</td>
+                                <td className="py-1 px-2 border-b">{order.tongTien.toLocaleString() + ' VNĐ'}</td>
                                 <td className="py-1 px-2 border-b">
                                     {order.taiKhoan ? order.taiKhoan.hoTen : 'Khách lẻ'}
                                 </td>
@@ -243,11 +333,10 @@ function Order() {
                                 </td>
                                 <td className="py-1 px-2 border-b">
                                     <span
-                                        className={`${
-                                            order.loaiHoaDon === 'Trực tuyến'
+                                        className={`${order.loaiHoaDon === 'Trực tuyến'
                                                 ? 'bg-indigo-200 text-indigo-800'
                                                 : 'bg-green-200 text-green-800'
-                                        } py-0.5 px-2 rounded-full text-xs`}
+                                            } py-0.5 px-2 rounded-full text-xs`}
                                     >
                                         {order.loaiHoaDon}
                                     </span>
@@ -272,9 +361,8 @@ function Order() {
 
             <div className="flex justify-center mb- 4 mt-7">
                 <button
-                    className={`${
-                        currentPage === 1 ? 'bg-gray-200 text-gray-800' : 'bg-white text-[#2f19ae]'
-                    } border border-[#2f19ae] hover:bg-[#2f19ae] hover:text-white font-medium py-1 px-2 rounded mx-1 transition duration-200`}
+                    className={`${currentPage === 1 ? 'bg-gray-200 text-gray-800' : 'bg-white text-[#2f19ae]'
+                        } border border-[#2f19ae] hover:bg-[#2f19ae] hover:text-white font-medium py-1 px-2 rounded mx-1 transition duration-200`}
                     onClick={() => setCurrentPage(currentPage - 1)}
                     disabled={currentPage === 1}
                 >
@@ -286,9 +374,8 @@ function Order() {
                     .map((_, index) => (
                         <button
                             key={index}
-                            className={`${
-                                currentPage === index + 1 ? 'bg-[#2f19ae] text-white' : 'bg-white text-[#2f19ae]'
-                            } border border-[#2f19ae] hover:bg-[#2f19ae] hover:text-white font-medium py-1 px-2 rounded mx-1 transition duration-200`}
+                            className={`${currentPage === index + 1 ? 'bg-[#2f19ae] text-white' : 'bg-white text-[#2f19ae]'
+                                } border border-[#2f19ae] hover:bg-[#2f19ae] hover:text-white font-medium py-1 px-2 rounded mx-1 transition duration-200`}
                             onClick={() => setCurrentPage(index + 1)}
                         >
                             {index + 1}
@@ -296,9 +383,8 @@ function Order() {
                     ))}
 
                 <button
-                    className={`${
-                        currentPage === totalPages ? 'bg-gray-200 text-gray-800' : 'bg-white text-[#2f19ae]'
-                    } border border-[#2f19ae] hover:bg-[#2f19ae] hover:text-white font-medium py-1 px-2 rounded mx-1 transition duration-200`}
+                    className={`${currentPage === totalPages ? 'bg-gray-200 text-gray-800' : 'bg-white text-[#2f19ae]'
+                        } border border-[#2f19ae] hover:bg-[#2f19ae] hover:text-white font-medium py-1 px-2 rounded mx-1 transition duration-200`}
                     onClick={() => setCurrentPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
                 >

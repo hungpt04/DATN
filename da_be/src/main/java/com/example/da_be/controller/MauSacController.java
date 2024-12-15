@@ -1,6 +1,7 @@
 package com.example.da_be.controller;
 
 import com.example.da_be.entity.MauSac;
+import com.example.da_be.repository.MauSacRepository;
 import com.example.da_be.service.MauSacService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +16,18 @@ public class MauSacController {
     @Autowired
     private MauSacService mauSacService;
 
+    @Autowired
+    private MauSacRepository mauSacRepository;
+
     // Lấy danh sách tất cả màu sắc
     @GetMapping
     public List<MauSac> getAllMauSac() {
         return mauSacService.getAllMauSac();
+    }
+
+    @GetMapping("/hien-thi")
+    public List<MauSac> getAllMauSacHienThi() {
+        return mauSacRepository.getAllMauSac();
     }
 
     // Lấy thông tin màu sắc theo id

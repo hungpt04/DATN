@@ -3,6 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import swal from "sweetalert";
 import ReactPaginate from 'react-paginate';
+import dayjs from 'dayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 const SaleDetail = () => {
     const { id } = useParams();
@@ -20,6 +24,7 @@ const SaleDetail = () => {
     const [errorTgKetThuc, setErrorTgKetThuc] = useState('')
     const [getTenKhuyenMai, setGetTenKhuyenMai] = useState([])
     const [pageCount, setPageCount] = useState(0);
+    const [currentPage, setCurrentPage] = useState(0);
     const size = 5;
     const [listThuongHieu, setListThuongHieu] = useState([]);
     const [listChatLieu, setListChatLieu] = useState([]);
@@ -28,8 +33,22 @@ const SaleDetail = () => {
     const [listDiemCanBang, setListDiemCanBang] = useState([]);
     const [listDoCung, setListDoCung] = useState([]);
 
+    const handleNavigateToSale = () => {
+        navigate('/admin/giam-gia/dot-giam-gia');
+    };
+
     const [searchSanPham, setSearchSanPham] = useState({
         tenSearch: "",
+    })
+
+    const [updateKhuyenMai, setUpdateKhuyenMai] = useState({
+        ten: '',
+        giaTri: '',
+        loai: true,
+        tgBatDau: '',
+        tgKetThuc: '',
+        trangThai: 0,
+        idProductDetail: selectedRows
     })
 
     const [fillterSanPhamChiTiet, setFillterSanPhamChiTiet] = useState({
@@ -65,7 +84,6 @@ const SaleDetail = () => {
         return debouncedValue
     }
 
-    // Tìm kiếm sản phẩm chi tiết
     const [inputValueSanPham, setInputValueSanPham] = useState('');
     const debouncedValueSanPham = useDebounce(inputValueSanPham, 300);
 
@@ -86,29 +104,20 @@ const SaleDetail = () => {
     const loadSanPhamSearch = (searchSanPham, currentPage) => {
         const params = new URLSearchParams({
             tenSearch: searchSanPham.tenSearch,
-            currentPage: currentPage, // Thêm tham số cho trang
-            size: size // Kích thước trang cũng có thể được truyền vào nếu cần
+            currentPage: currentPage,
+            size: size
         });
 
         axios.get(`http://localhost:8080/api/khuyen-mai/searchSanPham?${params.toString()}`)
             .then((response) => {
                 setGetProduct(response.data.content);
                 setPageCount(response.data.totalPages);
+                setCurrentPage(response.data.currentPage)
             })
             .catch((error) => {
                 console.error('Error:', error);
             });
     }
-
-    const [updateKhuyenMai, setUpdateKhuyenMai] = useState({
-        ten: '',
-        giaTri: '',
-        loai: true,
-        tgBatDau: '',
-        tgKetThuc: '',
-        trangThai: 0,
-        idProductDetail: selectedRows
-    })
 
     const handleAllTenKhuyenMai = () => {
         axios.get(`http://localhost:8080/api/khuyen-mai/list-ten-khuyen-mai`)
@@ -122,29 +131,79 @@ const SaleDetail = () => {
 
     useEffect(() => {
         handleAllTenKhuyenMai()
-    })
+        fetchData(id);
+    }, [id]);
+
+    const fetchData = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/khuyen-mai/detail/${id}`);
+            setUpdateKhuyenMai(response.data);
+        } catch (error) {
+            console.error("Error fetching voucher details:", error);
+        }
+    };
+
+    const getListSanPham = (id) => {
+        axios.get(`http://localhost:8080/api/khuyen-mai/get-id-san-pham-va-san-pham-chi-tiet-by-id-khuyen-mai/${id}`)
+            .then((response) => {
+                setSelectedRowsProduct(response.data)
+                getProductDetailById(fillterSanPhamChiTiet, response.data)
+            })
+            .catch((error) => {
+                console.error('Error:', error)
+            })
+    }
+
+    const getListSanPhamChiTiet = (id) => {
+        axios.get(`http://localhost:8080/api/khuyen-mai/get-id-san-pham-chi-tiet-by-id-khuyen-mai/${id}`)
+            .then((response) => {
+                setSelectedRows(response.data)
+            })
+            .catch((error) => {
+                console.error('Error:', error)
+            })
+    }
+
+    useEffect(() => {
+        getListSanPham(id)
+    }, [id, fillterSanPhamChiTiet])
+
+    useEffect(() => {
+        getListSanPhamChiTiet(id)
+    }, [id])
+
+    useEffect(() => {
+        setUpdateKhuyenMai({
+            ...updateKhuyenMai,
+            idProductDetail: selectedRows
+        })
+    }, [updateKhuyenMai, selectedRows])
 
     const khuyenMaiTen = getTenKhuyenMai.map((khuyenMai) => khuyenMai.ten)
 
     const getProductDetailById = (fillterSanPhamChiTiet, selectedProductIds) => {
         const params = new URLSearchParams({
-            id: selectedProductIds.join(','), // Chuyển mảng thành chuỗi
-            tenSearch: fillterSanPhamChiTiet.tenSearch || '',
-            idThuongHieuSearch: fillterSanPhamChiTiet.idThuongHieuSearch || '',
-            idChatLieuSearch: fillterSanPhamChiTiet.idChatLieuSearch || '',
-            idMauSacSearch: fillterSanPhamChiTiet.idMauSacSearch || '',
-            idDiemCanBangSearch: fillterSanPhamChiTiet.idDiemCanBangSearch || '',
-            idTrongLuongSearch: fillterSanPhamChiTiet.idTrongLuongSearch || '',
-            idDoCungSearch: fillterSanPhamChiTiet.idDoCungSearch || '',
+            tenSearch: fillterSanPhamChiTiet.tenSearch,
+            idThuongHieuSearch: fillterSanPhamChiTiet.idThuongHieuSearch,
+            idChatLieuSearch: fillterSanPhamChiTiet.idChatLieuSearch,
+            idMauSacSearch: fillterSanPhamChiTiet.idMauSacSearch,
+            idDiemCanBangSearch: fillterSanPhamChiTiet.idDiemCanBangSearch,
+            idTrongLuongSearch: fillterSanPhamChiTiet.idTrongLuongSearch,
+            idDoCungSearch: fillterSanPhamChiTiet.idDoCungSearch,
             currentPage: fillterSanPhamChiTiet.currentPage || 0,
             size: size
         });
 
-        if (selectedProductIds.length > 0) {
+        if (Array.isArray(selectedProductIds) && selectedProductIds.length > 0) {
+            selectedProductIds.forEach((id) => params.append('id', id));
+        }
+
+        if (Array.isArray(selectedProductIds) && selectedProductIds.length > 0) {
             axios.get(`http://localhost:8080/api/khuyen-mai/getSanPhamCTBySanPham?${params.toString()}`)
                 .then((response) => {
                     setGetProductDetailByProduct(response.data.content);
                     setPageCount(response.data.totalPages);
+                    setCurrentPage(response.data.currentPage);
                 })
                 .catch((error) => {
                     console.error('Error:', error);
@@ -156,27 +215,6 @@ const SaleDetail = () => {
         getProductDetailById(fillterSanPhamChiTiet, selectedProductIds);
     }, [fillterSanPhamChiTiet, selectedProductIds]);
 
-    const handleNavigateToSale = () => {
-        navigate('/admin/giam-gia/dot-giam-gia');
-    };
-
-    const handleInputChange = (event) => {
-        setUpdateKhuyenMai({ ...updateKhuyenMai, [event.target.name]: event.target.value })
-    }
-
-    const fetchData = async () => {
-        try {
-            const response = await axios.get(`http://localhost:8080/api/khuyen-mai/detail/${id}`);
-            setUpdateKhuyenMai(response.data);
-        } catch (error) {
-            console.error("Error fetching voucher details:", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchData(id);
-    }, []);
-
     const handleSelectAllChangeProduct = (event) => {
         const selectedIds = event.target.checked ? getProduct.map((row) => row.id) : []
         setSelectedRowsProduct(selectedIds)
@@ -184,6 +222,22 @@ const SaleDetail = () => {
         setSelectAllProduct(event.target.checked)
         getProductDetailById(fillterSanPhamChiTiet, selectedIds);
     }
+
+    // const handleSelectAllChangeProduct = (event) => {
+    //     const isChecked = event.target.checked;
+    //     const selectedIds = isChecked ? getProduct.map((row) => row.id) : [];
+
+    //     // Giữ lại các sản phẩm chi tiết đã chọn
+    //     const updatedSelectedRows = isChecked
+    //         ? [...new Set([...selectedRows, ...getProductDetailByProduct.map((row) => row.id)])]
+    //         : [];
+
+    //     setSelectedRowsProduct(selectedIds);
+    //     setSelectedRows(updatedSelectedRows);
+    //     setSelectAllProduct(isChecked);
+    //     getProductDetailById(fillterSanPhamChiTiet, selectedIds);
+    // };
+
 
     const handleSelectAllChangeProductDetail = (event) => {
         const selectedIds = event.target.checked ? getProductDetailByProduct.map((row) => row.id) : []
@@ -194,7 +248,7 @@ const SaleDetail = () => {
     const handleCheckboxChange1 = (event, productId) => {
         const selectedIndex = selectedRowsProduct.indexOf(productId)
         let newSelected = []
-
+    
         if (selectedIndex === -1) {
             newSelected = [...selectedRowsProduct, productId]
         } else {
@@ -203,40 +257,71 @@ const SaleDetail = () => {
                 ...selectedRowsProduct.slice(selectedIndex + 1),
             ]
         }
-
+    
         setSelectedRowsProduct(newSelected)
         setSelectAllProduct(newSelected.length === getProduct.length)
-
+    
         const selectedProductIds = getProduct
             .filter((row) => newSelected.includes(row.id))
             .map((selectedProduct) => selectedProduct.id);
         setSelectedProductIds(selectedProductIds);
-        setSelectedRows(selectedProductIds);
+        // setSelectedRows(selectedProductIds);
+        getProductDetailById(fillterSanPhamChiTiet, selectedProductIds);
     }
+
+    // const handleCheckboxChange1 = (event, productId) => {
+    //     const selectedIndex = selectedRowsProduct.indexOf(productId);
+    //     let newSelected = [];
+
+    //     if (selectedIndex === -1) {
+    //         newSelected = [...selectedRowsProduct, productId];
+    //     } else {
+    //         newSelected = selectedRowsProduct.filter(id => id !== productId);
+
+    //         // Xóa các sản phẩm chi tiết liên quan đến sản phẩm bị bỏ chọn
+    //         const relatedDetails = getProductDetailByProduct
+    //             .filter(detail => detail.productId === productId)
+    //             .map(detail => detail.id);
+    //         setSelectedRows(selectedRows.filter(id => !relatedDetails.includes(id)));
+    //     }
+
+    //     setSelectedRowsProduct(newSelected);
+    //     setSelectAllProduct(newSelected.length === getProduct.length);
+    //     setSelectedProductIds(newSelected);
+    //     getProductDetailById(fillterSanPhamChiTiet, newSelected);
+    // };
+
+
+    // const handleCheckboxChange2 = (event, productDetailId) => {
+    //     const selectedIndex = selectedRows.indexOf(productDetailId)
+    //     let newSelected = []
+
+    //     if (selectedIndex === -1) {
+    //         newSelected = [...selectedRows, productDetailId]
+    //     } else {
+    //         newSelected = selectedRows.filter(id => id !== productDetailId)
+    //     }
+
+    //     setSelectedRows(newSelected)
+    //     setSelectAllProductDetail(newSelected.length === getProductDetailByProduct.length)
+    // }
 
     const handleCheckboxChange2 = (event, productDetailId) => {
         const selectedIndex = selectedRows.indexOf(productDetailId)
         let newSelected = []
 
         if (selectedIndex === -1) {
-            // Nếu chưa được chọn thì thêm vào
             newSelected = [...selectedRows, productDetailId]
         } else {
-            // Nếu đã được chọn thì loại bỏ
-            newSelected = selectedRows.filter(id => id !== productDetailId)
+            newSelected = [
+                ...selectedRows.slice(0, selectedIndex),
+                ...selectedRows.slice(selectedIndex + 1),
+            ]
         }
 
         setSelectedRows(newSelected)
         setSelectAllProductDetail(newSelected.length === getProductDetailByProduct.length)
     }
-
-    useEffect(() => {
-        // Khi selectedRows thay đổi, cập nhật lại state của updateKhuyenMai
-        setUpdateKhuyenMai(prev => ({
-            ...prev,
-            idProductDetail: selectedRows
-        }))
-    }, [selectedRows])
 
     const validate = () => {
         let check = 0
@@ -329,7 +414,6 @@ const SaleDetail = () => {
                 },
             }).then((willConfirm) => {
                 if (willConfirm) {
-                    // Sử dụng trực tiếp updateKhuyenMai và id từ scope
                     const dataToUpdate = {
                         ...updateKhuyenMai,
                         loai: selectedRows.length === 0 ? false : true,
@@ -427,16 +511,19 @@ const SaleDetail = () => {
 
     const handlePageClick = (event) => {
         const selectedPage = event.selected;
-        loadSanPhamSearch(searchSanPham, selectedPage); // Gọi hàm tìm kiếm với trang mới
-        console.log(`User  requested page number ${selectedPage + 1}`);
+        loadSanPhamSearch(searchSanPham, selectedPage);
     };
 
     const handlePageSPCTClick = (event) => {
         const selectedPage = event.selected;
-        getProductDetailById(fillterSanPhamChiTiet, selectedPage); // Gọi hàm tìm kiếm với trang mới
-        console.log(`User  requested page number ${selectedPage + 1}`);
-    };
 
+        setFillterSanPhamChiTiet((prev) => ({
+            ...prev,
+            currentPage: selectedPage
+        }))
+
+        getProductDetailById(fillterSanPhamChiTiet, selectedPage);
+    };
 
     return (
         <div>
@@ -475,7 +562,7 @@ const SaleDetail = () => {
                             </label>
                             <input
                                 type="text"
-                                name="ten"  // Thêm thuộc tính name
+                                name="ten"
                                 id="discount-name"
                                 placeholder="Tên đợt giảm giá"
                                 className="w-full p-2 border rounded mb-4"
@@ -486,7 +573,7 @@ const SaleDetail = () => {
                                 }}  // Bỏ arrow function
                                 error={errorTen ? 'true' : undefined}
                             />
-                            <span className='text-red-600'>{errorTen}</span>
+                            <span className='text-red-600 text-xs italic'>{errorTen}</span>
                         </div>
 
                         <div>
@@ -495,7 +582,7 @@ const SaleDetail = () => {
                             </label>
                             <input
                                 type="number"
-                                name="giaTri"  // Thêm thuộc tính name
+                                name="giaTri"
                                 id="discount-value"
                                 placeholder="Giá trị"
                                 className="w-full p-2 border rounded mb-4"
@@ -506,41 +593,63 @@ const SaleDetail = () => {
                                 }}
                                 error={errorGiaTri ? 'true' : undefined}
                             />
-                            <span className='text-red-600'>{errorGiaTri}</span>
+                            <span className='text-red-600 text-xs italic'>{errorGiaTri}</span>
                         </div>
 
                         <div>
-                            <label className="block text-gray-600 mb-1">Ngày bắt đầu</label>
-                            <input
-                                type="date"
-                                className="w-full border border-gray-300 rounded-md p-2"
-                                value={updateKhuyenMai.tgBatDau}
-                                onChange={(e) => {
-                                    setUpdateKhuyenMai({
-                                        ...updateKhuyenMai,
-                                        tgBatDau: e.target.value
-                                    })
-                                    setErrorTgBatDau('')
-                                }}
-                            />
-                            <span className='text-red-600'>{errorTgBatDau}</span>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <label className="block text-gray-600 mb-1">Từ ngày</label>
+                                <DateTimePicker
+                                    format={'DD-MM-YYYY HH:mm:ss'}
+
+                                    slotProps={{
+                                        textField: {
+                                            size: 'small',
+                                            className: 'w-[608px]'
+                                        },
+                                        actionBar: {
+                                            actions: ['clear', 'today']
+                                        }
+                                    }}
+                                    value={dayjs(updateKhuyenMai.tgBatDau, 'YYYY-MM-DDTHH:mm:ss')}
+                                    onChange={(e) => {
+                                        setUpdateKhuyenMai({
+                                            ...updateKhuyenMai,
+                                            tgBatDau: dayjs(e).format('YYYY-MM-DDTHH:mm:ss')
+                                        })
+                                        setErrorTgBatDau('')
+                                    }}
+                                />
+                            </LocalizationProvider>
+                            <span className='text-red-600 text-xs italic'>{errorTgBatDau}</span>
                         </div>
 
-                        <div>
-                            <label className="block text-gray-600 mb-1">Ngày kết thúc</label>
-                            <input
-                                type="date"
-                                className="w-full border border-gray-300 rounded-md p-2"
-                                value={updateKhuyenMai.tgKetThuc}
-                                onChange={(e) => {
-                                    setUpdateKhuyenMai({
-                                        ...updateKhuyenMai,
-                                        tgKetThuc: e.target.value
-                                    })
-                                    setErrorTgKetThuc('')
-                                }}
-                            />
-                            <span className='text-red-600'>{errorTgKetThuc}</span>
+                        <div className='mt-4'>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <label className="block text-gray-600 mb-1">Đến ngày</label>
+                                <DateTimePicker
+                                    format={'DD-MM-YYYY HH:mm:ss'}
+
+                                    slotProps={{
+                                        textField: {
+                                            size: 'small',
+                                            className: 'w-[608px]'
+                                        },
+                                        actionBar: {
+                                            actions: ['clear', 'today']
+                                        }
+                                    }}
+                                    value={dayjs(updateKhuyenMai.tgKetThuc, 'YYYY-MM-DDTHH:mm:ss')}
+                                    onChange={(e) => {
+                                        setUpdateKhuyenMai({
+                                            ...updateKhuyenMai,
+                                            tgKetThuc: dayjs(e).format('YYYY-MM-DDTHH:mm:ss')
+                                        })
+                                        setErrorTgKetThuc('')
+                                    }}
+                                />
+                            </LocalizationProvider>
+                            <span className='text-red-600 text-xs italic'>{errorTgKetThuc}</span>
                         </div>
 
                         {selectedRowsProduct.length > 0 ? (
@@ -557,32 +666,32 @@ const SaleDetail = () => {
                     <div className="w-1/2 pr-4">
                         <table className="min-w-full border border-gray-200">
                             <thead>
-                                <tr className="bg-gray-100 text-gray-700">
-                                    <th className="py-2 px-4 border-b text-center">
-                                        <input type="checkbox"
-                                            checked={selectAllProduct}
-                                            onChange={handleSelectAllChangeProduct}
-                                        />
-                                    </th>
-                                    <th className="py-2 px-4 border-b text-center">STT</th>
-                                    <th className="py-2 px-4 border-b text-center">Tên sản phẩm</th>
-                                </tr>
+                            <tr className="bg-gray-100 text-gray-700">
+                                <th className="py-2 px-4 border-b text-center">
+                                    <input type="checkbox"
+                                           checked={selectAllProduct}
+                                           onChange={handleSelectAllChangeProduct}
+                                    />
+                                </th>
+                                <th className="py-2 px-4 border-b text-center">STT</th>
+                                <th className="py-2 px-4 border-b text-center">Tên sản phẩm</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {getProduct.map((sanPham, index) => (
-                                    <tr key={sanPham.id} className="text-left border-b">
-                                        <td className="py-2 px-4 border-b text-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedRowsProduct.indexOf(sanPham.id) !== -1}
-                                                onChange={(event) => handleCheckboxChange1(event, sanPham.id)}
-                                                className="align-middle"
-                                            />
-                                        </td>
-                                        <td className="py-2 px-4 border-b text-center">{index + 1}</td>
-                                        <td className="py-2 px-4 border-b text-center">{sanPham.ten}</td>
-                                    </tr>
-                                ))}
+                            {getProduct.map((sanPham, index) => (
+                                <tr key={sanPham.id} className="text-left border-b">
+                                    <td className="py-2 px-4 border-b text-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedRowsProduct.indexOf(sanPham.id) !== -1}
+                                            onChange={(event) => handleCheckboxChange1(event, sanPham.id)}
+                                            className="align-middle"
+                                        />
+                                    </td>
+                                    <td className="py-2 px-4 border-b text-center">{(currentPage * 5) + index + 1}</td>
+                                    <td className="py-2 px-4 border-b text-center">{sanPham.ten}</td>
+                                </tr>
+                            ))}
                             </tbody>
                         </table>
                         {/* Pagination */}
@@ -646,7 +755,7 @@ const SaleDetail = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Thương hiệu:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idThuongHieuSearch || ''}
+                                value={fillterSanPhamChiTiet.idThuongHieuSearch}
                                 onChange={(e) => {
                                     const newIdThuongHieuSearch = e.target.value;
                                     const updatedFilter = {
@@ -672,7 +781,7 @@ const SaleDetail = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Màu sắc:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idMauSac}
+                                value={fillterSanPhamChiTiet.idMauSacSearch}
                                 onChange={(e) => {
                                     const newIdMauSacSearch = e.target.value;
                                     const updatedFilter = {
@@ -699,7 +808,7 @@ const SaleDetail = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Chất liệu:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idChatLieu}
+                                value={fillterSanPhamChiTiet.idChatLieuSearch}
                                 onChange={(e) => {
                                     const newIdChatLieuSearch = e.target.value;
                                     const updatedFilter = {
@@ -725,7 +834,7 @@ const SaleDetail = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Trọng lượng:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idTrongLuong}
+                                value={fillterSanPhamChiTiet.idTrongLuongSearch}
                                 onChange={(e) => {
                                     const newIdTrongLuongSearch = e.target.value;
                                     const updatedFilter = {
@@ -750,7 +859,7 @@ const SaleDetail = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Điểm cân bằng:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idDiemCanBang}
+                                value={fillterSanPhamChiTiet.idDiemCanBangSearch}
                                 onChange={(e) => {
                                     const newIdDiemCanBangSearch = e.target.value;
                                     const updatedFilter = {
@@ -775,7 +884,7 @@ const SaleDetail = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Độ cứng:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idDoCung}
+                                value={fillterSanPhamChiTiet.idDoCungSearch}
                                 onChange={(e) => {
                                     const newIdDoCungSearch = e.target.value;
                                     const updatedFilter = {
@@ -799,42 +908,42 @@ const SaleDetail = () => {
 
                     <table className="min-w-full border border-gray-200">
                         <thead>
-                            <tr className="bg-gray-100 text-gray-700">
-                                <th className="py-2 px-4 border-b text-center">
-                                    <input type="checkbox"
-                                        checked={selectAllProductDetail}
-                                        onChange={handleSelectAllChangeProductDetail}
-                                    />
-                                </th>
-                                <th className="py-2 px-4 border-b text-center">STT</th>
-                                <th className="py-2 px-4 border-b text-center">Tên sản phẩm</th>
-                                <th className="py-2 px-4 border-b text-center">Thương hiệu</th>
-                                <th className="py-2 px-4 border-b text-center">Màu sắc</th>
-                                <th className="py-2 px-4 border-b text-center">Chất liệu</th>
-                                <th className="py-2 px-4 border-b text-center">Trọng lượng</th>
-                                <th className="py-2 px-4 border-b text-center">Điểm cân bằng</th>
-                                <th className="py-2 px-4 border-b text-center">Độ cứng</th>
-                            </tr>
+                        <tr className="bg-gray-100 text-gray-700">
+                            <th className="py-2 px-4 border-b text-center">
+                                <input type="checkbox"
+                                       checked={selectAllProductDetail}
+                                       onChange={handleSelectAllChangeProductDetail}
+                                />
+                            </th>
+                            <th className="py-2 px-4 border-b text-center">STT</th>
+                            <th className="py-2 px-4 border-b text-center">Tên sản phẩm</th>
+                            <th className="py-2 px-4 border-b text-center">Thương hiệu</th>
+                            <th className="py-2 px-4 border-b text-center">Màu sắc</th>
+                            <th className="py-2 px-4 border-b text-center">Chất liệu</th>
+                            <th className="py-2 px-4 border-b text-center">Trọng lượng</th>
+                            <th className="py-2 px-4 border-b text-center">Điểm cân bằng</th>
+                            <th className="py-2 px-4 border-b text-center">Độ cứng</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {getProductDetailByProduct.map((spct, index) => (
-                                <tr key={spct.id} className="text-center border-b">
-                                    <td className="py-2 px-4 border-b text-center">
-                                        <input type="checkbox"
-                                            checked={selectedRows.indexOf(spct.id) !== -1}
-                                            onChange={(event) => handleCheckboxChange2(event, spct.id)}
-                                        />
-                                    </td>
-                                    <td className="py-2 px-4 border-b text-center">{index + 1}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenSanPham}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenThuongHieu}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenMauSac}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenChatLieu}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenTrongLuong}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenDiemCanBang}</td>
-                                    <td className="py-2 px-4 border-b text-center">{spct.tenDoCung}</td>
-                                </tr>
-                            ))}
+                        {getProductDetailByProduct.map((spct, index) => (
+                            <tr key={spct.id} className="text-center border-b">
+                                <td className="py-2 px-4 border-b text-center">
+                                    <input type="checkbox"
+                                           checked={selectedRows.indexOf(spct.id) !== -1}
+                                           onChange={(event) => handleCheckboxChange2(event, spct.id)}
+                                    />
+                                </td>
+                                <td className="py-2 px-4 border-b text-center">{index + 1}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenSanPham}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenThuongHieu}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenMauSac}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenChatLieu}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenTrongLuong}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenDiemCanBang}</td>
+                                <td className="py-2 px-4 border-b text-center">{spct.tenDoCung}</td>
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
                     <div className="flex justify-end mt-4">

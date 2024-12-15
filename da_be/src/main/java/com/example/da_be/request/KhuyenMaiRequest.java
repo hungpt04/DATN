@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor
@@ -15,9 +16,9 @@ public class KhuyenMaiRequest {
 
     private String ten;
 
-    private LocalDate tgBatDau;
+    private LocalDateTime tgBatDau;
 
-    private LocalDate tgKetThuc;
+    private LocalDateTime tgKetThuc;
 
     private Integer trangThai;
 
@@ -33,9 +34,9 @@ public class KhuyenMaiRequest {
         khuyenMai.setTgKetThuc(this.tgKetThuc);
         khuyenMai.setGiaTri(this.giaTri);
         khuyenMai.setLoai(this.loai);
-        if (LocalDate.now().isBefore(this.tgBatDau)) {
+        if (LocalDateTime.now().isBefore(this.tgBatDau)) {
             khuyenMai.setTrangThai(0); // Sắp diễn ra
-        } else if (LocalDate.now().isAfter(this.tgBatDau.minusDays(1)) && LocalDate.now().isBefore(this.tgKetThuc.plusDays(1))) {
+        } else if (LocalDateTime.now().isAfter(this.tgBatDau.minusDays(1)) && LocalDateTime.now().isBefore(this.tgKetThuc.plusDays(1))) {
             khuyenMai.setTrangThai(1); // Đang diễn ra
         } else {
             khuyenMai.setTrangThai(2); // Đã kết thúc

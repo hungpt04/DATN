@@ -1,5 +1,6 @@
 package com.example.da_be.controller;
 
+import com.example.da_be.entity.KhuyenMai;
 import com.example.da_be.request.KhuyenMaiRequest;
 import com.example.da_be.request.KhuyenMaiSearch;
 import com.example.da_be.request.SanPhamCTSearch;
@@ -16,7 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,13 +60,18 @@ public class KhuyenMaiController {
     }
 
     @GetMapping("/detail/{id}")
-    public KhuyenMaiResponse getKhuyenMaiById(@PathVariable Integer id) {
+    public KhuyenMai getKhuyenMaiById(@PathVariable Integer id) {
         return khuyenMaiService.getKhuyenMaiById(id);
     }
 
     @GetMapping("/get-id-san-pham-va-san-pham-chi-tiet-by-id-khuyen-mai/{idKhuyenMai}")
     public List<Integer> getIdSanPhamVaSanPhamChiTietByIdKhuyenMai(@PathVariable Integer idKhuyenMai) {
         return khuyenMaiService.getIdSanPhamVaSanPhamChiTietByIdKhuyenMai(idKhuyenMai);
+    }
+
+    @GetMapping("/get-id-san-pham-chi-tiet-by-id-khuyen-mai/{idKhuyenMai}")
+    public List<Integer> getIdSanPhamChiTietByIdKhuyenMai(@PathVariable Integer idKhuyenMai) {
+        return khuyenMaiService.getIdSanPhamChiTietByIdKhuyenMai(idKhuyenMai);
     }
 
     @PutMapping("/delete/{id}")
@@ -76,12 +82,12 @@ public class KhuyenMaiController {
     @GetMapping("/search")
     public Map<String, Object> searchKhuyenMai(
             @RequestParam(required = false) String tenSearch,       // Tìm kiếm theo mã hoặc tên
-            @RequestParam(required = false) LocalDate tgBatDauSearch,  // Tìm kiếm theo ngày bắt đầu
-            @RequestParam(required = false) LocalDate tgKetThucSearch,
+            @RequestParam(required = false) LocalDateTime tgBatDauSearch,  // Tìm kiếm theo ngày bắt đầu
+            @RequestParam(required = false) LocalDateTime tgKetThucSearch,
             @RequestParam(required = false) Integer trangThaiSearch,
             @RequestParam(value = "currentPage", defaultValue = "0") Integer currentPage,  // Trang hiện tại
             @RequestParam(value = "size", defaultValue = "5") Integer size
-            ) {
+    ) {
         KhuyenMaiSearch search = new KhuyenMaiSearch();
         search.setTenSearch(tenSearch);
         search.setTgBatDauSearch(tgBatDauSearch);

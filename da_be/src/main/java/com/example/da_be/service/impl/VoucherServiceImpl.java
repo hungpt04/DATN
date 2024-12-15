@@ -1,5 +1,7 @@
 package com.example.da_be.service.impl;
 
+import com.example.da_be.email.Email;
+import com.example.da_be.email.EmailSender;
 import com.example.da_be.entity.KhachHang_Voucher;
 import com.example.da_be.entity.TaiKhoan;
 import com.example.da_be.entity.Voucher;
@@ -13,15 +15,16 @@ import com.example.da_be.request.VoucherSearch;
 import com.example.da_be.response.KhachHangResponse;
 import com.example.da_be.response.VoucherResponse;
 import com.example.da_be.service.VoucherService;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +39,8 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Autowired
     private KhachHang_VoucherRepository khachHang_VoucherRepository;
+    @Autowired
+    private EmailSender emailSender;
 
     @Override
     public List<VoucherResponse> getAllVoucher() {
@@ -69,6 +74,93 @@ public class VoucherServiceImpl implements VoucherService {
                     KhachHang_Voucher khachHang_voucher = khachHang_voucherRequest.newKhachHang_Voucher(new KhachHang_Voucher());
                     khachHangVoucherList.add(khachHang_voucher);
                     khachHang_VoucherRepository.save(khachHang_voucher);
+
+                    String valueText = voucher.getKieuGiaTri() == 0 ? (voucher.getGiaTri() + "%") : (voucher.getGiaTri() + "(VNĐ)");
+                    String[] toMail = {khachHang.getEmail()};
+                    Email email = new Email();
+                    email.setBody("<!DOCTYPE html>\n" +
+                            "<html>\n" +
+                            "  <head>\n" +
+                            "    <style>\n" +
+                            "      body {\n" +
+                            "        font-family: Arial, sans-serif;\n" +
+                            "        background-color: #f5f5f5;\n" +
+                            "      }\n" +
+                            "\n" +
+                            "      .container {\n" +
+                            "        background-color: #fff;\n" +
+                            "        max-width: 600px;\n" +
+                            "        margin: 0 auto;\n" +
+                            "        padding: 20px;\n" +
+                            "        border: 1px solid #ccc;\n" +
+                            "        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                            "      }\n" +
+                            "\n" +
+                            "      h1 {\n" +
+                            "        color: #333;\n" +
+                            "        text-align: center;\n" +
+                            "      }\n" +
+                            "\n" +
+                            "      .voucher {\n" +
+                            "        background-image: url(\"https://shorturl.at/uBKU6\");\n" +
+                            "        background-size: auto;\n" +
+                            "        background-repeat: no-repeat;\n" +
+                            "        background-position: center center;\n" +
+                            "        color: #fff;\n" +
+                            "        text-align: center;\n" +
+                            "        padding: 20px;\n" +
+                            "        margin: 20px 0;\n" +
+                            "        border-radius: 5px;\n" +
+                            "        display: flex;\n" +
+                            "      }\n" +
+                            "\n" +
+                            "      .voucher p {\n" +
+                            "        font-size: 18px;\n" +
+                            "        font-weight: bold;\n" +
+                            "        color: #333;\n" +
+                            "        flex: 2;\n" +
+                            "      }\n" +
+                            "\n" +
+                            "      button {\n" +
+                            "        background-color: #333;\n" +
+                            "        color: #fff;\n" +
+                            "        padding: 10px 20px;\n" +
+                            "        border: none;\n" +
+                            "        border-radius: 5px;\n" +
+                            "        font-size: 16px;\n" +
+                            "        cursor: pointer;\n" +
+                            "      }\n" +
+                            "\n" +
+                            "      button:hover {\n" +
+                            "        background-color: #555;\n" +
+                            "      }\n" +
+                            "    </style>\n" +
+                            "  </head>\n" +
+                            "  <body>\n" +
+                            "    <div class=\"container\">\n" +
+                            "      <h1>Thông Báo Phiếu Giảm Giá</h1>\n" +
+                            "      <p>Xin chào quý khách hàng thân yêu,</p>\n" +
+                            "      <p>\n" +
+                            "        Chúng tôi vô cùng vui mừng thông báo rằng bạn có một phiếu giảm giá đặc biệt.\n" +
+                            "      </p>\n" +
+                            "      <div class=\"voucher\">\n" +
+                            "        <p>Giảm " + valueText + "</p>\n" +
+                            "        <p>Có hiệu lực từ: " + voucher.getNgayBatDau().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "</p>\n" +
+                            "      </div>\n" +
+                            "\n" +
+                            "      <p>\n" +
+                            "        Hãy sử dụng phiếu giảm giá này khi bạn mua sắm trên trang web của chúng tôi\n" +
+                            "        để nhận được ưu đãi đặc biệt.\n" +
+                            "      </p>\n" +
+                            "       <a href='http://localhost:3000/home'><button>Xem Chi Tiết</button></a>" +
+                            "      <p>Cảm ơn bạn đã ủng hộ chúng tôi!</p>\n" +
+                            "    </div>\n" +
+                            "  </body>\n" +
+                            "</html>\n");
+                    email.setToEmail(toMail);
+                    email.setSubject("BACKET WEBSITE BÁN VỢT CẦU LÔNG");
+                    email.setTitleEmail("<b style=\"text-align: left;\">Bạn có một phiếu giảm giá: </b><span>" + voucher.getTen() + "</span>");
+                    emailSender.sendEmail(email);
                 }
                 return voucher;
             }
@@ -80,9 +172,7 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     public Voucher updateVoucher(Integer id, VoucherRequest voucherRequest) throws ParseException {
-        // Lấy thông tin voucher theo ID
         Optional<Voucher> optionalVoucher = voucherRepository.findById(id);
-        // Lấy danh sách KhachHang_Voucher liên quan đến voucher
         List<KhachHang_Voucher> customerVouchers = khachHang_VoucherRepository.getListKhachHangVoucherByIdVoucher(id);
 
         // Xóa tất cả các KhachHang_Voucher cũ
@@ -91,58 +181,135 @@ public class VoucherServiceImpl implements VoucherService {
         }
 
         if (optionalVoucher.isPresent()) {
-            // Lấy voucher cần cập nhật
             Voucher voucher = optionalVoucher.get();
-            // Cập nhật thông tin voucher
             Voucher voucherUpdate = voucherRepository.save(voucherRequest.newVoucher(voucher));
             List<KhachHang_Voucher> customerVoucherList = new ArrayList<>();
 
-            // Kiểm tra kiểu voucher
             if (voucherRequest.getKieu() == 0) {
-                return voucherUpdate; // Không cần xử lý thêm nếu kiểu là 0
+                return voucherUpdate;
             } else {
-                // Lấy danh sách ID khách hàng từ yêu cầu
                 List<Integer> listIdCustomer = voucherRequest.getListIdCustomer();
                 if (listIdCustomer != null && !listIdCustomer.isEmpty()) {
                     for (Integer idCustomer : listIdCustomer) {
-                        // Kiểm tra và lấy thông tin tài khoản khách hàng theo ID
                         Optional<TaiKhoan> optionalCustomer = khachHangRepository.findById(idCustomer);
                         if (optionalCustomer.isPresent()) {
                             TaiKhoan customer = optionalCustomer.get();
-                            // Tạo mới đối tượng KhachHang_Voucher từ thông tin yêu cầu
                             KhachHang_VoucherRequest adCustomerVoucherRequest = new KhachHang_VoucherRequest();
                             adCustomerVoucherRequest.setVoucher(voucherUpdate);
                             adCustomerVoucherRequest.setTaiKhoan(customer);
                             KhachHang_Voucher customerVoucher = adCustomerVoucherRequest.newKhachHang_Voucher(new KhachHang_Voucher());
                             customerVoucherList.add(customerVoucher);
                         } else {
-                            // Xử lý nếu không tìm thấy khách hàng
                             System.out.println("Không tìm thấy khách hàng với ID: " + idCustomer);
                         }
                     }
                 } else {
-                    // Xử lý khi danh sách ID khách hàng bị null hoặc rỗng
                     System.out.println("Danh sách ID khách hàng (listIdCustomer) null hoặc rỗng.");
                 }
             }
 
-            // Lưu danh sách KhachHang_Voucher mới vào cơ sở dữ liệu
             khachHang_VoucherRepository.saveAll(customerVoucherList);
+
+            // Thêm logic gửi email
+            for (KhachHang_Voucher customerVoucher : customerVoucherList) {
+                TaiKhoan khachHang = customerVoucher.getTaiKhoan();
+                String valueText = voucherUpdate.getKieuGiaTri() == 0 ? (voucherUpdate.getGiaTri() + "%") : (voucherUpdate.getGiaTri() + "(VNĐ)");
+                String[] toMail = {khachHang.getEmail()};
+                Email email = new Email();
+                email.setBody("<!DOCTYPE html>\n" +
+                        "<html>\n" +
+                        "  <head>\n" +
+                        "    <style>\n" +
+                        "      body {\n" +
+                        "        font-family: Arial, sans-serif;\n" +
+                        "        background-color: #f5f5f5;\n" +
+                        "      }\n" +
+                        "      .container {\n" +
+                        "        background-color: #fff;\n" +
+                        "        max-width: 600px;\n" +
+                        "        margin: 0 auto;\n" +
+                        "        padding: 20px;\n" +
+                        "        border: 1px solid #ccc;\n" +
+                        "        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                        "      }\n" +
+                        "      h1 {\n" +
+                        "        color: #333;\n" +
+                        "        text-align: center;\n" +
+                        "      }\n" +
+                        "      .voucher {\n" +
+                        "        background-image: url(\"https://shorturl.at/uBKU6\");\n" +
+                        "        background-size: auto;\n" +
+                        "        background-repeat: no-repeat;\n" +
+                        "        background-position: center center;\n" +
+                        "        color: #fff;\n" +
+                        "        text-align: center;\n" +
+                        "        padding: 20px;\n" +
+                        "        margin: 20px 0;\n" +
+                        "        border-radius: 5px;\n" +
+                        "        display: flex;\n" +
+                        "      }\n" +
+                        "      .voucher p {\n" +
+                        "        font-size: 18px;\n" +
+                        "        font-weight: bold;\n" +
+                        "        color: #333;\n" +
+                        "        flex: 2;\n" +
+                        "      }\n" +
+                        "      button {\n" +
+                        "        background-color: #333;\n" +
+                        "        color: #fff;\n" +
+                        "        padding: 10px 20px;\n" +
+                        "        border: none;\n" +
+                        "        border-radius: 5px;\n" +
+                        "        font-size: 16px;\n" +
+                        "        cursor: pointer;\n" +
+                        "      }\n" +
+                        "      button:hover {\n" +
+                        "        background-color: #555;\n" +
+                        "      }\n" +
+                        "    </style>\n" +
+                        "  </head>\n" +
+                        "  <body>\n" +
+                        "    <div class=\"container\">\n" +
+                        "      <h1>Thông Báo Phiếu Giảm Giá</h1>\n" +
+                        "      <p>Xin chào quý khách hàng thân yêu,</p>\n" +
+                        "      <p>\n" +
+                        "        Chúng tôi vô cùng vui mừng thông báo rằng bạn có một phiếu giảm giá đặc biệt.\n" +
+                        "      </p>\n" +
+                        "      <div class=\"voucher\">\n" +
+                        "        <p>Giảm " + valueText + "</p>\n" +
+                        "        <p>Có hiệu lực từ: " + voucherUpdate.getNgayBatDau().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "</p>\n" +
+                        "      </div>\n" +
+                        "      <p>\n" +
+                        "        Hãy sử dụng phiếu giảm giá này khi bạn mua sắm trên trang web của chúng tôi\n" +
+                        "        để nhận được ưu đãi đặc biệt.\n" +
+                        "      </p>\n" +
+                        "       <a href='http://localhost:3000/home'><button>Xem Chi Tiết</button></a>" +
+                        "      <p>Cảm ơn bạn đã ủng hộ chúng tôi!</p>\n" +
+                        "    </div>\n" +
+                        "  </body>\n" +
+                        "</html>\n");
+                email.setToEmail(toMail);
+                email.setSubject("BACKET WEBSITE BÁN VỢT CẦU LÔNG");
+                email.setTitleEmail("<b style=\"text-align: left;\">Bạn có một phiếu giảm giá: </b><span>" + voucherUpdate.getTen() + "</span>");
+                emailSender.sendEmail(email);
+            }
             return voucherUpdate;
         } else {
-            // Trả về null nếu không tìm thấy voucher
             System.out.println("Không tìm thấy voucher với ID: " + id);
             return null;
         }
     }
 
+
     @Override
     public Boolean deleteVoucher(Integer id) {
-        LocalDateTime currentDate = LocalDateTime.now();  // Lấy ngày hiện tại
+        LocalDateTime currentDateTime = LocalDateTime.now();  // Lấy thời gian hiện tại với ngày và giờ
+
         Optional<Voucher> optionalVoucher = voucherRepository.findById(id);  // Tìm voucher theo id kiểu Integer
+
         if (optionalVoucher.isPresent()) {
             Voucher voucher = optionalVoucher.get();
-            voucher.setNgayKetThuc(currentDate);  // Cập nhật ngày kết thúc của voucher
+            voucher.setNgayKetThuc(currentDateTime);  // Cập nhật ngày kết thúc của voucher với ngày và giờ hiện tại
             voucher.setTrangThai(2);  // Đặt trạng thái voucher là "đã xóa"
             voucherRepository.save(voucher);  // Lưu voucher đã thay đổi
             return true;
@@ -160,7 +327,6 @@ public class VoucherServiceImpl implements VoucherService {
     public Page<VoucherResponse> getSearchVoucher(VoucherSearch voucherSearch, Pageable pageable) {
         return voucherRepository.getSearchVoucher(voucherSearch, pageable);
     }
-
 
     @Override
     public Page<KhachHangResponse> getSearchKhachHang(KhachHangSearch khachHangSearch, Pageable pageable) {
@@ -192,5 +358,30 @@ public class VoucherServiceImpl implements VoucherService {
         voucher.setSoLuong(voucher.getSoLuong() - 1);
         return voucherRepository.save(voucher);
 
+    }
+
+    @Scheduled(cron = "0 * * * * ?")
+    @Transactional
+    public void updateTrangThaiVoucher() {
+        boolean flag = false;
+        LocalDateTime now = LocalDateTime.now(); // Lấy thời gian hiện tại
+
+        List<Voucher> voucherList = voucherRepository.getAllVoucherWrong(now);
+
+        for (Voucher voucher : voucherList) {
+            LocalDateTime ngayBatDau = voucher.getNgayBatDau();
+            LocalDateTime ngayKetThuc = voucher.getNgayKetThuc();
+
+            if (ngayBatDau.isAfter(now) && voucher.getTrangThai() != 0) {
+                voucher.setTrangThai(0);
+                flag = true;
+            } else if (ngayKetThuc.isBefore(now) && voucher.getTrangThai() != 2) {
+                voucher.setTrangThai(2);
+                flag = true;
+            } else if (ngayBatDau.isBefore(now) && ngayKetThuc.isAfter(now) && voucher.getTrangThai() != 1) {
+                voucher.setTrangThai(1);
+                flag = true;
+            }
+        }
     }
 }

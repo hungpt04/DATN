@@ -5,6 +5,11 @@ import swal from 'sweetalert';
 import { AiOutlineDollar, AiOutlinePercentage } from "react-icons/ai";
 import ReactPaginate from 'react-paginate';
 import numeral from 'numeral';
+import dayjs from 'dayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { CircularProgress } from '@mui/material';
 
 const VoucherDetail = () => {
     const initialVoucher = {
@@ -16,8 +21,8 @@ const VoucherDetail = () => {
         kieuGiaTri: 0,
         dieuKienNhoNhat: '',
         soLuong: '',
-        ngayBatDau: '',
-        ngayKetThuc: '',
+        ngayBatDau: null,
+        ngayKetThuc: null,
         trangThai: 0,
         listIdCustomer: []
     }
@@ -99,12 +104,13 @@ const VoucherDetail = () => {
     const [giaTriMaxDefault, setGiaTriMaxDefault] = useState(0)
     const [soLuongDefault, setSoLuongDefault] = useState(0)
     const [dieuKienNhoNhatDefault, setDieuKienNhoNhatDefault] = useState(0)
+    const [loading, setLoading] = useState(false)
+    const [confirmClicked, setConfirmClicked] = useState(false)
 
     const listMa = []
     allMaVoucher.map((m) => listMa.push(m.toLowerCase()))
     const listTen = []
     allTenVoucher.map((m) => listTen.push(m.toLowerCase()))
-
 
     const handleNavigateToDiscountVoucher = () => {
         navigate('/admin/giam-gia/phieu-giam-gia');
@@ -327,6 +333,7 @@ const VoucherDetail = () => {
         setErrorSoLuong(errors.soLuong)
         setErrorNgayBatDau(errors.ngayBatDau)
         setErrorNgayKetThuc(errors.ngayKetThuc)
+        setConfirmClicked(true)
         return check
     }
 
@@ -348,6 +355,7 @@ const VoucherDetail = () => {
                 },
             }).then((willConfirm) => {
                 if (willConfirm) {
+                    setLoading(true)
                     const updatedVoucher = {
                         ...voucherDetail,
                         listIdCustomer: selectedCustomerIds // Gửi danh sách ID khách hàng
@@ -365,7 +373,10 @@ const VoucherDetail = () => {
                         .catch((error) => {
                             console.error("Lỗi cập nhật:", error);
                             swal("Thất bại!", "Cập nhật phiếu giảm giá thất bại!", "error");
-                        });
+                        })
+                        .finally(() => {
+                            setLoading(false)
+                        })
                 }
             });
         } else {
@@ -449,7 +460,7 @@ const VoucherDetail = () => {
                                     }}
                                     error={errorMa ? 'true' : undefined}
                                 />
-                                <span className='text-red-600'>{errorMa}</span>
+                                <span className='text-red-600 text-xs italic'>{errorMa}</span>
                             </div>
 
                             <div>
@@ -468,7 +479,7 @@ const VoucherDetail = () => {
                                     }}
                                     error={errorTen ? 'true' : undefined}
                                 />
-                                <span className='text-red-600'>{errorTen}</span>
+                                <span className='text-red-600 text-xs italic'>{errorTen}</span>
                             </div>
 
                             <div>
@@ -512,7 +523,7 @@ const VoucherDetail = () => {
                                         />
                                     </div>
                                 </div>
-                                <span className='text-red-600'>{errorGiaTri}</span>
+                                <span className='text-red-600 text-xs italic'>{errorGiaTri}</span>
                             </div>
 
                             <div>
@@ -539,7 +550,7 @@ const VoucherDetail = () => {
                                     />
                                     <span className="flex items-center px-4 bg-gray-200 rounded-r-md">đ</span>
                                 </div>
-                                <span className='text-red-600'>{errorGiaTriMax}</span>
+                                <span className='text-red-600 text-xs italic'>{errorGiaTriMax}</span>
                             </div>
 
                             <div>
@@ -559,7 +570,7 @@ const VoucherDetail = () => {
                                     }}
                                     error={errorSoLuong ? 'true' : undefined}
                                 />
-                                <span className='text-red-600'>{errorSoLuong}</span>
+                                <span className='text-red-600 text-xs italic'>{errorSoLuong}</span>
                             </div>
 
                             <div>
@@ -582,42 +593,61 @@ const VoucherDetail = () => {
                                     />
                                     <span className="flex items-center px-4 bg-gray-200 rounded-r-md">đ</span>
                                 </div>
-                                <span className='text-red-600'>{errorDieuKienNhoNhat}</span>
+                                <span className='text-red-600 text-xs italic'>{errorDieuKienNhoNhat}</span>
                             </div>
 
                             <div>
-                                <label className="block text-gray-600 mb-1">Từ ngày</label>
-                                <input
-                                    type="date"
-                                    className="w-full border border-gray-300 rounded-md p-2"
-                                    value={voucherDetail?.ngayBatDau}
-                                    onChange={(e) => {
-                                        setVoucherDetail({
-                                            ...voucherDetail,
-                                            ngayBatDau: e.target.value
-                                        })
-                                        setErrorNgayBatDau('')
-                                    }}
-                                />
-                                <span className='text-red-600'>{errorNgayBatDau}</span>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DateTimePicker
+                                        format={'DD-MM-YYYY HH:mm:ss'}
+                                        label="Từ ngày"
+                                        slotProps={{
+                                            textField: {
+                                                size: 'small',
+                                                className: 'w-[200px]'
+                                            },
+                                            actionBar: {
+                                                actions: ['clear', 'today']
+                                            }
+                                        }}
+                                        value={dayjs(voucherDetail?.ngayBatDau, 'YYYY-MM-DDTHH:mm:ss')}
+                                        onChange={(e) => {
+                                            setVoucherDetail({
+                                                ...voucherDetail,
+                                                ngayBatDau: dayjs(e).format('YYYY-MM-DDTHH:mm:ss')
+                                            })
+                                            setErrorNgayBatDau('')
+                                        }}
+                                    />
+                                </LocalizationProvider>
+                                <span className='text-red-600 text-xs italic'>{errorNgayBatDau}</span>
                             </div>
 
                             <div>
-                                <label className="block text-gray-600 mb-1">Đến ngày</label>
-                                <input
-                                    type="date"
-                                    className="w-full border border-gray-300 rounded-md p-2"
-                                    value={voucherDetail?.ngayKetThuc}
-                                    onChange={(e) => {
-                                        setVoucherDetail({
-                                            ...voucherDetail,
-                                            ngayKetThuc: e.target.value
-                                        })
-                                        setErrorNgayKetThuc('')
-                                    }}
-                                    e
-                                />
-                                <span className='text-red-600'>{errorNgayKetThuc}</span>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DateTimePicker
+                                        format={'DD-MM-YYYY HH:mm:ss'}
+                                        label="Đến ngày"
+                                        slotProps={{
+                                            textField: {
+                                                size: 'small',
+                                                className: 'w-[200px]'
+                                            },
+                                            actionBar: {
+                                                actions: ['clear', 'today']
+                                            }
+                                        }}
+                                        value={dayjs(voucherDetail?.ngayKetThuc, 'YYYY-MM-DDTHH:mm:ss')}
+                                        onChange={(e) => {
+                                            setVoucherDetail({
+                                                ...voucherDetail,
+                                                ngayKetThuc: dayjs(e).format('YYYY-MM-DDTHH:mm:ss')
+                                            })
+                                            setErrorNgayKetThuc('')
+                                        }}
+                                    />
+                                </LocalizationProvider>
+                                <span className='text-red-600 text-xs italic'>{errorNgayKetThuc}</span>
                             </div>
 
                             <div className="col-span-2">
@@ -751,11 +781,24 @@ const VoucherDetail = () => {
                     </div>
                 </div>
                 <div className="pt-4">
-                    {/* Button */}
+                    {confirmClicked && loading && (
+                        <div
+                            style={{
+                                position: 'fixed',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                zIndex: 9999,
+                            }}>
+                            <CircularProgress size={50} />
+                        </div>
+                    )}
+                    {/*Button*/}
                     <button
                         onClick={() => handleVoucherUpdate(id, voucherDetail)}
+                        disabled={loading}
                         className="border border-amber-400 hover:bg-gray-100 text-amber-400 py-2 px-4 rounded-md ml-auto flex items-center">
-                        Cập nhật
+                        {loading ? 'Đang cập nhật...' : 'Cập nhật'}
                     </button>
                 </div>
             </div>

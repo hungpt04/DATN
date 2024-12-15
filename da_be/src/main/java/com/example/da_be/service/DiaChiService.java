@@ -4,8 +4,12 @@ import com.example.da_be.entity.DiaChi;
 import com.example.da_be.entity.DiemCanBang;
 import com.example.da_be.repository.DiaChiRepository;
 import com.example.da_be.repository.KhachHangRepository;
+import com.example.da_be.request.DiaChiRequest;
+import com.example.da_be.response.DiaChiResponse;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +73,52 @@ public class DiaChiService {
         return diaChiRepository.getIdDiaChiByIdTaiKhoan(idTaiKhoan);
     }
 
+    //Get all địa chỉ by idTaiKhoan của Hoàng
+    public Page<DiaChiResponse> getAllDiaChiByIdTaiKhoan(Pageable pageable, Integer idTaiKhoan) {
+        return diaChiRepository.getPageDiaChiByIdTaiKhoan(pageable, idTaiKhoan);
+    }
+
+    //Add địa chỉ của Hoàng
+    public DiaChi add(DiaChiRequest diaChiRequest) {
+        try {
+            DiaChi diaChi = diaChiRequest.newDiaChi(new DiaChi());
+            diaChi.setTaiKhoan(khachHangRepository.findById(diaChiRequest.getIdTaiKhoan()).orElseThrow(() -> new RuntimeException("Customer not found.")));
+            return diaChiRepository.save(diaChi);
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Update địa chỉ của Hoàng
+    public Boolean update(Long id, DiaChiRequest diaChiRequest) {
+        Optional<DiaChi> optional = diaChiRepository.findById(id);
+        if (optional.isPresent()) {
+            DiaChi diaChi = diaChiRequest.newDiaChi(optional.get());
+            diaChiRepository.save(diaChi);
+            return true;
+        }else {
+            return false;
+        }
+    }
+//Delete địa chỉ của Hoàng
+    public void delete(Long id) {
+        diaChiRepository.deleteById(id);
+    }
+
+    public Boolean updateDefault(Integer idTaiKhoan, Long idDiaChi) {
+        List<DiaChi> addressList = diaChiRepository.getTrangThaiDiaChiByIdTaiKhoan(idTaiKhoan);
+        if (!addressList.isEmpty()) {
+            for (DiaChi address : addressList) {
+                address.setLoai(1);
+                if (address.getId().equals(idDiaChi)) {
+                    address.setLoai(0);
+                }
+                diaChiRepository.save(address);
+            }
+            return true;
+        }
+        return false;
+
     @Transactional
     public DiaChi setDefaultAddress(Long diaChiId) {
         DiaChi diaChi = diaChiRepository.findById(diaChiId)
@@ -87,6 +137,7 @@ public class DiaChiService {
         }
 
         return diaChiRepository.save(diaChi);
+
     }
 
 }

@@ -40,9 +40,19 @@ public class VoucherRequest {
     private List<Integer> listIdCustomer;
 
     // Phương thức tiện ích để thiết lập trạng thái dựa trên ngày hiện tại
+//    public Integer setDataStatus(LocalDate startDate, LocalDate endDate, Integer status) {
+//        LocalDate currentDate = LocalDate.now();
+//        if (!currentDate.isBefore(startDate) && currentDate.isBefore(endDate.plusDays(1))) {
+//            return 1;  // Đang diễn ra
+//        } else {
+//            return status;  // Trạng thái mặc định hoặc đã hết hạn
+//        }
+//    }
+
     public Integer setDataStatus(LocalDateTime startDate, LocalDateTime endDate, Integer status) {
-        LocalDateTime currentDate = LocalDateTime.now();
-        if (!currentDate.isBefore(startDate) && currentDate.isBefore(endDate.plusDays(1))) {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        // Kiểm tra xem thời gian hiện tại có nằm trong khoảng thời gian diễn ra không
+        if (!currentDateTime.isBefore(startDate) && currentDateTime.isBefore(endDate.plusMinutes(1))) {
             return 1;  // Đang diễn ra
         } else {
             return status;  // Trạng thái mặc định hoặc đã hết hạn

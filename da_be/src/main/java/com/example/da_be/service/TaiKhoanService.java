@@ -4,10 +4,15 @@ import com.example.da_be.config.JwtTokenProvider;
 import com.example.da_be.entity.TaiKhoan;
 import com.example.da_be.exception.ResourceNotFoundException;
 import com.example.da_be.repository.TaiKhoanRepository;
+
+import com.google.gson.JsonParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.example.da_be.request.ChangeRequest;
 import com.google.gson.JsonParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,30 +39,6 @@ public class TaiKhoanService {
     public TaiKhoan saveOrUpdateTaiKhoan(TaiKhoan taiKhoan) {
         return taiKhoanRepository.save(taiKhoan);
     }
-
-//    public TaiKhoan add(TaiKhoanRequest taiKhoanRequest) throws ParseException, IOException {
-//        String setMa = "NV" + taiKhoanRepository.findAll().size();
-//        TaiKhoan taiKhoan = TaiKhoan.builder()
-//                .ma(setMa)
-//                .hoTen(taiKhoanRequest.getHoTen())
-//                .sdt(taiKhoanRequest.getSdt())
-//                .email(taiKhoanRequest.getEmail())
-//                .gioiTinh(taiKhoanRequest.getGioiTinh())
-//                .vaiTro(taiKhoanRequest.getVaiTro())
-//                .ngaySinh(taiKhoanRequest.getNgaySinh())
-//                .cccd(taiKhoanRequest.getCccd())
-//                .trangThai(taiKhoanRequest.getTrangThai())
-//                .build();
-//
-//        // Xử lý avatar
-//        if (taiKhoanRequest.getAvatar() != null && !taiKhoanRequest.getAvatar().isEmpty()) {
-//            String avatarPath = saveAvatar(taiKhoanRequest.getAvatar());
-//            taiKhoan.setAvatar(avatarPath);
-//        }
-//        String password = generatePassword();
-//        taiKhoan.setMatKhau(password);
-//        return taiKhoanRepository.save(taiKhoan);
-//    }
 
     public TaiKhoan deleteTaiKhoanById(int id) {
         TaiKhoan taiKhoan = taiKhoanRepository.findById(id).orElse(null);

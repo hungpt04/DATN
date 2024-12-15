@@ -4,18 +4,20 @@ import AddIcon from '@mui/icons-material/Add';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import swal from 'sweetalert';
 import { useForm } from 'react-hook-form';
+import { TbEyeEdit } from 'react-icons/tb';
 
 function Product() {
+
     const [products, setProducts] = useState([]);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const productsPerPage = 4;
+    const productsPerPage = 5;
 
     const [showImageModal, setShowImageModal] = useState(false);
     const [imageList, setImageList] = useState([]);
@@ -352,20 +354,62 @@ function Product() {
         }
     };
 
-    // Add handlers
+
+
 
     return (
         <div>
-            <h1 className="text-center text-5xl font-bold text-gray-800">Danh sách sản phẩm</h1>
-            <div>
-                <div className="flex justify-end mb-4">
+            <div className="font-bold text-sm">
+                Sản phẩm
+            </div>
+            <div className="bg-white p-4 rounded-md shadow-md">
+                <div className="flex mb-4 justify-between items-center">
+                    <input
+                        type="text"
+                        placeholder="Nhập tên sản phẩm để tìm..."
+                        className="border border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 rounded-md px-4 py-2 text-gray-700 w-1/2"
+                    />
                     <Link to={'/admin/quan-ly-san-pham/san-pham-ct/add'}>
-                        <button className="border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium py-2 px-4 rounded">
-                            <AddIcon />
+                        <button className="border border-blue-500 text-blue-500 font-medium py-2 px-4 rounded flex items-center">
+                            <AddIcon /> Thêm mới
                         </button>
                     </Link>
                 </div>
-                <table className="w-full table-auto bg-white rounded-lg shadow-md">
+                <div className="flex items-center mr-4 mb-6">
+                    <label className="mr-2 font-semibold">Trạng thái:</label>
+                    <label className="mr-2">
+                        <input
+                            type="radio"
+                            name="status"
+                            value="all"
+                            className="mr-1"
+                        />
+                        Tất cả
+                    </label>
+                    <label className="mr-2">
+                        <input
+                            type="radio"
+                            name="status"
+
+                            className="mr-1"
+                        />
+                        Active
+                    </label>
+                    <label className="mr-2">
+                        <input
+                            type="radio"
+                            name="status"
+
+                            className="mr-1"
+                        />
+                        Inactive
+                    </label>
+                    <button className="ml-6 border border-blue-500 text-blue-500 font-medium py-2 px-4 rounded">
+                        Xuất Excel
+                    </button>
+                </div>
+
+                <table className="min-w-full table-auto border-collapse border border-gray-200">
                     <thead>
                         <tr className="bg-gray-200 text-gray-700">
                             <th className="py-4 px-6 text-left">STT</th>
@@ -384,19 +428,18 @@ function Product() {
                                 <td className="py-4 px-6">
                                     <span
                                         className={`px-2 py-1 rounded-full text-xs font-semibold
-                        ${
-                            product.trangThai
-                                ? 'text-red-600 bg-red-100 border border-red-600'
-                                :  'text-green-600 bg-green-100 border border-green-600'
-                        }`}
+                        ${product.trangThai
+                                                ? 'text-red-600 bg-red-100 border border-red-600'
+                                                : 'text-green-600 bg-green-100 border border-green-600'
+                                            }`}
                                     >
                                         {product.trangThai ? 'Inactive' : 'Active'}
                                     </span>
                                 </td>
                                 <td className="py-4 px-6">
                                     <Link to={`/admin/quan-ly-san-pham/san-pham-ct/${product.id}/variants`}>
-                                        <button className="hover:bg-gray-400 font-medium py-2 px-4 rounded">
-                                            <PencilIcon className="h-5 w-5" />
+                                        <button className="text-blue-500 text-2xl font-medium py-2 px-4 rounded">
+                                            <TbEyeEdit />
                                         </button>
                                     </Link>
                                 </td>
@@ -417,9 +460,8 @@ function Product() {
                     <button
                         key={index}
                         onClick={() => paginate(index + 1)}
-                        className={`border-t border-b border-gray-400 px-4 py-2 ${
-                            index + 1 === currentPage ? 'bg-gray-200' : ''
-                        }`}
+                        className={`border-t border-b border-gray-400 px-4 py-2 ${index + 1 === currentPage ? 'bg-gray-200' : ''
+                            }`}
                     >
                         {index + 1}
                     </button>

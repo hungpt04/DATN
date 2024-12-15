@@ -43,6 +43,12 @@ public class Voucher {
     @Column(name = "DieuKienNhoNhat")
     private Integer dieuKienNhoNhat;
 
+//    @Column(name = "NgayBatDau")
+//    private LocalDate ngayBatDau;
+//
+//    @Column(name = "NgayKetThuc")
+//    private LocalDate ngayKetThuc;
+
     @Column(name = "NgayBatDau")
     private LocalDateTime ngayBatDau;
 

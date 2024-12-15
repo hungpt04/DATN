@@ -3,12 +3,10 @@ package com.example.da_be.service.impl;
 import com.example.da_be.entity.KhuyenMai;
 import com.example.da_be.entity.SanPhamCT;
 import com.example.da_be.entity.SanPhamKhuyenMai;
-import com.example.da_be.repository.KhachHangRepository;
 import com.example.da_be.repository.KhuyenMaiRepository;
 import com.example.da_be.repository.SanPhamCTRepository;
 import com.example.da_be.repository.SanPhamKhuyenMaiRepository;
 import com.example.da_be.request.*;
-import com.example.da_be.response.KhachHangResponse;
 import com.example.da_be.response.KhuyenMaiResponse;
 import com.example.da_be.response.SanPhamCTResponse;
 import com.example.da_be.response.SanPhamResponse;
@@ -16,10 +14,11 @@ import com.example.da_be.service.KhuyenMaiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,8 +33,6 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
 
     @Autowired
     private SanPhamKhuyenMaiRepository sanPhamKhuyenMaiRepository;
-    @Autowired
-    private KhachHangRepository khachHangRepository;
 
     @Override
     public List<KhuyenMaiResponse> getAllKhuyenMai() {
@@ -57,37 +54,101 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
         return khuyenMaiRepository.getSanPhamChiTietBySanPham(id);
     }
 
+//    @Override
+//    public KhuyenMai addKhuyenMaiOnProduct(KhuyenMaiRequest khuyenMaiRequest) {
+//        KhuyenMai khuyenMai = khuyenMaiRequest.newKhuyenMaiAddSanPham(new KhuyenMai());
+//        khuyenMaiRepository.save(khuyenMai);
+//
+//        List<SanPhamCT> spctList = sanPhamChiTietRepository.findAll();
+//        List<SanPhamKhuyenMai> sanPhamKhuyenMaiList = new ArrayList<>();
+//
+//        // Nếu type == false: Áp dụng cho TẤT CẢ sản phẩm
+//        if (khuyenMaiRequest.getLoai() == false) {
+//            for (SanPhamCT spct : spctList) {
+//                SanPhamRequest addRequest = new SanPhamRequest();
+//                addRequest.setKhuyenMai(khuyenMai);
+//                addRequest.setSanPhamChiTiet(spct);
+//                SanPhamKhuyenMai sanPhamKhuyenMai = addRequest.newSanPhamKhuyenMai(new SanPhamKhuyenMai());
+//                sanPhamKhuyenMaiList.add(sanPhamKhuyenMai);
+//            }
+//        }
+//        // Nếu type == true: Áp dụng cho các sản phẩm ĐƯỢC CHỌN
+//        else {
+//            for (Integer idProductDetail : khuyenMaiRequest.getIdProductDetail()) {
+//                SanPhamCT spct = sanPhamChiTietRepository.findById(idProductDetail).get();
+//                SanPhamRequest addRequest = new SanPhamRequest();
+//                addRequest.setKhuyenMai(khuyenMai);
+//                addRequest.setSanPhamChiTiet(spct);
+//                SanPhamKhuyenMai sanPhamKhuyenMai = addRequest.newSanPhamKhuyenMai(new SanPhamKhuyenMai());
+//                sanPhamKhuyenMaiList.add(sanPhamKhuyenMai);
+//            }
+//        }
+//        sanPhamKhuyenMaiRepository.saveAll(sanPhamKhuyenMaiList);
+//        return khuyenMai;
+//    }
+
     @Override
     public KhuyenMai addKhuyenMaiOnProduct(KhuyenMaiRequest khuyenMaiRequest) {
+        // Tạo đối tượng KhuyenMai từ request và lưu vào cơ sở dữ liệu
         KhuyenMai khuyenMai = khuyenMaiRequest.newKhuyenMaiAddSanPham(new KhuyenMai());
         khuyenMaiRepository.save(khuyenMai);
 
+        // Lấy danh sách tất cả sản phẩm chi tiết từ cơ sở dữ liệu
         List<SanPhamCT> spctList = sanPhamChiTietRepository.findAll();
         List<SanPhamKhuyenMai> sanPhamKhuyenMaiList = new ArrayList<>();
 
-        // Nếu type == false: Áp dụng cho TẤT CẢ sản phẩm
+        // Lấy giá trị phần trăm giảm từ request
+        double discountPercent = khuyenMaiRequest.getGiaTri(); // Phần trăm khuyến mãi
+
+        // Nếu loại khuyến mãi là false, áp dụng cho tất cả sản phẩm
         if (khuyenMaiRequest.getLoai() == false) {
             for (SanPhamCT spct : spctList) {
-                SanPhamRequest addRequest = new SanPhamRequest();
-                addRequest.setKhuyenMai(khuyenMai);
-                addRequest.setSanPhamChiTiet(spct);
-                SanPhamKhuyenMai sanPhamKhuyenMai = addRequest.newSanPhamKhuyenMai(new SanPhamKhuyenMai());
+                SanPhamKhuyenMai sanPhamKhuyenMai = new SanPhamKhuyenMai();
+                sanPhamKhuyenMai.setKhuyenMai(khuyenMai);
+                sanPhamKhuyenMai.setSanPhamCT(spct);
+
+                // Tính giá khuyến mãi cho sản phẩm này
+                double originalPrice = spct.getDonGia(); // Giá gốc của sản phẩm (kiểu double)
+                int discountPrice = calculateDiscountPrice(originalPrice, discountPercent); // Tính giá khuyến mãi
+
+                sanPhamKhuyenMai.setGiaKhuyenMai(discountPrice); // Lưu giá khuyến mãi vào bảng
+
                 sanPhamKhuyenMaiList.add(sanPhamKhuyenMai);
             }
-        }
-        // Nếu type == true: Áp dụng cho các sản phẩm ĐƯỢC CHỌN
-        else {
+        } else { // Nếu loại khuyến mãi là true, áp dụng cho các sản phẩm được chọn
             for (Integer idProductDetail : khuyenMaiRequest.getIdProductDetail()) {
                 SanPhamCT spct = sanPhamChiTietRepository.findById(idProductDetail).get();
-                SanPhamRequest addRequest = new SanPhamRequest();
-                addRequest.setKhuyenMai(khuyenMai);
-                addRequest.setSanPhamChiTiet(spct);
-                SanPhamKhuyenMai sanPhamKhuyenMai = addRequest.newSanPhamKhuyenMai(new SanPhamKhuyenMai());
+                SanPhamKhuyenMai sanPhamKhuyenMai = new SanPhamKhuyenMai();
+                sanPhamKhuyenMai.setKhuyenMai(khuyenMai);
+                sanPhamKhuyenMai.setSanPhamCT(spct);
+
+                // Tính giá khuyến mãi cho sản phẩm được chọn
+                double originalPrice = spct.getDonGia(); // Giá gốc của sản phẩm (kiểu double)
+                int discountPrice = calculateDiscountPrice(originalPrice, discountPercent); // Tính giá khuyến mãi
+
+                sanPhamKhuyenMai.setGiaKhuyenMai(discountPrice); // Lưu giá khuyến mãi vào bảng
+
                 sanPhamKhuyenMaiList.add(sanPhamKhuyenMai);
             }
         }
+
+        // Lưu tất cả các sản phẩm khuyến mãi vào cơ sở dữ liệu
         sanPhamKhuyenMaiRepository.saveAll(sanPhamKhuyenMaiList);
+
         return khuyenMai;
+    }
+
+    private int calculateDiscountPrice(double originalPrice, double discountPercent) {
+        // Tính giá khuyến mãi theo phần trăm
+        double discountPrice = originalPrice * (1 - discountPercent / 100.0); // Giảm giá theo phần trăm
+
+        // Đảm bảo giá không âm
+        if (discountPrice < 0) {
+            discountPrice = 0;
+        }
+
+        // Chuyển kết quả từ double sang int (có thể làm tròn nếu cần)
+        return (int) Math.round(discountPrice); // Làm tròn giá sau khi tính toán
     }
 
 
@@ -133,8 +194,8 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
 
 
     @Override
-    public KhuyenMaiResponse getKhuyenMaiById(Integer id) {
-        return khuyenMaiRepository.getKhuyenMaiById(id);
+    public KhuyenMai getKhuyenMaiById(Integer id) {
+        return khuyenMaiRepository.findById(id).orElse(null);
     }
 
     @Override
@@ -143,27 +204,26 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
     }
 
     @Override
-    public KhuyenMai deleteKhuyenMai(Integer id) {
-        // Lấy ngày hiện tại (không có giờ)
-        LocalDate currentDate = LocalDate.now();
-        // Định dạng ngày theo kiểu "dd-MM-yyyy"
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        String formattedDate = currentDate.format(dateFormatter);
+    public List<Integer> getIdSanPhamChiTietByIdKhuyenMai(Integer idKhuyenMai) {
+        return khuyenMaiRepository.getIdSanPhamChiTietByIdKhuyenMai(idKhuyenMai);
+    }
 
-        // Chuyển đổi chuỗi thành LocalDate
-        LocalDate endDate = LocalDate.parse(formattedDate, dateFormatter);
+    @Override
+    public KhuyenMai deleteKhuyenMai(Integer id) {
+        // Lấy ngày giờ hiện tại (bao gồm cả giờ)
+        LocalDateTime currentDateTime = LocalDateTime.now();
+
         // Tìm khuyến mãi theo id
         Optional<KhuyenMai> optionalKhuyenMai = khuyenMaiRepository.findById(id);
         if (optionalKhuyenMai.isPresent()) {
             KhuyenMai khuyenMai = optionalKhuyenMai.get();
-            // Cập nhật trạng thái và thời gian kết thúc (chỉ ngày)
+            // Cập nhật trạng thái và thời gian kết thúc
             khuyenMai.setTrangThai(2);
-            khuyenMai.setTgKetThuc(endDate);
+            khuyenMai.setTgKetThuc(currentDateTime);
             return khuyenMaiRepository.save(khuyenMai);
         } else {
             return null;
         }
-
     }
 
     @Override
@@ -194,5 +254,31 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
     @Override
     public List<String> getAllTenKhuyenMai() {
         return khuyenMaiRepository.getAllTenKhuyenMai();
+    }
+
+    @Scheduled(cron = "0 * * * * ?")
+    @Transactional
+    public void cronJobCheckPromotion() {
+        boolean flag = false;
+        LocalDateTime dateNow = LocalDateTime.now();
+
+        List<KhuyenMai> khuyenMaisList = khuyenMaiRepository.getAllKhuyenMaiWrong(dateNow);
+
+        for (KhuyenMai khuyenMai : khuyenMaisList) {
+            if (khuyenMai.getTgBatDau().isAfter(dateNow) &&
+                    khuyenMai.getTrangThai() != 0) {
+                khuyenMai.setTrangThai(0);
+                flag = true;
+            } else if (khuyenMai.getTgKetThuc().isBefore(dateNow) &&
+                    khuyenMai.getTrangThai() != 2) {
+                khuyenMai.setTrangThai(2);
+                flag = true;
+            } else if (khuyenMai.getTgBatDau().isBefore(dateNow) &&
+                    khuyenMai.getTgKetThuc().isAfter(dateNow) &&
+                    khuyenMai.getTrangThai() != 1) {
+                khuyenMai.setTrangThai(1);
+                flag = true;
+            }
+        }
     }
 }

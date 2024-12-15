@@ -1,14 +1,43 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Search, LocalShipping, CheckCircle, QrCodeScanner } from '@mui/icons-material';
+import swal from 'sweetalert';
 
 function SearchOrder() {
     const [orderId, setOrderId] = useState('');
     const navigate = useNavigate();
 
-    const handleSearch = () => {
-        if (orderId) {
-            navigate(`/admin/tra-hang/don-hang?orderId=${orderId}`);
+    const handleSearch = async () => {
+        if (!orderId) {
+            swal('Lỗi', 'Vui lòng nhập mã hóa đơn', 'error');
+            return;
+        }
+
+        try {
+            // Gọi API để kiểm tra thông tin hóa đơn
+            const response = await axios.get(`http://localhost:8080/api/hoa-don/${orderId}`);
+            const bill = response.data;
+
+            // Kiểm tra trạng thái hóa đơn
+            switch (bill.trangThai) {
+                case 9:
+                    swal('Thông báo', 'Hóa đơn đã được trả hàng! Vui lòng chọn hóa đơn khác', 'warning');
+                    break;
+                case 7:
+                    // Nếu là trạng thái Hoàn thành, cho phép trả hàng
+                    navigate(`/admin/tra-hang/don-hang?orderId=${orderId}`);
+                    break;
+                default:
+                    swal('Thông báo', 'Hóa đơn chưa hoàn thành! Không thể trả hàng', 'warning');
+            }
+        } catch (error) {
+            // Xử lý khi không tìm thấy hóa đơn
+            if (error.response && error.response.status === 404) {
+                swal('Lỗi', 'Không tìm thấy hóa đơn', 'error');
+            } else {
+                swal('Lỗi', 'Có lỗi xảy ra khi tìm kiếm hóa đơn', 'error');
+            }
         }
     };
 
@@ -33,6 +62,11 @@ function SearchOrder() {
                             className="p-2 outline-none w-60"
                             value={orderId}
                             onChange={(e) => setOrderId(e.target.value)}
+                            onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleSearch();
+                                }
+                            }}
                         />
                     </div>
                     <button
@@ -51,7 +85,7 @@ function SearchOrder() {
                 {/* Hình ảnh minh họa */}
                 <div className="flex justify-center mb-6">
                     <img
-                        src="https://files.oaiusercontent.com/file-QVi8IMXpZyt8WvQSV6udHhvB?se=2024-11-14T04%3A10%3A01Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D1f92fc6d-74b4-40a7-aab4-99bde59d92d2.webp&sig=ifShX5Uxt73frBNoMQ2DZImpfEAmnJx4zBNrGegqupg%3D"
+                        src="https://blog.dktcdn.net/files/ship-hang-nhanh3.jpg"
                         alt="Illustration of a person loading boxes into a truck"
                         className="rounded-lg shadow-lg"
                         width={400}

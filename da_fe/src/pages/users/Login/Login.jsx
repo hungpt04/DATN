@@ -188,16 +188,18 @@ const LoginPanel = () => {
             // Hiển thị thông báo thành công
             swal("Thành công!", "Đăng nhập thành công!", "success");
 
-            setError("");
 
-            setTimeout(() => {
-                if (vaiTro.toLowerCase() === "customer") {
-                    navigate(0)
-                } else {
-                    navigate("/admin")
-                }
-                // navigate(0)
-            }, 2000);
+                setTimeout(() => {
+                    // navigate(0)
+                    if (vaiTro.toLowerCase() === 'customer' ) {
+                        navigate(0)
+                    } else {
+                        navigate('/admin')
+                    }
+                }, 2000);
+            
+
+            setError("");
 
         } catch (error) {
             if (error.response) {

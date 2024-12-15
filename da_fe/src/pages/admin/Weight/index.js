@@ -120,18 +120,59 @@ function Weight() {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
-        <div className="p-2 max-w-7xl mx-auto bg-white rounded-lg">
-            <h4 className="text-center text-5xl font-bold text-gray-800">Danh sách trọng lượng</h4>
-            <div>
-                <div className="flex justify-end mb-4">
+        <div className="p-2 max-w-7xl mx-auto bg-white rounded-sm">
+            <div className="font-bold text-sm">
+                Trọng lượng
+            </div>
+            <div className="bg-white p-4 rounded-md shadow-md">
+                <div className="flex mb-4 justify-between items-center">
+                    <input
+                        type="text"
+                        placeholder="Nhập tên thương hiệu để tìm..."
+                        className="border border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 rounded-md px-4 py-2 text-gray-700 w-1/2"
+                    />
                     <button
                         onClick={handleAddModal}
                         className="border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white font-medium py-2 px-4 rounded"
                     >
-                        <AddIcon />
+                        <AddIcon/> Thêm mới 
                     </button>
                 </div>
-                <table className="w-full table-auto bg-white rounded-lg shadow-md">
+                <div className="flex items-center mr-4 mb-6">
+                    <label className="mr-2 font-semibold">Trạng thái:</label>
+                    <label className="mr-2">
+                        <input
+                            type="radio"
+                            name="status"
+                            value="all"
+                            className="mr-1"
+                        />
+                        Tất cả
+                    </label>
+                    <label className="mr-2">
+                        <input
+                            type="radio"
+                            name="status"
+
+                            className="mr-1"
+                        />
+                        Active
+                    </label>
+                    <label className="mr-2">
+                        <input
+                            type="radio"
+                            name="status"
+
+                            className="mr-1"
+                        />
+                        Inactive
+                    </label>
+                    <button className="ml-6 border border-blue-500 text-blue-500 font-medium py-2 px-4 rounded">
+                        Xuất Excel
+                    </button>
+                </div>
+
+                <table className="min-w-full table-auto border-collapse border border-gray-200">
                     <thead>
                         <tr className="bg-gray-200 text-gray-700">
                             <th className="py-4 px-6 text-left">STT</th>
@@ -163,13 +204,13 @@ function Weight() {
                                     <div className="flex">
                                         <button
                                             onClick={() => handleUpdateModal(weight)}
-                                            className=" hover:bg-gray-400 font-medium py-2 px-4 rounded"
+                                            className=" text-blue-500 font-medium py-2 px-4 rounded"
                                         >
                                             <PencilIcon className="h-5 w-5" />
                                         </button>
                                         <button
                                             onClick={() => confirmDelete(weight.id)}
-                                            className="hover:bg-gray-400 font-medium py-2 px-4 rounded"
+                                            className="text-red-600 font-medium py-2 px-4 rounded"
                                         >
                                             <TrashIcon className="w-5" />
                                         </button>

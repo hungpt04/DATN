@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -14,9 +15,9 @@ public class KhuyenMaiResponse {
 
     private String ten;
 
-    private LocalDate tgBatDau;
+    private LocalDateTime tgBatDau;
 
-    private LocalDate tgKetThuc;
+    private LocalDateTime tgKetThuc;
 
     private Integer trangThai;
 

@@ -51,7 +51,6 @@ public class AuthenticationService {
 
         // Mã hóa mật khẩu trước khi lưu
         taiKhoan.setMatKhau(passwordEncoder.encode(signupRequest.getMatKhau()));
-
         // Thiết lập vai trò mặc định là "Customer"
         taiKhoan.setVaiTro(Roles.CUSTOMER.name());
         taiKhoan.setTrangThai(1); // Hoặc trạng thái mặc định nào đó

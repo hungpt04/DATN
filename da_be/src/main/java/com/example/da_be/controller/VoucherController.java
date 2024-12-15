@@ -159,4 +159,14 @@ public class VoucherController {
         }
 
     }
+
+    @GetMapping("/by-id/{id}")
+    public ResponseEntity<VoucherResponse> getVoucherByIdd(@PathVariable Integer id) {
+        try {
+            VoucherResponse voucher = voucherService.getVoucherById(id);
+            return ResponseEntity.ok(voucher);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

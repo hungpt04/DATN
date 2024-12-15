@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import swal from 'sweetalert';
 import ReactPaginate from 'react-paginate';
+import dayjs from 'dayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 const CreateSale = () => {
     const navigate = useNavigate();
@@ -19,6 +23,7 @@ const CreateSale = () => {
     const [errorTgBatDau, setErrorTgBatDau] = useState('')
     const [errorTgKetThuc, setErrorTgKetThuc] = useState('')
     const [getTenKhuyenMai, setGetTenKhuyenMai] = useState([])
+    const [currentPage, setCurrentPage] = useState(0);
     const size = 5;
 
     const [listThuongHieu, setListThuongHieu] = useState([]);
@@ -30,6 +35,16 @@ const CreateSale = () => {
 
     const [searchSanPham, setSearchSanPham] = useState({
         tenSearch: "",
+    })
+
+    const [addKhuyenMai, setAddKhuyenMai] = useState({
+        ten: '',
+        giaTri: '',
+        loai: true,
+        tgBatDau: null,
+        tgKetThuc: null,
+        trangThai: 0,
+        idProductDetail: selectedRows
     })
 
     const [fillterSanPhamChiTiet, setFillterSanPhamChiTiet] = useState({
@@ -98,33 +113,23 @@ const CreateSale = () => {
         }
     }, [debouncedValueSanPham]);
 
-
     const loadSanPhamSearch = (searchSanPham, currentPage) => {
         const params = new URLSearchParams({
             tenSearch: searchSanPham.tenSearch,
-            currentPage: currentPage, // Thêm tham số cho trang
-            size: size // Kích thước trang cũng có thể được truyền vào nếu cần
+            currentPage: currentPage,
+            size: size
         });
 
         axios.get(`http://localhost:8080/api/khuyen-mai/searchSanPham?${params.toString()}`)
             .then((response) => {
                 setGetProduct(response.data.content);
                 setPageCount(response.data.totalPages);
+                setCurrentPage(response.data.currentPage);
             })
             .catch((error) => {
                 console.error('Error:', error);
             });
     }
-
-    const [addKhuyenMai, setAddKhuyenMai] = useState({
-        ten: '',
-        giaTri: '',
-        loai: true,
-        tgBatDau: '',
-        tgKetThuc: '',
-        trangThai: 0,
-        idProductDetail: selectedRows
-    })
 
     const handleNavigateToSale = () => {
         navigate('/admin/giam-gia/dot-giam-gia');
@@ -136,7 +141,7 @@ const CreateSale = () => {
 
     const getProductDetailById = (fillterSanPhamChiTiet, selectedProductIds) => {
         const params = new URLSearchParams({
-            id: selectedProductIds.join(','), // Chuyển mảng thành chuỗi
+            id: selectedProductIds,
             tenSearch: fillterSanPhamChiTiet.tenSearch || '',
             idThuongHieuSearch: fillterSanPhamChiTiet.idThuongHieuSearch || '',
             idChatLieuSearch: fillterSanPhamChiTiet.idChatLieuSearch || '',
@@ -151,8 +156,10 @@ const CreateSale = () => {
         if (selectedProductIds.length > 0) {
             axios.get(`http://localhost:8080/api/khuyen-mai/getSanPhamCTBySanPham?${params.toString()}`)
                 .then((response) => {
+                    console.log('Response:', response.data);
                     setGetProductDetailByProduct(response.data.content);
                     setPageCount(response.data.totalPages);
+                    setCurrentPage(response.data.currentPage);
                 })
                 .catch((error) => {
                     console.error('Error:', error);
@@ -169,9 +176,7 @@ const CreateSale = () => {
         setSelectedRowsProduct(selectedIds)
         setSelectedRows(selectedIds)
         setSelectAllProduct(event.target.checked)
-        // getProductDetailById(selectedIds)
         getProductDetailById(fillterSanPhamChiTiet, selectedIds);
-        console.log(selectedIds)
     }
 
     const handleSelectAllChangeProductDetail = (event) => {
@@ -196,10 +201,15 @@ const CreateSale = () => {
         setSelectedRowsProduct(newSelected)
         setSelectAllProduct(newSelected.length === getProduct.length)
 
+        // Khôi phục việc set selectedProductIds
         const selectedProductIds = getProduct
             .filter((row) => newSelected.includes(row.id))
             .map((selectedProduct) => selectedProduct.id)
         setSelectedProductIds(selectedProductIds)
+
+        // Gọi getProductDetailById với selectedProductIds mới
+        getProductDetailById(fillterSanPhamChiTiet, selectedProductIds);
+
     }
 
     const handleCheckboxChange2 = (event, productDetailId) => {
@@ -224,8 +234,8 @@ const CreateSale = () => {
         const errors = {
             ten: '',
             giaTri: '',
-            tgBatDau: '',
-            tgKetThuc: '',
+            tgBatDau: null,
+            tgKetThuc: null,
         }
 
         const minBirthYear = 1900
@@ -252,7 +262,7 @@ const CreateSale = () => {
 
         const minDate = new Date(minBirthYear, 0, 1); // Ngày bắt đầu từ 01-01-minBirthYear
 
-        if (addKhuyenMai.tgBatDau === '') {
+        if (addKhuyenMai.tgBatDau === null) {
             errors.tgBatDau = 'Vui lòng nhập thời gian bắt đầu'
         } else {
             const tgBatDau = new Date(addKhuyenMai.tgBatDau);
@@ -262,7 +272,7 @@ const CreateSale = () => {
         }
 
 
-        if (addKhuyenMai.tgKetThuc === '') {
+        if (addKhuyenMai.tgKetThuc === null) {
             errors.tgKetThuc = 'Vui lòng nhập thời gian kết thúc'
         } else {
             const tgBatDau = new Date(addKhuyenMai.tgBatDau)
@@ -406,15 +416,33 @@ const CreateSale = () => {
 
     const handlePageClick = (event) => {
         const selectedPage = event.selected;
-        loadSanPhamSearch(searchSanPham, selectedPage); // Gọi hàm tìm kiếm với trang mới
-        console.log(`User  requested page number ${selectedPage + 1}`);
+        loadSanPhamSearch(searchSanPham, selectedPage);
     };
 
+    // const handlePageSPCTClick = (event) => {
+    //     const selectedPage = event.selected;
+
+    //     setFillterSanPhamChiTiet((prev) => ({
+    //         ...prev,
+    //         currentPage: selectedPage
+    //     }));
+
+    //     getProductDetailById(fillterSanPhamChiTiet, selectedPage);
+    // };
     const handlePageSPCTClick = (event) => {
         const selectedPage = event.selected;
-        getProductDetailById(fillterSanPhamChiTiet, selectedPage); // Gọi hàm tìm kiếm với trang mới
-        console.log(`User  requested page number ${selectedPage + 1}`);
-    };
+
+        setFillterSanPhamChiTiet((prev) => ({
+            ...prev,
+            currentPage: selectedPage
+        }));
+
+        // Truyền selectedProductIds để giữ các sản phẩm đã chọn
+        getProductDetailById(
+            { ...fillterSanPhamChiTiet, currentPage: selectedPage },
+            selectedProductIds
+        );
+    }
 
     return (
         <div>
@@ -453,18 +481,17 @@ const CreateSale = () => {
                             </label>
                             <input
                                 type="text"
-                                name="ten"  // Thêm thuộc tính name
+                                name="ten"
                                 id="discount-name"
                                 placeholder="Tên đợt giảm giá"
                                 className="w-full p-2 border rounded mb-4"
-                                // onChange={handleInputChange}  // Bỏ arrow function
                                 onChange={(e) => {
                                     handleInputChange(e)
                                     setErrorTen('')
                                 }}
                                 error={errorTen ? 'true' : undefined}
                             />
-                            <span className='text-red-600'>{errorTen}</span>
+                            <span className='text-red-600 text-xs italic'>{errorTen}</span>
                         </div>
 
                         <div>
@@ -473,53 +500,69 @@ const CreateSale = () => {
                             </label>
                             <input
                                 type="number"
-                                name="giaTri"  // Thêm thuộc tính name
+                                name="giaTri"
                                 id="discount-value"
                                 placeholder="Giá trị"
                                 className="w-full p-2 border rounded mb-4"
-                                // onChange={handleInputChange}  // Bỏ arrow function
                                 onChange={(e) => {
                                     handleInputChange(e)
                                     setErrorGiaTri('')
                                 }}
                                 error={errorGiaTri ? 'true' : undefined}
                             />
-                            <span className='text-red-600'>{errorGiaTri}</span>
+                            <span className='text-red-600 text-xs italic'>{errorGiaTri}</span>
                         </div>
 
                         <div>
-                            <label className="block text-gray-600 mb-1">Ngày bắt đầu</label>
-                            <input
-                                type="date"
-                                className="w-full border border-gray-300 rounded-md p-2"
-                                
-                                onChange={(e) => {
-                                    setAddKhuyenMai({ 
-                                        ...addKhuyenMai, 
-                                        tgBatDau: e.target.value 
-                                    })
-                                    setErrorTgBatDau('')
-                                }}
-
-                            />
-                            <span className='text-red-600'>{errorTgBatDau}</span>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <label className="block text-gray-600 mb-1">Từ ngày</label>
+                                <DateTimePicker
+                                    format={'DD-MM-YYYY HH:mm:ss'}
+                                    slotProps={{
+                                        textField: {
+                                            size: 'small',
+                                            className: 'w-[608px]'
+                                        },
+                                        actionBar: {
+                                            actions: ['clear', 'today']
+                                        }
+                                    }}
+                                    onChange={(e) => {
+                                        setAddKhuyenMai({
+                                            ...addKhuyenMai,
+                                            tgBatDau: dayjs(e).format('YYYY-MM-DDTHH:mm:ss')
+                                        })
+                                        setErrorTgBatDau('')
+                                    }}
+                                />
+                            </LocalizationProvider>
+                            <span className='text-red-600 text-xs italic'>{errorTgBatDau}</span>
                         </div>
 
-                        <div>
-                            <label className="block text-gray-600 mb-1">Ngày kết thúc</label>
-                            <input
-                                type="date"
-                                className="w-full border border-gray-300 rounded-md p-2"
-                                
-                                onChange={(e) => {
-                                    setAddKhuyenMai({ 
-                                        ...addKhuyenMai, 
-                                        tgKetThuc: e.target.value 
-                                    })
-                                    setErrorTgKetThuc('')
-                                } }
-                            />
-                            <span className='text-red-600'>{errorTgKetThuc}</span>
+                        <div className='mt-4'>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <label className="block text-gray-600 mb-1">Đến ngày</label>
+                                <DateTimePicker
+                                    format={'DD-MM-YYYY HH:mm:ss'}
+                                    slotProps={{
+                                        textField: {
+                                            size: 'small',
+                                            className: 'w-[608px]'
+                                        },
+                                        actionBar: {
+                                            actions: ['clear', 'today']
+                                        }
+                                    }}
+                                    onChange={(e) => {
+                                        setAddKhuyenMai({
+                                            ...addKhuyenMai,
+                                            tgKetThuc: dayjs(e).format('YYYY-MM-DDTHH:mm:ss')
+                                        })
+                                        setErrorTgKetThuc('')
+                                    }}
+                                />
+                            </LocalizationProvider>
+                            <span className='text-red-600 text-xs italic'>{errorTgKetThuc}</span>
                         </div>
 
                         {selectedRowsProduct.length > 0 ? (
@@ -531,7 +574,6 @@ const CreateSale = () => {
                             </button>
                         )}
                     </div>
-
 
                     {/* Product Table Section */}
                     <div className="w-1/2 pr-4">
@@ -560,7 +602,7 @@ const CreateSale = () => {
                                                 className="align-middle"
                                             />
                                         </td>
-                                        <td className="py-2 px-4 border-b text-center">{index + 1}</td>
+                                        <td className="py-2 px-4 border-b text-center">{(currentPage * 5) + index + 1}</td>
                                         <td className="py-2 px-4 border-b text-center">{sanPham.ten}</td>
                                     </tr>
                                 ))}
@@ -655,7 +697,7 @@ const CreateSale = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Màu sắc:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idMauSac}
+                                value={fillterSanPhamChiTiet.idMauSacSearch}
                                 onChange={(e) => {
                                     const newIdMauSacSearch = e.target.value;
                                     const updatedFilter = {
@@ -682,7 +724,7 @@ const CreateSale = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Chất liệu:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idChatLieu}
+                                value={fillterSanPhamChiTiet.idChatLieuSearch}
                                 onChange={(e) => {
                                     const newIdChatLieuSearch = e.target.value;
                                     const updatedFilter = {
@@ -708,7 +750,7 @@ const CreateSale = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Trọng lượng:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idTrongLuong}
+                                value={fillterSanPhamChiTiet.idTrongLuongSearch}
                                 onChange={(e) => {
                                     const newIdTrongLuongSearch = e.target.value;
                                     const updatedFilter = {
@@ -733,7 +775,7 @@ const CreateSale = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Điểm cân bằng:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idDiemCanBang}
+                                value={fillterSanPhamChiTiet.idDiemCanBangSearch}
                                 onChange={(e) => {
                                     const newIdDiemCanBangSearch = e.target.value;
                                     const updatedFilter = {
@@ -758,7 +800,7 @@ const CreateSale = () => {
                             <label className="text-sm text-gray-700 whitespace-nowrap">Độ cứng:</label>
                             <select
                                 className="w-32 text-sm border rounded px-2 py-1"
-                                value={fillterSanPhamChiTiet.idDoCung}
+                                value={fillterSanPhamChiTiet.idDoCungSearch}
                                 onChange={(e) => {
                                     const newIdDoCungSearch = e.target.value;
                                     const updatedFilter = {
@@ -808,7 +850,7 @@ const CreateSale = () => {
                                             onChange={(event) => handleCheckboxChange2(event, spct.id)}
                                         />
                                     </td>
-                                    <td className="py-2 px-4 border-b text-center">{index + 1}</td>
+                                    <td className="py-2 px-4 border-b text-center">{(currentPage * 5) + index + 1}</td>
                                     <td className="py-2 px-4 border-b text-center">{spct.tenSanPham}</td>
                                     <td className="py-2 px-4 border-b text-center">{spct.tenThuongHieu}</td>
                                     <td className="py-2 px-4 border-b text-center">{spct.tenMauSac}</td>

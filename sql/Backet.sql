@@ -126,6 +126,7 @@
 		IdTinh NVARCHAR(255),
 		IdHuyen NVARCHAR(255),
 		IdXa NVARCHAR(255),
+		Loai BIT,
 		DiaChiCuThe NVARCHAR(255),
 		Loai bit,
 		FOREIGN KEY (IdTaiKhoan) REFERENCES TaiKhoan(Id)
@@ -294,13 +295,6 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc,GiaTri, Loai, TrangThai) VALUE
 	('Hoang Van E', '0897654321', 'e@example.com', 'password123', 1, 'User', 'https://images.javatpoint.com/top10-technologies/images/top-10-hollywood-actors5.png', '1988-05-30', '234567891', 0),
 	('Nguyen Tien N', '0981238651', 'e@example.com', 'password123', 1, 'User', 'https://cdn.shopify.com/s/files/1/0182/8937/files/tom_hordy_1024x1024.jpg?v=1482502984', '1986-08-30', '214557791', 0);
 
-
-
-
-	
-
-
-
 	INSERT INTO SanPham (Ma, Ten, TrangThai) VALUES
 	('SP001', 'Yonex Nanoflare 700 Pro', 1),
 	('SP002', 'Yonex Astrox 99 Pro', 1),
@@ -352,12 +346,12 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc,GiaTri, Loai, TrangThai) VALUE
 	(8, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-bkex-noi-dia-trung-1_1719176469.webp', 1);
 
 
-	INSERT INTO DiaChi (IdTaiKhoan, Ten, Sdt, IdTinh, IdHuyen, IdXa, DiaChiCuThe) VALUES
-	(1, 'Nguyen Van A', '0123456789', 'Hanoi', 'Dong Da', 'Khuong Thuong', 'So 10, Pho ABC'),
-	(2, 'Tran Thi B', '0987654321', 'Ho Chi Minh', 'District 1', 'Ben Nghe', '123 Nguyen Hue'),
-	(3, 'Le Van C', '0912345678', 'Da Nang', 'Hai Chau', 'Thach Thang', '45 Bach Dang'),
-	(4, 'Pham Thi D', '0908765432', 'Can Tho', 'Ninh Kieu', 'An Hoa', '67 Hung Vuong'),
-	(5, 'Hoang Van E', '0897654321', 'Hai Phong', 'Le Chan', 'Niem Nghia', '21 Tran Phu');
+	INSERT INTO DiaChi (IdTaiKhoan, Ten, Sdt, IdTinh, IdHuyen, IdXa,Loai, DiaChiCuThe) VALUES
+	(1, 'Nguyen Van A', '0123456789', 'Hanoi', 'Dong Da', 'Khuong Thuong',0, 'So 10, Pho ABC'),
+	(2, 'Tran Thi B', '0987654321', 'Ho Chi Minh', 'District 1', 'Ben Nghe',1, '123 Nguyen Hue'),
+	(3, 'Le Van C', '0912345678', 'Da Nang', 'Hai Chau', 'Thach Thang',1, '45 Bach Dang'),
+	(4, 'Pham Thi D', '0908765432', 'Can Tho', 'Ninh Kieu', 'An Hoa',0, '67 Hung Vuong'),
+	(5, 'Hoang Van E', '0897654321', 'Hai Phong', 'Le Chan', 'Niem Nghia',1, '21 Tran Phu');
 
 
 	INSERT INTO ThongBao (IdKhachHang, TieuDe, NoiDung, IdRedirect, KieuThongBao, TrangThai) VALUES
@@ -367,17 +361,12 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc,GiaTri, Loai, TrangThai) VALUE
 	(4, 'Khuyến mãi 20%', 'Bạn nhận được khuyến mãi 20% từ hệ thống', 'SP002', 'Promotion', 1),
 	(5, 'Thông báo giao hàng', 'Đơn hàng của bạn đang được giao', 'HD002', 'Order', 0);
 
-
-
 	INSERT INTO GioHang (IdSanPhamCT, IdTaiKhoan, soLuong, NgayTao, NgaySua) VALUES
 	(1, 1, 3, '2024-09-01', '2024-09-02'),
 	(2, 2,4,  '2024-09-03', '2024-09-04'),
 	(3, 1,7,  '2024-09-05', '2024-09-06'),
 	(4, 4,5,  '2024-09-07', '2024-09-08'),
 	(5, 5,2,   '2024-09-09', '2024-09-10');
-
-
-
 
 	INSERT INTO HoaDon (IdTaiKhoan, Ma, DiaChiNguoiNhan, SdtNguoiNhan, PhiShip, TongTien, TrangThai) VALUES
 	(1, 'HD001', 'So 10, Pho ABC, Hanoi', '0123456789', 30000, 6030000, 1),

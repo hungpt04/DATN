@@ -22,8 +22,9 @@ public interface KhuyenMaiService {
     KhuyenMai addKhuyenMaiOnProduct(KhuyenMaiRequest khuyenMaiRequest);
     KhuyenMai updateKhuyenMai(KhuyenMaiRequest khuyenMaiRequest, Integer id);
     KhuyenMai deleteKhuyenMai(Integer id);
-    KhuyenMaiResponse getKhuyenMaiById(Integer id);
+    KhuyenMai getKhuyenMaiById(Integer id);
     List<Integer> getIdSanPhamVaSanPhamChiTietByIdKhuyenMai(Integer idKhuyenMai);
+    List<Integer> getIdSanPhamChiTietByIdKhuyenMai(Integer idKhuyenMai);
     Page<KhuyenMaiResponse> getSearchKhuyenMai(KhuyenMaiSearch khuyenMaiSearch, Pageable pageable);
     Page<SanPhamResponse> getSearchSanPham(SanPhamSearch sanPhamSearch, Pageable pageable);
     Page<SanPhamCTResponse> phanTrangSanPhamCT(Pageable pageable);

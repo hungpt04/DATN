@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -22,10 +23,10 @@ public class KhuyenMai {
     private String ten;
 
     @Column(name = "TG_BatDau")
-    private LocalDate tgBatDau;
+    private LocalDateTime tgBatDau;
 
     @Column(name = "TG_KetThuc")
-    private LocalDate tgKetThuc;
+    private LocalDateTime tgKetThuc;
 
     @Column(name = "TrangThai")
     private Integer trangThai;

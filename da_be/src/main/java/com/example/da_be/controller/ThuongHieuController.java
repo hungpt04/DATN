@@ -1,6 +1,7 @@
 package com.example.da_be.controller;
 
 import com.example.da_be.entity.ThuongHieu;
+import com.example.da_be.repository.ThuongHieuRepository;
 import com.example.da_be.service.ThuongHieuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +16,18 @@ public class ThuongHieuController {
     @Autowired
     private ThuongHieuService thuongHieuService;
 
+    @Autowired
+    private ThuongHieuRepository thuongHieuRepository;
+
     // Lấy danh sách tất cả thương hiệu
     @GetMapping
     public List<ThuongHieu> getAllThuongHieu() {
         return thuongHieuService.getAllThuongHieu();
+    }
+
+    @GetMapping("/hien-thi")
+    public List<ThuongHieu> getAllThuongHieuHienThi() {
+        return thuongHieuRepository.getAllThuongHieu();
     }
 
     // Lấy thông tin thương hiệu theo id

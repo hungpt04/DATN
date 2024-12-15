@@ -1,6 +1,5 @@
 import Sidebar from './Sidebar/Sidebar';
 import HeaderAdmin from './HeaderAdmin/HeaderAdmin';
-import {ToastContainer} from "react-toastify";
 
 function AdminLayout({ children }) {
     return (
