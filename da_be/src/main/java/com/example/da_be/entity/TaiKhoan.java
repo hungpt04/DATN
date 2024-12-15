@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -51,4 +52,5 @@ public class TaiKhoan {
 
     @Column(name = "TrangThai")
     private Integer trangThai;
+
 }

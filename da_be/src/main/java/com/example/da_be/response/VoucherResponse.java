@@ -27,10 +27,6 @@ public class VoucherResponse {
 
     private Integer soLuong;
 
-//    private LocalDate ngayBatDau;
-//
-//    private LocalDate ngayKetThuc;
-
     private LocalDateTime ngayBatDau;
 
     private LocalDateTime ngayKetThuc;

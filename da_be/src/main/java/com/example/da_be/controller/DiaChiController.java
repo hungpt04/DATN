@@ -4,6 +4,7 @@ import com.example.da_be.entity.DiaChi;
 import com.example.da_be.request.DiaChiRequest;
 import com.example.da_be.response.DiaChiResponse;
 import com.example.da_be.response.KhuyenMaiResponse;
+import com.example.da_be.repository.DiaChiRepository;
 import com.example.da_be.service.DiaChiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,8 @@ public class DiaChiController {
 
     @Autowired
     private DiaChiService diaChiService;
+    @Autowired
+    private DiaChiRepository diaChiRepository;
 
     // Lấy danh sách tất cả địa chỉ
     @GetMapping
@@ -71,7 +74,7 @@ public class DiaChiController {
     }
 
     // Cập nhật thông tin địa chỉ
-   @PutMapping("/update/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<?> updateDiaChiByHoang(@PathVariable Long id, @RequestBody DiaChi diaChi) {
         try {
             // Ensure the ID in the path is set in the body
@@ -96,7 +99,6 @@ public class DiaChiController {
     public Long getIdDiaChiByIdTaiKhoan(@PathVariable Integer idTaiKhoan) {
         return diaChiService.getIdDiaChiByIdTaiKhoan(idTaiKhoan);
     }
-
     // lấy tất cả địa chỉ qua idTaiKhoan
     @GetMapping("/getAllDiaChi")
     public ResponseEntity<?> getAllDiaChi(
@@ -139,4 +141,16 @@ public class DiaChiController {
         return ResponseEntity.ok(diaChiService.updateDefault(idTaiKhoan, idDiaChi));
     }
 
+    @PutMapping("/default/{id}")
+    public ResponseEntity<DiaChi> setDefaultAddress(@PathVariable Long id) {
+        DiaChi updatedDiaChi = diaChiService.setDefaultAddress(id);
+        return ResponseEntity.ok(updatedDiaChi);
+    }
+
+    // @DeleteMapping("/delete/{id}")
+    // public ResponseEntity<Void> deleteDiaChiId(@PathVariable Long id) {
+    //     diaChiService.deleteDiaChiById(id);
+    //     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
+    // }
 }

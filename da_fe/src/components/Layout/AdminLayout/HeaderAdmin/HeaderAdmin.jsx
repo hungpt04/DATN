@@ -29,6 +29,7 @@ function HeaderAdmin() {
 
     useEffect(() => {
         const token = localStorage.getItem('token'); 
+
         if (token) {
             const fetchUserInfo = async () => {
                 try {

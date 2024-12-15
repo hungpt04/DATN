@@ -2,6 +2,7 @@ package com.example.da_be.email;
 
 public class MailConstant {
     public static final String LOGO_PATH = "/static/images/logo.png";
+
     public static final String FONT_INVOICE = "/static/font/font-hoa-don.ttf";
 
     public static final String BODY_STARTS = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional //EN\"\n" +

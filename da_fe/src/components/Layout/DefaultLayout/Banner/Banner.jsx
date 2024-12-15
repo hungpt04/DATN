@@ -26,6 +26,7 @@ const Banner = () => {
                 overflow: 'hidden',
                 padding: 0,
                 margin: 0
+
             }}
         >
             <Slider {...settings}>
@@ -34,9 +35,9 @@ const Banner = () => {
                         src={banner1}
                         alt="Banner 1"
                         style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover', // Đảm bảo ảnh đẹp không méo
+                            width: '100%', // Chiều rộng toàn bộ container
+                            height: '100%', // Chiều cao đầy đủ
+                            objectFit: 'cover', // Cắt ảnh vừa khít
                         }}
                     />
                 </div>

@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class VoucherSearch {
     public String tenSearch;
-//    public LocalDate ngayBatDauSearch;
-//    public LocalDate ngayKetThucSearch;
     public LocalDateTime ngayBatDauSearch;
     public LocalDateTime ngayKetThucSearch;
     public Integer kieuSearch;

@@ -128,6 +128,7 @@
 		IdXa NVARCHAR(255),
 		Loai BIT,
 		DiaChiCuThe NVARCHAR(255),
+		Loai bit,
 		FOREIGN KEY (IdTaiKhoan) REFERENCES TaiKhoan(Id)
 	);
 
@@ -419,7 +420,6 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc,GiaTri, Loai, TrangThai) VALUE
 	(3, 3, 'Đơn hàng đã bị hủy', '2024-09-05', '2024-09-06', 3),
 	(4, 4, 'Đơn hàng đã được giao', '2024-09-07', '2024-09-08', 1),
 	(5, 5, 'Đơn hàng đang chờ xử lý', '2024-09-09', '2024-09-10', 0);
-
 
 
 

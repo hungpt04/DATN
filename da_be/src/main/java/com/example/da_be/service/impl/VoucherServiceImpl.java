@@ -304,6 +304,7 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public Boolean deleteVoucher(Integer id) {
         LocalDateTime currentDateTime = LocalDateTime.now();  // Lấy thời gian hiện tại với ngày và giờ
+
         Optional<Voucher> optionalVoucher = voucherRepository.findById(id);  // Tìm voucher theo id kiểu Integer
 
         if (optionalVoucher.isPresent()) {

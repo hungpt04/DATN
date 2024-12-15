@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -117,6 +118,26 @@ public class DiaChiService {
             return true;
         }
         return false;
+
+    @Transactional
+    public DiaChi setDefaultAddress(Long diaChiId) {
+        DiaChi diaChi = diaChiRepository.findById(diaChiId)
+                .orElseThrow(() -> new RuntimeException("Address not found with ID: " + diaChiId));
+
+        if (diaChi.getTaiKhoan() == null) {
+            throw new RuntimeException("Account not found for the address.");
+        }
+
+        // Reset tất cả các địa chỉ của tài khoản về loai = 0
+        diaChiRepository.resetDefaultAddress(diaChi.getTaiKhoan().getId().longValue());
+
+        // Cập nhật địa chỉ thành mặc định
+        if (diaChi.getLoai() != 1) { // Kiểm tra nếu không phải là địa chỉ mặc định
+            diaChi.setLoai(1);
+        }
+
+        return diaChiRepository.save(diaChi);
+
     }
 
 }

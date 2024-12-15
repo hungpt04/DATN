@@ -1,10 +1,18 @@
 package com.example.da_be.email;
 
 import jakarta.mail.internet.MimeMessage;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMailMessage;
+
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -26,11 +34,13 @@ public class EmailSender {
                 MailConstant.BODY_BODY +
                 email.getBody() +
                 MailConstant.BODY_END;
+
         sendSimpleMail(email.getToEmail(), htmlBody, email.getSubject());
     }
 
     private void sendSimpleMail(String[] recipients, String msgBody, String subject) {
         try {
+
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true, StandardCharsets.UTF_8.toString());
             ClassPathResource resource = new ClassPathResource(MailConstant.LOGO_PATH);
@@ -40,6 +50,7 @@ public class EmailSender {
             mimeMessageHelper.setSubject(subject);
             mimeMessageHelper.addInline("logoImage", resource);
             javaMailSender.send(mimeMessage);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

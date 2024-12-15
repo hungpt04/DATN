@@ -6,6 +6,7 @@ import com.example.da_be.response.DiaChiResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -42,9 +43,8 @@ public interface DiaChiRepository extends JpaRepository<DiaChi, Long> {
     )
     List<DiaChi> getTrangThaiDiaChiByIdTaiKhoan(@Param("idTaiKhoan") Integer idTaiKhoan);
 
-
-
-
-
+    @Modifying
+    @Query("UPDATE DiaChi d SET d.loai = 0 WHERE d.taiKhoan.id = :taiKhoanId")
+    void resetDefaultAddress(Long taiKhoanId);
 
 }

@@ -31,10 +31,6 @@ public class VoucherRequest {
 
     private Integer dieuKienNhoNhat;
 
-//    private LocalDate ngayBatDau;
-//
-//    private LocalDate ngayKetThuc;
-
     private LocalDateTime ngayBatDau;
 
     private LocalDateTime ngayKetThuc;
@@ -55,7 +51,6 @@ public class VoucherRequest {
 
     public Integer setDataStatus(LocalDateTime startDate, LocalDateTime endDate, Integer status) {
         LocalDateTime currentDateTime = LocalDateTime.now();
-
         // Kiểm tra xem thời gian hiện tại có nằm trong khoảng thời gian diễn ra không
         if (!currentDateTime.isBefore(startDate) && currentDateTime.isBefore(endDate.plusMinutes(1))) {
             return 1;  // Đang diễn ra

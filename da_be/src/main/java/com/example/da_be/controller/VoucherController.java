@@ -24,7 +24,7 @@ import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
-@RequestMapping("/api/voucher")
+@RequestMapping("/api/admin/voucher")
 public class VoucherController {
     @Autowired
     private VoucherService voucherService;
@@ -79,8 +79,6 @@ public class VoucherController {
     @GetMapping("/search")
     public Map<String, Object> searchVouchers(
             @RequestParam(required = false) String tenSearch,       // Tìm kiếm theo mã hoặc tên
-//            @RequestParam(required = false) LocalDate ngayBatDauSearch,  // Tìm kiếm theo ngày bắt đầu
-//            @RequestParam(required = false) LocalDate ngayKetThucSearch,    // Tìm kiếm theo ngày kết thúc
             @RequestParam(required = false) LocalDateTime ngayBatDauSearch,  // Tìm kiếm theo ngày bắt đầu
             @RequestParam(required = false) LocalDateTime ngayKetThucSearch,    // Tìm kiếm theo ngày kết thúc
             @RequestParam(required = false) Integer kieuSearch    ,  // Tìm kiếm theo loại

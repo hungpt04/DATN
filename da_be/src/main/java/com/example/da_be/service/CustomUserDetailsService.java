@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
@@ -15,14 +17,23 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        TaiKhoan taiKhoan = taiKhoanRepository.findByEmail(email);
-        if (taiKhoan == null) {
+        Optional<TaiKhoan> taiKhoanOpt = taiKhoanRepository.findByEmail(email);
+
+        // Kiểm tra nếu tài khoản không tồn tại
+        if (taiKhoanOpt.isEmpty()) {
             throw new UsernameNotFoundException("User not found with email: " + email);
         }
-        //Important: Add null check for password
-        if(taiKhoan.getMatKhau() == null){
+
+        // Lấy tài khoản từ Optional
+        TaiKhoan taiKhoan = taiKhoanOpt.get();
+
+        // Kiểm tra nếu mật khẩu chưa được thiết lập
+        if (taiKhoan.getMatKhau() == null) {
             throw new UsernameNotFoundException("Password is not set for user: " + email);
         }
+
+        // Trả về đối tượng CustomUserDetails
         return new CustomUserDetails(taiKhoan);
     }
+
 }

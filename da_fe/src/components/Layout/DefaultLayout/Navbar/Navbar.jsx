@@ -159,24 +159,24 @@ const Navbar = () => {
                             <ul className="absolute right-0 mt-2 bg-white shadow-lg rounded-md w-48 py-2 text-gray-700 z-50" ref={menuRef}>
                                 {isLoggedIn ? (
                                     <>
-                                        {userRole === "Customer" && (
+                                        {/* {userRole === "Customer" && ( */}
                                             <li className="flex px-4 py-2 hover:bg-gray-100 space-x-3">
                                                 <User className='h-5 w-5' />
                                                 <Link to="/profile/user" onClick={() => { setIsMenuOpen(false) }}>Tài khoản của tôi</Link>
                                             </li>
-                                        )}
-                                        {userRole === 'Admin' && (
+                                        {/* )} */}
+                                        {/* {userRole === 'Admin' && (
                                             <li className="flex px-4 py-2 hover:bg-gray-100 space-x-3">
                                                 <Edit className="w-5 h-5" />
                                                 <Link to="/admin" onClick={() => { setIsMenuOpen(false) }}>Trang quản lý</Link>
                                             </li>
-                                        )}
-                                        {userRole === 'User' && (
+                                        )} */}
+                                        {/* {userRole === 'User' && (
                                             <li className="flex px-4 py-2 hover:bg-gray-100 space-x-3">
                                                 <Edit className="w-5 h-5" />
                                                 <Link to="/admin" onClick={() => { setIsMenuOpen(false) }}>Trang quản lý</Link>
                                             </li>
-                                        )}
+                                        )} */}
                                         <li className="flex px-4 py-2 hover:bg-gray-100 space-x-3">
                                             <LogOut className='w-5 h-5' />
                                             <button onClick={handleAccount}>Đăng xuất</button>

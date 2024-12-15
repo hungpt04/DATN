@@ -1,9 +1,11 @@
 package com.example.da_be.service.impl;
 
+import com.example.da_be.entity.Voucher;
 import com.example.da_be.repository.KhachHangRepository;
 import com.example.da_be.repository.KhachHang_VoucherRepository;
 import com.example.da_be.request.KhachHangSearch;
 import com.example.da_be.response.KhachHangResponse;
+import com.example.da_be.response.VoucherResponse;
 import com.example.da_be.service.KhachHangVoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,16 @@ public class KhachHangVoucherServiceImpl implements KhachHangVoucherService {
     @Override
     public List<Integer> getIdKhachHangByIdVoucher(Integer idVoucher) {
         return khachHang_voucherRepository.getListIdKhachHangByIdVoucher(idVoucher);
+    }
+
+    @Override
+    public List<Voucher> getVoucherPublic() {
+        return khachHang_voucherRepository.getVoucherPublic();
+    }
+
+    @Override
+    public List<Voucher> getVoucherPrivate(Integer idKhachHang) {
+        return khachHang_voucherRepository.getVoucherPrivate(idKhachHang);
     }
 
 
