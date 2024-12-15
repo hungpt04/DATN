@@ -15,4 +15,6 @@ public interface SanPhamKhuyenMaiRepository extends JpaRepository<SanPhamKhuyenM
 """
     )
     List<SanPhamKhuyenMai> getListSanPhamKhuyenMaiByIdKhuyenMai(Integer idKhuyenMai);
+
+    List<SanPhamKhuyenMai> findBySanPhamCT_Id(Integer sanPhamCtId);
 }

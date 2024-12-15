@@ -108,12 +108,48 @@ const OrderSummary = () => {
     };
 
     // Hàm tính tổng giá tiền
-    const calculateTotalPrice = (firstCartItems) => {
-        return firstCartItems.reduce((total, cart) => {
-            const donGia = cart.gioHang.sanPhamCT.donGia * cart.gioHang.soLuong;
-            return total + donGia;
-        }, 0);
+    const calculateTotalPrice = async (firstCartItems) => {
+        const totalPromises = firstCartItems.map(async (cart) => {
+            try {
+                const response = await axios.get(
+                    `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${cart.gioHang.sanPhamCT.id}`,
+                );
+
+                if (response.data.length > 0) {
+                    // Nếu có khuyến mãi, sử dụng giá khuyến mãi
+                    return response.data[0].giaKhuyenMai * cart.gioHang.soLuong;
+                }
+                // Nếu không có khuyến mãi, sử dụng giá gốc
+                return cart.gioHang.sanPhamCT.donGia * cart.gioHang.soLuong;
+            } catch (error) {
+                console.error('Error fetching promotion:', error);
+                return cart.gioHang.sanPhamCT.donGia * cart.gioHang.soLuong;
+            }
+        });
+
+        // Đợi tất cả các promise hoàn thành và tính tổng
+        const totals = await Promise.all(totalPromises);
+        return totals.reduce((sum, current) => sum + current, 0);
     };
+
+    // Sử dụng trong useEffect
+    useEffect(() => {
+        const fetchTotalPrice = async () => {
+            if (carts.length > 0) {
+                const firstCartItems = getFirstCartItemPerProduct(carts);
+                const total = await calculateTotalPrice(firstCartItems);
+
+                setTotalPrice(total);
+
+                // Tính toán giảm giá từ voucher
+                const voucherDiscount = calculateDiscount();
+                const totalAmount = total - voucherDiscount + shippingFee;
+                setTotalAmount(totalAmount);
+            }
+        };
+
+        fetchTotalPrice();
+    }, [carts, selectedVoucher, shippingFee]);
 
     // Hàm tính tổng số lượng
     const calculateTotalQuantity = (firstCartItems) => {
@@ -192,8 +228,10 @@ const OrderSummary = () => {
             // Tạo hóa đơn
             const hoaDonResponse = await axios.post('http://localhost:8080/api/hoa-don', {
                 // taiKhoan: { id: 1 }, //lấy tài khoản đang đăng nhập qua token Chi sửa lại nhe
-                taiKhoan: {id: customerId},
+
+                taiKhoan: { id: customerId },
                 soLuong: totalQuantity,
+                idVoucher: selectedVoucher ? selectedVoucher.id : null,
                 loaiHoaDon: 'Trực tuyến',
                 phuongThucThanhToan: 'Thanh toán VNPay',
                 tenNguoiNhan: selectedAddress?.ten,
@@ -290,7 +328,8 @@ const OrderSummary = () => {
             //Thêm thanh toán
             await axios.post('http://localhost:8080/api/thanh-toan', {
                 // taiKhoan: { id: 1 },
-                taiKhoan: {id: customerId},
+
+                taiKhoan: { id: customerId },
                 hoaDon: { id: createdBill.id },
                 ma: null,
                 tongTien: totalAmount,
@@ -302,7 +341,7 @@ const OrderSummary = () => {
             // Thêm lịch sử đơn hàng
             await axios.post('http://localhost:8080/api/lich-su-don-hang', {
                 // taiKhoan: { id: 1 },
-                taiKhoan: {id: customerId},
+                taiKhoan: { id: customerId },
                 hoaDon: { id: createdBill.id },
                 moTa: 'Đơn hàng đã được tạo',
                 ngayTao: new Date(),

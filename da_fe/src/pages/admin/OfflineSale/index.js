@@ -43,6 +43,9 @@ function OfflineSale() {
 
     const [bestVoucher, setBestVoucher] = useState(null);
 
+    const [productPrices, setProductPrices] = useState({});
+    const [productPromotions, setProductPromotions] = useState({});
+
     const findBestVoucher = (vouchers, totalPrice) => {
         if (!vouchers || vouchers.length === 0) return null;
 
@@ -123,7 +126,11 @@ function OfflineSale() {
 
         // Tính toán tổng tiền hàng từ các chi tiết hóa đơn duy nhất
         const totalItems = uniqueDetails.reduce((acc, detail) => {
-            return acc + detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan;
+            const priceInfo = productPrices[detail.hoaDonCT.id] || {
+                originalPrice: detail.hoaDonCT.giaBan,
+                discountedPrice: detail.hoaDonCT.giaBan,
+            };
+            return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
         }, 0);
 
         // Tính toán tổng số tiền
@@ -485,10 +492,13 @@ function OfflineSale() {
             });
 
         // Tính toán tổng tiền hàng
-        const totalItems = uniqueDetails.reduce(
-            (acc, detail) => acc + detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan,
-            0,
-        );
+        const totalItems = uniqueDetails.reduce((acc, detail) => {
+            const priceInfo = productPrices[detail.hoaDonCT.id] || {
+                originalPrice: detail.hoaDonCT.giaBan,
+                discountedPrice: detail.hoaDonCT.giaBan,
+            };
+            return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
+        }, 0);
 
         // Tính giảm giá từ voucher
         const voucherDiscount = bestVoucher
@@ -688,6 +698,66 @@ function OfflineSale() {
         return matchesSearchTerm && matchesBrand && matchesColor && matchesWeight && matchesPrice;
     });
 
+    useEffect(() => {
+        const fetchProductPrices = async () => {
+            if (!selectedBill || !billDetails.length) return;
+
+            const uniqueProductIds = new Set();
+            const uniqueDetails = billDetails
+                .filter(
+                    (detail) =>
+                        detail.hoaDonCT &&
+                        detail.hoaDonCT.hoaDon.id === selectedBill.id &&
+                        detail.hoaDonCT.trangThai === 1,
+                )
+                .filter((detail) => {
+                    const isUnique = !uniqueProductIds.has(detail.hoaDonCT.id);
+                    if (isUnique) {
+                        uniqueProductIds.add(detail.hoaDonCT.id);
+                    }
+                    return isUnique;
+                });
+
+            const pricePromises = uniqueDetails.map(async (detail) => {
+                try {
+                    const response = await axios.get(
+                        `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${detail.hoaDonCT.sanPhamCT.id}`,
+                    );
+
+                    return {
+                        [detail.hoaDonCT.id]:
+                            response.data.length > 0
+                                ? {
+                                      originalPrice: detail.hoaDonCT.giaBan,
+                                      discountedPrice: response.data[0].giaKhuyenMai,
+                                      promotion: response.data[0],
+                                  }
+                                : {
+                                      originalPrice: detail.hoaDonCT.giaBan,
+                                      discountedPrice: detail.hoaDonCT.giaBan,
+                                      promotion: null,
+                                  },
+                    };
+                } catch (error) {
+                    console.error('Error fetching product promotion:', error);
+                    return {
+                        [detail.hoaDonCT.id]: {
+                            originalPrice: detail.hoaDonCT.giaBan,
+                            discountedPrice: detail.hoaDonCT.giaBan,
+                            promotion: null,
+                        },
+                    };
+                }
+            });
+
+            const priceResults = await Promise.all(pricePromises);
+            const priceMap = priceResults.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+            setProductPrices(priceMap);
+        };
+
+        fetchProductPrices();
+    }, [billDetails]);
+
     const loadBillDetailsWithImages = async (hoaDonId) => {
         try {
             const response = await axios.get(`http://localhost:8080/api/hoa-don-ct/with-images/${hoaDonId}`);
@@ -718,7 +788,40 @@ function OfflineSale() {
         }
     }, [transactions]);
 
-    console.log(billDetails);
+    useEffect(() => {
+        const fetchPromotions = async () => {
+            try {
+                if (!filteredProducts?.length) return;
+
+                const promotionPromises = filteredProducts.map(async (product) => {
+                    const response = await axios.get(
+                        `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${product.id}`,
+                    );
+                    return {
+                        productId: product.id,
+                        promotion: response.data.length > 0 ? response.data[0] : null,
+                    };
+                });
+
+                const promotionResults = await Promise.all(promotionPromises);
+
+                const promotionMap = promotionResults.reduce((acc, result) => {
+                    acc[result.productId] = result.promotion;
+                    return acc;
+                }, {});
+
+                setProductPromotions(promotionMap);
+            } catch (error) {
+                console.error('Error fetching promotions:', error);
+            }
+        };
+
+        const timeoutId = setTimeout(() => {
+            fetchPromotions();
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [JSON.stringify(filteredProducts)]);
 
     return (
         <div className="h-[500px] flex justify-between items-start p-4">
@@ -799,13 +902,13 @@ function OfflineSale() {
                             <div className="mt-4">
                                 {/* Các chi tiết hóa đơn */}
                                 {(() => {
-                                    // Tạo một Set để lưu trữ các ID sản phẩm đã gặp
                                     const uniqueProductIds = new Set();
-                                    // Lọc ra các chi tiết hóa đơn không bị trùng
                                     const uniqueDetails = billDetails
                                         .filter(
                                             (detail) =>
-                                                detail.hoaDonCT && detail.hoaDonCT.hoaDon.id === selectedBill.id,
+                                                detail.hoaDonCT &&
+                                                detail.hoaDonCT.hoaDon.id === selectedBill.id && // Sửa từ currentOrder.id thành selectedBill.id
+                                                detail.hoaDonCT.trangThai === 1,
                                         )
                                         .filter((detail) => {
                                             const isUnique = !uniqueProductIds.has(detail.hoaDonCT.id);
@@ -815,65 +918,98 @@ function OfflineSale() {
                                             return isUnique;
                                         });
 
-                                    console.log(uniqueDetails);
-
                                     return uniqueDetails.length > 0 ? (
                                         <>
-                                            {uniqueDetails.map((detail) => (
-                                                <div
-                                                    key={detail.hoaDonCT.id}
-                                                    className="flex items-center border-b py-4"
-                                                >
-                                                    <input className="mr-4" type="checkbox" />
-                                                    <div className="flex items-center">
-                                                        <div className="relative">
-                                                            <img
-                                                                src={detail.link || 'default_image.jpg'}
-                                                                alt={detail.hoaDonCT.sanPhamCT.sanPham.ten}
-                                                                className="w-20 h-20 object-cover"
-                                                            />
-                                                        </div>
-                                                        <div className="ml-4">
-                                                            <div className="text-gray-800 font-semibold">
-                                                                {detail.hoaDonCT.sanPhamCT.sanPham.ten}
-                                                            </div>
-                                                            <div className="text-gray-400 line-through">
-                                                                {detail.hoaDonCT.giaBan.toLocaleString()} VNĐ
-                                                            </div>
-                                                            <div className="text-gray-600">
-                                                                Size: {detail.hoaDonCT.sanPhamCT.trongLuong.ten}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center ml-auto">
-                                                        <button
-                                                            className="border border-gray-300 px-2 py-1"
-                                                            onClick={() => decreaseQuantity(detail)}
-                                                        >
-                                                            {' - '}
-                                                        </button>
-                                                        <span className="mx-2">{detail.hoaDonCT.soLuong}</span>
-                                                        <button
-                                                            className="border border-gray-300 px-2 py-1"
-                                                            onClick={() => increaseQuantity(detail)}
-                                                        >
-                                                            {' + '}
-                                                        </button>
-                                                    </div>
-                                                    <div className="text-red-500 font-bold ml-8">
-                                                        {(
-                                                            detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan
-                                                        ).toLocaleString()}{' '}
-                                                        VNĐ
-                                                    </div>
-                                                    <button
-                                                        className="ml-4 text-red-500"
-                                                        onClick={() => openDeleteModal(detail.hoaDonCT)}
+
+                                            {uniqueDetails.map((detail) => {
+                                                const priceInfo = productPrices[detail.hoaDonCT.id] || {
+                                                    originalPrice: detail.hoaDonCT.giaBan,
+                                                    discountedPrice: detail.hoaDonCT.giaBan,
+                                                    promotion: null,
+                                                };
+
+                                                return (
+                                                    <div
+                                                        key={detail.hoaDonCT.id}
+                                                        className="flex items-center border-b py-4"
                                                     >
-                                                        <TrashIcon className="w-5" />
-                                                    </button>
-                                                </div>
-                                            ))}
+                                                        <input className="mr-4" type="checkbox" />
+                                                        <div className="flex items-center">
+                                                            <div className="relative">
+                                                                <img
+                                                                    src={detail.link || 'default_image.jpg'}
+                                                                    alt={detail.hoaDonCT.sanPhamCT.sanPham.ten}
+                                                                    className="w-20 h-20 object-cover"
+                                                                />
+                                                            </div>
+                                                            <div className="ml-4">
+                                                                <div className="text-gray-800 font-semibold">
+                                                                    {detail.hoaDonCT.sanPhamCT.sanPham.ten}
+                                                                </div>
+                                                                <div className="flex items-center space-x-2">
+                                                                    {priceInfo.promotion ? (
+                                                                        <>
+                                                                            <div className="text-red-500">
+                                                                                {priceInfo.discountedPrice.toLocaleString()}{' '}
+                                                                                VND
+                                                                            </div>
+                                                                            <div className="text-gray-400 line-through">
+                                                                                {priceInfo.originalPrice.toLocaleString()}{' '}
+                                                                                VND
+                                                                            </div>
+                                                                            <div className="text-green-500 font-bold">
+                                                                                {Math.round(
+                                                                                    ((priceInfo.originalPrice -
+                                                                                        priceInfo.discountedPrice) /
+                                                                                        priceInfo.originalPrice) *
+                                                                                        100,
+                                                                                )}
+                                                                                % off
+                                                                            </div>
+                                                                        </>
+                                                                    ) : (
+                                                                        <div className="text-gray-400">
+                                                                            {priceInfo.originalPrice.toLocaleString()}{' '}
+                                                                            VND
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-gray-600">
+                                                                    Size: {detail.hoaDonCT.sanPhamCT.trongLuong.ten}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center ml-auto">
+                                                            <button
+                                                                className="border border-gray-300 px-2 py-1"
+                                                                onClick={() => decreaseQuantity(detail)}
+                                                            >
+                                                                {' - '}
+                                                            </button>
+                                                            <span className="mx-2">{detail.hoaDonCT.soLuong}</span>
+                                                            <button
+                                                                className="border border-gray-300 px-2 py-1"
+                                                                onClick={() => increaseQuantity(detail)}
+                                                            >
+                                                                {' + '}
+                                                            </button>
+                                                        </div>
+                                                        <div className="text-red-500 font-bold ml-8">
+                                                            {(
+                                                                detail.hoaDonCT.soLuong *
+                                                                (priceInfo.discountedPrice || detail.hoaDonCT.giaBan)
+                                                            ).toLocaleString()}{' '}
+                                                            VND
+                                                        </div>
+                                                        <button
+                                                            className="ml-4 text-red-500"
+                                                            onClick={() => openDeleteModal(detail.hoaDonCT)}
+                                                        >
+                                                            <TrashIcon className="w-5" />
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
 
                                             {isModalOpen && (
                                                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -948,16 +1084,47 @@ function OfflineSale() {
                                                     <div className="flex justify-between w-full max-w-[400px] mb-2">
                                                         <span className="text-gray-700">Tiền hàng:</span>
                                                         <div className="text-gray-500 font-bold ml-4">
-                                                            {uniqueDetails
-                                                                .reduce(
-                                                                    (acc, detail) =>
-                                                                        acc +
-                                                                        detail.hoaDonCT.soLuong *
-                                                                        detail.hoaDonCT.giaBan,
+                                                            {(() => {
+                                                                const uniqueProductIds = new Set();
+                                                                const uniqueDetails = billDetails
+                                                                    .filter(
+                                                                        (detail) =>
+                                                                            detail.hoaDonCT &&
+                                                                            detail.hoaDonCT.hoaDon.id ===
+                                                                                selectedBill.id &&
+                                                                            detail.hoaDonCT.trangThai === 1,
+                                                                    )
+                                                                    .filter((detail) => {
+                                                                        const isUnique = !uniqueProductIds.has(
+                                                                            detail.hoaDonCT.id,
+                                                                        );
+                                                                        if (isUnique) {
+                                                                            uniqueProductIds.add(detail.hoaDonCT.id);
+                                                                        }
+                                                                        return isUnique;
+                                                                    });
+
+                                                                // Tính toán tổng tiền hàng với giá đã giảm
+                                                                const totalItems = uniqueDetails.reduce(
+                                                                    (acc, detail) => {
+                                                                        const priceInfo = productPrices[
+                                                                            detail.hoaDonCT.id
+                                                                        ] || {
+                                                                            originalPrice: detail.hoaDonCT.giaBan,
+                                                                            discountedPrice: detail.hoaDonCT.giaBan,
+                                                                        };
+                                                                        return (
+                                                                            acc +
+                                                                            detail.hoaDonCT.soLuong *
+                                                                                priceInfo.discountedPrice
+                                                                        );
+                                                                    },
                                                                     0,
-                                                                )
-                                                                .toLocaleString()}{' '}
-                                                            VNĐ
+                                                                );
+
+                                                                return totalItems.toLocaleString(); // Định dạng số tiền
+                                                            })()}{' '}
+                                                            VND
                                                         </div>
                                                     </div>
 
@@ -975,17 +1142,27 @@ function OfflineSale() {
                                                     </div>
 
                                                     {/* Giảm giá */}
-                                                    {/* <div className="flex justify-between w-full max-w-[400px] mb-2">
+                                                    <div className="flex justify-between w-full max-w-[400px] mb-2">
                                                         <span className="text-gray-700">Giảm giá:</span>
                                                         <div className="flex items-center">
                                                             <input
                                                                 type="number"
                                                                 value={(() => {
                                                                     const total = uniqueDetails.reduce(
-                                                                        (acc, detail) =>
-                                                                            acc +
-                                                                            detail.hoaDonCT.soLuong *
-                                                                            detail.hoaDonCT.giaBan,
+
+                                                                        (acc, detail) => {
+                                                                            const priceInfo = productPrices[
+                                                                                detail.hoaDonCT.id
+                                                                            ] || {
+                                                                                originalPrice: detail.hoaDonCT.giaBan,
+                                                                                discountedPrice: detail.hoaDonCT.giaBan,
+                                                                            };
+                                                                            return (
+                                                                                acc +
+                                                                                detail.hoaDonCT.soLuong *
+                                                                                    priceInfo.discountedPrice
+                                                                            );
+                                                                        },
                                                                         0,
                                                                     );
 
@@ -1005,10 +1182,10 @@ function OfflineSale() {
                                                             />
                                                             <span className="ml-2">VNĐ</span>
                                                         </div>
-                                                    </div> */}
+                                                    </div>
 
                                                     {/* Giảm giá */}
-                                                    <div className="flex justify-between w-full max-w-[400px] mb-2">
+                                                    {/* <div className="flex justify-between w-full max-w-[400px] mb-2">
                                                         <span className="text-gray-700">Giảm giá:</span>
                                                         <div className="flex items-center">
                                                             <span className="ml-4 px-2 py-1 rounded bg-gray-100">
@@ -1033,7 +1210,7 @@ function OfflineSale() {
                                                                 })()}
                                                             </span>
                                                         </div>
-                                                    </div>
+                                                    </div> */}
 
 
                                                     {/* Tổng số tiền */}
@@ -1041,11 +1218,41 @@ function OfflineSale() {
                                                         <span className="text-gray-700 font-bold">Tổng số tiền:</span>
                                                         <span className="ml-4 text-red-500 font-bold">
                                                             {(() => {
+                                                                const uniqueProductIds = new Set();
+                                                                const uniqueDetails = billDetails
+                                                                    .filter(
+                                                                        (detail) =>
+                                                                            detail.hoaDonCT &&
+                                                                            detail.hoaDonCT.hoaDon.id ===
+                                                                                selectedBill.id &&
+                                                                            detail.hoaDonCT.trangThai === 1,
+                                                                    )
+                                                                    .filter((detail) => {
+                                                                        const isUnique = !uniqueProductIds.has(
+                                                                            detail.hoaDonCT.id,
+                                                                        );
+                                                                        if (isUnique) {
+                                                                            uniqueProductIds.add(detail.hoaDonCT.id);
+                                                                        }
+                                                                        return isUnique;
+                                                                    });
+
+                                                                // Tính toán tổng tiền hàng với giá đã giảm
                                                                 const totalItems = uniqueDetails.reduce(
-                                                                    (acc, detail) =>
-                                                                        acc +
-                                                                        detail.hoaDonCT.soLuong *
-                                                                        detail.hoaDonCT.giaBan,
+
+                                                                    (acc, detail) => {
+                                                                        const priceInfo = productPrices[
+                                                                            detail.hoaDonCT.id
+                                                                        ] || {
+                                                                            originalPrice: detail.hoaDonCT.giaBan,
+                                                                            discountedPrice: detail.hoaDonCT.giaBan,
+                                                                        };
+                                                                        return (
+                                                                            acc +
+                                                                            detail.hoaDonCT.soLuong *
+                                                                                priceInfo.discountedPrice
+                                                                        );
+                                                                    },
                                                                     0,
                                                                 );
 
@@ -1132,7 +1339,7 @@ function OfflineSale() {
 
                         {/* Tổng tiền hàng */}
                         <div className="flex justify-between items-center mb-4">
-                            <span className="text-md text-gray-600">Tổng tiền hàng</span>
+                            <span className="text-md text-gray-600">Tổng tiền hàng:</span>
                             <span className="text-red-600 text-lg font-semibold">
                                 {(() => {
                                     // Tính toán uniqueDetails ngay tại đây
@@ -1150,10 +1357,13 @@ function OfflineSale() {
                                             return isUnique;
                                         });
 
-                                    const totalItems = uniqueDetails.reduce(
-                                        (acc, detail) => acc + detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan,
-                                        0,
-                                    );
+                                    const totalItems = uniqueDetails.reduce((acc, detail) => {
+                                        const priceInfo = productPrices[detail.hoaDonCT.id] || {
+                                            originalPrice: detail.hoaDonCT.giaBan,
+                                            discountedPrice: detail.hoaDonCT.giaBan,
+                                        };
+                                        return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
+                                    }, 0);
 
                                     // Tính giảm giá từ voucher
                                     const voucherDiscount = bestVoucher
@@ -1320,10 +1530,13 @@ function OfflineSale() {
                                             return isUnique;
                                         });
 
-                                    const totalItems = uniqueDetails.reduce(
-                                        (acc, detail) => acc + detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan,
-                                        0,
-                                    );
+                                    const totalItems = uniqueDetails.reduce((acc, detail) => {
+                                        const priceInfo = productPrices[detail.hoaDonCT.id] || {
+                                            originalPrice: detail.hoaDonCT.giaBan,
+                                            discountedPrice: detail.hoaDonCT.giaBan,
+                                        };
+                                        return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
+                                    }, 0);
 
                                     // Tính giảm giá từ voucher
                                     const voucherDiscount = bestVoucher
@@ -1368,10 +1581,13 @@ function OfflineSale() {
                                             return isUnique;
                                         });
 
-                                    const totalItems = uniqueDetails.reduce(
-                                        (acc, detail) => acc + detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan,
-                                        0,
-                                    );
+                                    const totalItems = uniqueDetails.reduce((acc, detail) => {
+                                        const priceInfo = productPrices[detail.hoaDonCT.id] || {
+                                            originalPrice: detail.hoaDonCT.giaBan,
+                                            discountedPrice: detail.hoaDonCT.giaBan,
+                                        };
+                                        return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
+                                    }, 0);
 
                                     const voucherDiscount = bestVoucher ? (totalItems * bestVoucher.giaTri) / 100 : 0;
                                     const totalAmount = totalItems - voucherDiscount + shippingFee;
@@ -1563,26 +1779,47 @@ function OfflineSale() {
 
                         {/* Products List */}
                         <div className="grid grid-cols-4 gap-4">
-                            {filteredProducts.map((product) => (
-                                <div key={product.id} className="border rounded p-2 relative">
-                                    <img
-                                        src={product.hinhAnhUrls[0]}
-                                        alt={product.sanPhamTen}
-                                        className="w-full h-[250px] object-cover mb-2"
-                                    />
-                                    <h3 className="font-semibold">
-                                        {product.sanPhamTen} [{product.trongLuongTen}]
-                                    </h3>
-                                    <p className="text-gray-500">Giá: {product.donGia.toLocaleString()} VND</p>
-                                    <p className="text-gray-500">Số lượng: {product.soLuong}</p>
-                                    <button
-                                        className="absolute top-2 right-2 text-blue-500 hover:text-blue-700"
-                                        onClick={() => handleQuantityModal(product)} // Gọi hàm với sản phẩm hiện tại
-                                    >
-                                        <AddIcon />
-                                    </button>
-                                </div>
-                            ))}
+                            {filteredProducts.map((product) => {
+                                const promotion = productPromotions[product.id];
+                                return (
+                                    <div key={product.id} className="border rounded p-2 relative">
+                                        {promotion && (
+                                            <div className="absolute text-white px-2 py-1 rounded-full text-xs z-10">
+                                                <p className="text-green-600 font-semibold">
+                                                    -{Math.round((1 - promotion.giaKhuyenMai / product.donGia) * 100)}%
+                                                </p>
+                                            </div>
+                                        )}
+                                        <img
+                                            src={product.hinhAnhUrls[0]}
+                                            alt={product.sanPhamTen}
+                                            className="w-full h-[250px] object-cover mb-2"
+                                        />
+                                        <h3 className="font-semibold">
+                                            {product.sanPhamTen} [{product.trongLuongTen}]
+                                        </h3>
+                                        {promotion ? (
+                                            <div className="flex items-center space-x-2">
+                                                <p className="text-red-500 font-bold">
+                                                    {promotion.giaKhuyenMai.toLocaleString()} VND
+                                                </p>
+                                                <p className="text-gray-500 line-through">
+                                                    {product.donGia.toLocaleString()} VND
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-500">{product.donGia.toLocaleString()} VND</p>
+                                        )}
+                                        <p className="text-gray-500">Số lượng: {product.soLuong}</p>
+                                        <button
+                                            className="absolute top-2 right-2 text-blue-500 hover:text-blue-700"
+                                            onClick={() => handleQuantityModal(product)}
+                                        >
+                                            <AddIcon />
+                                        </button>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

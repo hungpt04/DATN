@@ -1,10 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, IconButton } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import axios from 'axios';
 
 const CartItem = ({ showButton, cart, onQuantityChange, onDeleteCart }) => {
     const [quantity, setQuantity] = useState(cart.gioHang.soLuong);
+    const [promotion, setPromotion] = useState(null);
+
+    useEffect(() => {
+        const fetchPromotion = async () => {
+            try {
+                const response = await axios.get(
+                    `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${cart.gioHang.sanPhamCT.id}`,
+                );
+
+                if (response.data.length > 0) {
+                    setPromotion(response.data[0]);
+                }
+            } catch (error) {
+                console.error('Error fetching promotion:', error);
+            }
+        };
+
+        fetchPromotion();
+    }, [cart.gioHang.sanPhamCT.id]);
 
     const handleIncrease = () => {
         const newQuantity = quantity + 1;
@@ -20,6 +40,14 @@ const CartItem = ({ showButton, cart, onQuantityChange, onDeleteCart }) => {
         }
     };
 
+    // Tính phần trăm giảm giá
+    const calculateDiscountPercentage = () => {
+        if (promotion) {
+            return Math.round((1 - promotion.giaKhuyenMai / cart.gioHang.sanPhamCT.donGia) * 100);
+        }
+        return 0;
+    };
+
     return (
         <div className="p-5 shadow-lg border rounded-md">
             <div className="flex items-center">
@@ -30,10 +58,23 @@ const CartItem = ({ showButton, cart, onQuantityChange, onDeleteCart }) => {
                     <p className="font-semibold">{cart.gioHang.sanPhamCT.sanPham.ten}</p>
                     <p className="opacity-70">Trọng lượng: {cart.gioHang.sanPhamCT.trongLuong.ten}</p>
                     <p className="opacity-70 mt-2">Thương hiệu: {cart.gioHang.sanPhamCT.thuongHieu.ten}</p>
+
                     <div className="flex space-x-2 items-center pt-3">
-                        <p className="font-semibold text-lg">{cart.gioHang.sanPhamCT.donGia.toLocaleString()} ₫</p>
-                        {/* <p className="opacity-50 line-through">37000000 ₫</p>
-                        <p className="text-green-600 font-semibold">3% off</p> */}
+                        {promotion ? (
+                            <>
+                                <p className="font-semibold text-lg text-red-600">
+                                    {promotion.giaKhuyenMai.toLocaleString()} ₫
+                                </p>
+                                <p className="opacity-50 line-through">
+                                    {cart.gioHang.sanPhamCT.donGia.toLocaleString()} ₫
+                                </p>
+                                <p className="text-green-600 font-semibold">{calculateDiscountPercentage()}% off</p>
+                            </>
+                        ) : (
+                            <p className="font-semibold text-lg text-red-600">
+                                {cart.gioHang.sanPhamCT.donGia.toLocaleString()} ₫
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

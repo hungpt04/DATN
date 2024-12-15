@@ -134,7 +134,7 @@ const AddAddress = () => {
 
         const newAddress = {
             ten: values.addressName,
-            taiKhoan:  {id: customerId},
+            taiKhoan: { id: customerId },
             sdt: values.mobile,
             idTinh: selectedProvince.ProvinceName,
             idHuyen: selectedDistrict.DistrictName,
