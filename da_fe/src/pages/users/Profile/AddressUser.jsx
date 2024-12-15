@@ -29,6 +29,15 @@ export default function AddressUser() {
     loai: 0 // 0 cho không phải địa chỉ mặc định, 1 cho địa chỉ mặc định
   });
 
+  const [errors, setErrors] = useState({
+    fullName: "",
+    phoneNumber: "",
+    provinceId: "",
+    districtId: "",
+    wardId: "",
+    specificAddress: ""
+  })
+
   useEffect(() => {
     const token = localStorage.getItem('token'); // Lấy token từ localStorage
     if (token) {
@@ -196,6 +205,66 @@ export default function AddressUser() {
 
   const onCreateDiaChi = async (e) => {
     e.preventDefault();
+    const newErrors = {}
+    let check = 0
+
+    if (!diaChiData.ten.trim()) {
+      newErrors.fullName = "*Bạn chưa nhập họ tên"
+      check++
+    } else if (diaChiData.ten.length > 100) {
+      newErrors.fullName = "*Họ tên không dài quá 100 ký tự"
+      check++
+    } else {
+      const specialCharsRegex = /[!@#$%^&*(),.?":{}|<>]/
+      if (specialCharsRegex.test(diaChiData.ten)) {
+        newErrors.fullName = "*Họ tên không chứa ký tự đặc biệt"
+        check++
+      } else {
+        newErrors.fullName = ""
+      }
+    }
+
+    if (!diaChiData.sdt.trim()) {
+      newErrors.phoneNumber = "*Bạn chưa nhập số điện thoại"
+      check++
+    } else {
+      const phoneNumberRegex = /^(0[1-9][0-9]{8})$/
+      if (!phoneNumberRegex.test(diaChiData.sdt.trim())) {
+        newErrors.phoneNumber = "*Số điện thoại không hợp lệ"
+        check++
+      } else {
+        newErrors.phoneNumber = ""
+      }
+    }
+
+    if (!selectedProvince) {
+      newErrors.provinceId = "*Bạn chưa chọn tỉnh/ thành phố"
+      check++
+    }
+
+    if (!selectedDistrict) {
+      newErrors.districtId = "*Bạn chưa chọn quận/ huyện"
+      check++
+    }
+
+    if (!selectedWard) {
+      newErrors.wardId = "*Bạn chưa chọn xã/ phường"
+      check++
+    }
+
+    if (!diaChiData.diaChiCuThe.trim()) {
+      newErrors.specificAddress = "*Bạn chưa nhập địa chỉ cụ thể"
+      check++
+    } else if (diaChiData.diaChiCuThe.length > 255) {
+      newErrors.specificAddress = "*Địa chỉ cụ thể không dài quá 255 ký tự"
+    } else {
+      newErrors.specificAddress = ""
+    }
+
+    if (check > 0) {
+      setErrors(newErrors)
+      return
+    }
 
     try {
       const diaChiPayload = {
@@ -403,10 +472,19 @@ export default function AddressUser() {
       idHuyen: null,
       idXa: null,
       loai: 0 // Đặt lại loại về mặc định
-    });
-    setSelectedProvince('');
-    setSelectedDistrict('');
-    setSelectedWard('');
+    })
+
+    setErrors({
+      fullName: "",
+      phoneNumber: "",
+      provinceId: "",
+      districtId: "",
+      wardId: "",
+      specificAddress: "",
+    })
+    setSelectedProvince("");
+    setSelectedDistrict("");
+    setSelectedWard("");
   };
 
   const handleOpen = (address) => {
@@ -457,30 +535,42 @@ export default function AddressUser() {
                   <label className='block mb-1'>Tên</label>
                   <input
                     type='text'
-                    className='w-full px-3 py-2 border rounded focus:outline-none focus:border-gray-700'
+                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.fullName ? "border-red-500 focus:outline-red-500 hover:border-red-600" : ""}`}
                     name='ten'
                     value={diaChiData.ten}
-                    onChange={handleInputChange}
+                    onChange={(e) => {
+                      handleInputChange(e)
+                      setErrors({...errors, fullName: ""})
+                    }}
                   />
+                  {errors.fullName && <p className="text-sm mt-1" style={{color: "red"}}>{errors.fullName}</p>}
                 </div>
                 <div className='mb-2'>
                   <label className='block mb-1'>Số điện thoại</label>
                   <input
                     type='text'
-                    className='w-full px-3 py-2 border rounded focus:outline-none focus:border-gray-700'
+                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.phoneNumber ? "border-red-500 hover:border-red-600 focus:outline-red-500": ""}`}
                     name='sdt'
                     value={diaChiData.sdt}
-                    onChange={handleInputChange}
+                    onChange={(e) => {
+                      handleInputChange(e)
+                      setErrors({...errors, phoneNumber: ""})
+                    }}
+                    
                   />
+                  {errors.phoneNumber && <p className="text-sm mt-1" style={{color: "red"}}>{errors.phoneNumber}</p>}
                 </div>
               </div>
 
               <div className='grid grid-cols-1 gap-4 mt-4'>
                 <div className='mb-2'>
                   <label className='block mb-1'>Tỉnh/thành phố</label>
-                  <select className='w-full px-3 py-2 border rounded focus:outline-none focus:border-gray-700'
+                  <select className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.provinceId ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
                     value={selectedProvince}
-                    onChange={(e) => setSelectedProvince(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedProvince(e.target.value)
+                      setErrors({...errors, provinceId: ""})
+                    }}
                   >
                     <option value="">Chọn tỉnh/thành phố</option>
                     {provinces.map((province) => (
@@ -489,14 +579,18 @@ export default function AddressUser() {
                       </option>
                     ))}
                   </select>
+                  {errors.provinceId && <p className="text-sm mt-1" style={{color: "red"}}>{errors.provinceId}</p>}
                 </div>
 
                 <div className='mb-2'>
                   <label className='block mb-1'>Quận/huyện</label>
                   <select
-                    className='w-full px-3 py-2 border rounded focus:outline-none focus:border-gray-700'
+                    className={`w-full px-3 py-2 border rounded outline-gray-600 #${errors.districtId ? "border-red-500 focus:outline-red-500 hover:border-red-600": ""}`}
                     value={selectedDistrict}
-                    onChange={(e) => setSelectedDistrict(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedDistrict(e.target.value)
+                      setErrors({...errors, districtId: ""})
+                    }}
                     disabled={!selectedProvince}
                   >
                     <option value="">Chọn quận/huyện</option>
@@ -506,14 +600,18 @@ export default function AddressUser() {
                       </option>
                     ))}
                   </select>
+                  {errors.districtId && <p className="text-sm mt-1" style={{color: "red"}}>{errors.districtId}</p>}
                 </div>
 
                 <div className='mb-2'>
                   <label className='block mb-1'>Xã/phường</label>
                   <select
-                    className='w-full px-3 py-2 border rounded focus:outline-none focus:border-gray-700'
+                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.wardId ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
                     value={selectedWard}
-                    onChange={(e) => setSelectedWard(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedWard(e.target.value)
+                      setErrors({...errors, wardId: ""})
+                    }}
                     disabled={!selectedDistrict}
                   >
                     <option value="">Chọn xã/phường</option>
@@ -523,18 +621,23 @@ export default function AddressUser() {
                       </option>
                     ))}
                   </select>
+                  {errors.wardId && <p className="text-sm mt-1" style={{color: "red"}}>{errors.wardId}</p>}
                 </div>
 
                 <div className='mb-2'>
                   <label className='block mb-1'>Địa chỉ cụ thể</label>
                   <input
                     type='text'
-                    className='w-full px-3 py-2 border rounded focus:outline-none focus:border-gray-700'
+                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.specificAddress ? "border-red-500 hover:border-red-600 focus:outline-red-500": ""}`}
                     placeholder='Địa chỉ cụ thể'
                     name='diaChiCuThe'
                     value={diaChiData.diaChiCuThe}
-                    onChange={handleInputChange}
+                    onChange={(e) => {
+                      handleInputChange(e)
+                      setErrors({...errors, specificAddress: ""})
+                    }}
                   />
+                  {errors.specificAddress && <p className="text-sm mt-1" style={{color: "red"}}>{errors.specificAddress}</p>}
                 </div>
               </div>
 
@@ -560,7 +663,7 @@ export default function AddressUser() {
       <div className='mt-4'>
         {listDiaChi.length > 0 ? (
           listDiaChi.map((address) => (
-            <div key={address.id} className='mb-4 p-4 flex justify-between border rounded'>
+            <div key={address.id} className='mb-4 p-4 flex justify-between border rounded space-x-2'>
               <div>
                 <p><strong>Tên: </strong>{address.ten}</p>
                 <p><strong>Số điện thoại: </strong>{address.sdt}</p>

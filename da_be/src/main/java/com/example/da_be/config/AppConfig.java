@@ -54,8 +54,7 @@ public class AppConfig {
 				.authorizeHttpRequests(authorize -> authorize
 //						.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
 //						.anyRequest().authenticated())
-						.requestMatchers("/api/admin/**").hasAnyAuthority(Roles.ADMIN.name(), Roles.USER.name())
-						.requestMatchers("/api/tai-khoan/my-info").hasAuthority(Roles.CUSTOMER.name())
+//						.requestMatchers("/api/voucher/**").hasAuthority(Roles.ADMIN.name())
 						.anyRequest().permitAll())
 				.addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
 				.csrf(csrf -> csrf.disable())

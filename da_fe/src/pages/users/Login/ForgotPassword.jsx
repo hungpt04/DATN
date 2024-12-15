@@ -124,23 +124,33 @@ const ForgotPassword = () => {
     const newErrors = {};
 
     if (!otp) {
-      newErrors.otp = "*Ban chưa nhập mã OTP";
+      newErrors.otp = "*Ban chưa nhập mã OTP"
       hasError = true;
+    } else if (otp != otp2) {
+      newErrors.otp = "*Mã OTP không chính xác"
+      hasError = true
+    } else {
+      newErrors.otp = ""
     }
 
     if (!matKhauMoi) {
       newErrors.matKhauMoi = "*Bạn chưa nhập mật khẩu mới";
       hasError = true;
+    } else if (matKhauMoi.length < 6) {
+      newErrors.matKhauMoi = "*Mật khẩu phải có ít nhất 6 ký tự"
+      hasError = true
+    } else {
+      newErrors.matKhauMoi = ""
     }
 
     if (!xacNhanMkMoi) {
       newErrors.xacNhanMkMoi = "*Bạn chưa xác nhận mật khẩu";
       hasError = true;
-    }
-
-    if (matKhauMoi !== xacNhanMkMoi) {
+    } else if (matKhauMoi !== xacNhanMkMoi) {
       newErrors.xacNhanMkMoi = "*Mật khẩu và xác nhận mật khẩu không khớp";
       hasError = true;
+    } else {
+      newErrors.xacNhanMkMoi = ""
     }
 
     if (hasError) {
@@ -201,7 +211,7 @@ const ForgotPassword = () => {
                     }
                   }}
                 />
-                {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+                {errors.email && <p className="text-sm" style={{color: "red"}}>{errors.email}</p>}
               </div>
               <button
                 type="button"
@@ -221,7 +231,7 @@ const ForgotPassword = () => {
                 <input
                   type="text"
                   id="otp"
-                  className={`mt-1 block w-full p-2 border hover:border-gray-500 rounded-sm ${errors.otp ? "border-red-500 hover:border-red-500 outline-red-500" : "border-gray-500"}`}
+                  className={`mt-1 block w-full p-2 border hover:border-gray-500 rounded-sm ${errors.otp ? "border-red-500 hover:border-red-600 outline-red-500" : "border-gray-500"}`}
                   value={otp}
                   onChange={(e) => {
                     setOtp(e.target.value);
@@ -230,7 +240,7 @@ const ForgotPassword = () => {
                     }
                   }}
                 />
-                {errors.otp && <p className="text-red-500 text-sm">{errors.otp}</p>}
+                {errors.otp && <p className="text-sm" style={{color: "red"}}>{errors.otp}</p>}
               </div>
               <div className="mb-4">
                 <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
@@ -239,7 +249,7 @@ const ForgotPassword = () => {
                 <input
                   type="password"
                   id="newPassword"
-                  className={`mt-1 block w-full p-2 border hover:border-gray-500 rounded-sm ${errors.matKhauMoi ? "border-red-500 hover:border-red-500 outline-red-500" : "border-gray-500"}`}
+                  className={`mt-1 block w-full p-2 border hover:border-gray-500 rounded-sm ${errors.matKhauMoi ? "border-red-500 hover:border-red-600 outline-red-500" : "border-gray-500"}`}
                   value={matKhauMoi}
                   onChange={(e) => {
                     setMatKhauMoi(e.target.value);
@@ -248,7 +258,7 @@ const ForgotPassword = () => {
                     }
                   }}
                 />
-                {errors.matKhauMoi && <p className="text-red-500 text-sm">{errors.matKhauMoi}</p>}
+                {errors.matKhauMoi && <p className="text-sm" style={{color: "red"}}>{errors.matKhauMoi}</p>}
               </div>
               <div className="mb-4">
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
@@ -257,7 +267,7 @@ const ForgotPassword = () => {
                 <input
                   type="password"
                   id="confirmPassword"
-                  className={`mt-1 block w-full p-2 border hover:border-gray-500 rounded-sm ${errors.xacNhanMkMoi ? "border-red-500 hover:border-red-500 outline-red-500" : "border-gray-500"}`}
+                  className={`mt-1 block w-full p-2 border hover:border-gray-500 rounded-sm ${errors.xacNhanMkMoi ? "border-red-500 hover:border-red-600 outline-red-500" : "border-gray-500"}`}
                   value={xacNhanMkMoi}
                   onChange={(e) => {
                     setXacNhanMkMoi(e.target.value);
@@ -266,7 +276,7 @@ const ForgotPassword = () => {
                     }
                   }}
                 />
-                {errors.xacNhanMkMoi && <p className="text-red-500 text-sm">{errors.xacNhanMkMoi}</p>}
+                {errors.xacNhanMkMoi && <p className="text-sm" style={{color: "red"}}>{errors.xacNhanMkMoi}</p>}
               </div>
               <ReCAPTCHA
                 sitekey="6Lf3KwwpAAAAAJriNTbY4LqBvuI1aiRzTNb14cVd"

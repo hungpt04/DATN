@@ -24,6 +24,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -169,5 +170,37 @@ public class AuthController {
 	public ResponseEntity<?> change(@RequestBody ForgotPasswordRequest request) {
 		return new ResponseEntity<>(authenticationService.change(request), HttpStatus.OK);
 	}
+
+	@GetMapping("/check-pass")
+	public ResponseEntity<?> checkPassword(
+			@RequestParam String currentPassword,
+			Principal principal
+	) {
+		try {
+			// Lấy email của user đang đăng nhập
+			String email = principal.getName();
+
+			// Gọi service để kiểm tra mật khẩu
+			boolean isPasswordCorrect = authenticationService.checkPassword(email, currentPassword);
+
+			return ResponseEntity.ok(isPasswordCorrect);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Kiểm tra mật khẩu thất bại: " + e.getMessage());
+		}
+	}
+//	public ResponseEntity<String> checkPassword(@RequestParam String email, @RequestParam String currentPassword) {
+//		try {
+//			// Gọi service để kiểm tra mật khẩu
+//			boolean isPasswordCorrect = authenticationService.checkPassword(email, currentPassword);
+//			if (isPasswordCorrect) {
+//				return ResponseEntity.ok("Mật khẩu chính xác!");
+//			} else {
+//				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mật khẩu không chính xác!");
+//			}
+//		} catch (RuntimeException e) {
+//			// Xử lý nếu email không tồn tại
+//			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+//		}
+//	}
 
 }

@@ -17,9 +17,9 @@ const ChangePassword = () => {
   })
 
   const [errors, setErrors] = useState({
-    matKhau: "",
-    matKhauMoi: "",
-    xacNhanMkMoi: ""
+    oldPass: "",
+    newPass: "",
+    confirmPass: ""
   });
 
   const navigate = useNavigate();
@@ -51,27 +51,59 @@ const ChangePassword = () => {
     const newErrors = {};
     let check = 0;
 
-    if (formData.matKhau === null) {
-      newErrors.matKhau = "*Vui lòng nhập mật khẩu cũ";
+    if (!formData.matKhau) {
+      newErrors.oldPass = "*Bạn chưa nhập mật khẩu hiện tại";
       check++;
+    } else {
+      try {
+        const checkPasswordResponse = await axios.get(
+          "http://localhost:8080/auth/check-pass", 
+          {
+            params: { currentPassword: formData.matKhau },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
+  
+        // Kiểm tra kết quả trả về
+        if (!checkPasswordResponse.data) {
+          newErrors.oldPass = "*Mật khẩu hiện tại không đúng";
+          check++;
+        }
+      } catch (error) {
+        console.error("Lỗi kiểm tra mật khẩu:", error);
+        
+        // Xử lý chi tiết lỗi
+        if (error.response) {
+          newErrors.oldPass = error.response.data || "*Có lỗi xảy ra khi kiểm tra mật khẩu";
+        } else {
+          newErrors.oldPass = "*Có lỗi xảy ra khi kiểm tra mật khẩu";
+        }
+        check++;
+      }
     }
 
-    if (formData.matKhauMoi === null) {
-      newErrors.matKhauMoi = "*Vui lòng nhập mật khẩu mới";
+    if (!formData.matKhauMoi) {
+      newErrors.newPass = "*Bạn chưa nhập mật khẩu mới";
       check++;
-    } else if (formData.matKhauMoi.length < 5) {
-      newErrors.matKhauMoi = "*Mật khẩu mới phải chứa ít nhất 6 kí tự.";
+    } else if (formData.matKhauMoi.length < 6) {
+      newErrors.newPass = "*Mật khẩu mới phải chứa ít nhất 6 kí tự.";
       check++;
+    } else {
+      newErrors.newPass = ""
     }
 
-    if (formData.xacNhanMkMoi === null) {
-      newErrors.xacNhanMkMoi = "*Vui lòng xác nhận lại mật khẩu mới";
+    if (!formData.xacNhanMkMoi) {
+      newErrors.confirmPass = "*Bạn chưa xác nhận lại mật khẩu mới";
       check++;
-    }
-
-    if (formData.matKhauMoi !== formData.xacNhanMkMoi) {
-      newErrors.xacNhanMkMoi = "*Mật khẩu mới và xác nhận mật khẩu mới không khớp";
-      check++;
+    } else {
+      if (formData.matKhauMoi !== formData.xacNhanMkMoi) {
+        newErrors.confirmPass = "*Mật khẩu mới và xác nhận mật khẩu mới không khớp";
+        check++;
+      } else {
+        newErrors.confirmPass = ""
+      }
     }
 
     if (check > 0) {
@@ -121,10 +153,13 @@ const ChangePassword = () => {
             <div className="relative">
               <input
                 type={showCurrentPassword ? "text" : "password"}
-                className={"w-full p-2 border border-gray-400 rounded hover:border-gray-700"}
+                className={`w-full p-2 border border-gray-400 rounded hover:border-gray-700 ${errors.oldPass ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
                 name="matKhau"
                 value={formData.matKhau}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  handleInputChange(e)
+                  setErrors({ ...errors, oldPass: "" })
+                }}
               />
               <button
                 type="button"
@@ -133,7 +168,7 @@ const ChangePassword = () => {
               >
                 {showCurrentPassword ? "Ẩn" : "Hiện"}
               </button>
-              {errors.passOld && <p className="text-sm" style={{ color: "red" }}>{errors.passOld}</p>}
+              {errors.oldPass && <p className="text-sm" style={{ color: "red" }}>{errors.oldPass}</p>}
             </div>
           </div>
 
@@ -144,10 +179,13 @@ const ChangePassword = () => {
             <div className="relative">
               <input
                 type={showNewPassword ? "text" : "password"}
-                className={"w-full p-2 border border-gray-400 rounded hover:border-gray-700"}
+                className={`w-full p-2 border border-gray-400 rounded hover:border-gray-700 ${errors.newPass ? "border-red-500 hover:border-red-500 focus:outline-red-500" : ""}`}
                 name="matKhauMoi"
                 value={formData.matKhauMoi}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  handleInputChange(e)
+                  setErrors({ ...errors, newPass: "" })
+                }}
               />
               <button
                 type="button"
@@ -167,10 +205,13 @@ const ChangePassword = () => {
             <div className="relative">
               <input
                 type={showConfirmNewPassword ? "text" : "password"}
-                className={"w-full p-2 border border-gray-400 rounded hover:border-gray-700"}
+                className={`w-full p-2 border border-gray-400 rounded hover:border-gray-700 ${errors.confirmPass ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
                 name="xacNhanMkMoi"
                 value={formData.xacNhanMkMoi}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  handleInputChange(e)
+                  setErrors({ ...errors, confirmPass: "" })
+                }}
               />
               <button
                 type="button"

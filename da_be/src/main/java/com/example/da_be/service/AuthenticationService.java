@@ -71,6 +71,21 @@ public class AuthenticationService {
         return taiKhoan;
     }
 
+    public boolean checkPassword(String email, String currentPass) {
+        Optional<TaiKhoan> taiKhoanOptional = taiKhoanRepository.findByEmail(email);
+
+        // Kiểm tra xem tài khoản có tồn tại không
+        if (!taiKhoanOptional.isPresent()) {
+            throw new RuntimeException("Tài khoản không tồn tại!");
+        }
+
+        // Lấy tài khoản từ Optional
+        TaiKhoan taiKhoan = taiKhoanOptional.get();
+
+        // So sánh mật khẩu hiện tại với mật khẩu đã mã hóa
+        return passwordEncoder.matches(currentPass, taiKhoan.getMatKhau());
+    }
+
     public String sendOTP(String email) {
         Random random = new Random();
         StringBuilder otp = new StringBuilder();

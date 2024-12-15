@@ -121,6 +121,7 @@ import { Link } from 'react-router-dom';
 import { EnvelopeIcon, UserCircleIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
 import { jwtDecode } from 'jwt-decode';
 import swal from 'sweetalert';
+
 const InputForm = ({ value, onChange, placeholder = '' }) => {
     const [showPassword, setShowPassword] = useState(false);
     return (
@@ -143,16 +144,22 @@ const InputForm = ({ value, onChange, placeholder = '' }) => {
         </div>
     );
 };
+
 const LoginPanel = () => {
-    const [user, setUser ] = useState({
-        email: '',
-        matKhau: '',
+    const [user, setUser] = useState({
+        email: "",
+        matKhau: "",
     });
-    const [error, setError] = useState('');
+    const [error, setError] = useState("");
     const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+
+        if (!user.email || !user.matKhau || !(user.email && user.matKhau)) {
+            setError("*Bạn chưa nhập thông tin tài khoản")
+            return;
+        }
 
         try {
             const response = await axios.post('http://localhost:8080/auth/signin', {
@@ -162,43 +169,43 @@ const LoginPanel = () => {
 
             const token = response.data;
 
-                const decodedToken = jwtDecode(token);
-                console.log('Decoded Token:', decodedToken); // Kiểm tra cấu trúc token
+            const decodedToken = jwtDecode(token);
+            console.log('Decoded Token:', decodedToken); // Kiểm tra cấu trúc token
 
-                const vaiTro = decodedToken.vaiTro || decodedToken.authorities || decodedToken.role;
-                const email = decodedToken.sub || decodedToken.email;
+            const vaiTro = decodedToken.vaiTro || decodedToken.authorities || decodedToken.role;
+            const email = decodedToken.sub || decodedToken.email;
 
-                if (!vaiTro) {
-                    swal("Lỗi!", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau!", "error");
-                    setError('*Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau!');
+            if (!vaiTro) {
+                swal("Lỗi!", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau!", "error");
+                //    setError('*Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau!');
+            }
+
+            // Lưu token vào localStorage hoặc state
+            localStorage.setItem("token", token);
+            localStorage.setItem("vaiTro", vaiTro);
+            localStorage.setItem("email", email);
+
+            // Hiển thị thông báo thành công
+            swal("Thành công!", "Đăng nhập thành công!", "success");
+
+            setError("");
+
+            setTimeout(() => {
+                if (vaiTro.toLowerCase() === "customer") {
+                    navigate(0)
+                } else {
+                    navigate("/admin")
                 }
+                // navigate(0)
+            }, 2000);
 
-                // Lưu token vào localStorage hoặc state
-                localStorage.setItem('token', token);
-                localStorage.setItem('vaiTro', vaiTro);
-                localStorage.setItem('email', email);
-
-                // Hiển thị thông báo thành công
-                swal("Thành công!", "Đăng nhập thành công!", "success");
-
-                setError('');
-
-                setTimeout(() => {
-                    if (vaiTro.toLowerCase() === 'customer') {
-                        navigate(0)
-                    } else {
-                        navigate("/admin")
-                    }
-                    // navigate(0)
-                }, 2000);
-            
         } catch (error) {
             if (error.response) {
-                setError('*Tài khoản hoặc mật khẩu không chính xác!');
+                setError("*Tài khoản hoặc mật khẩu không chính xác");
             } else {
                 // Hiển thị lỗi hệ thống
                 swal("Lỗi!", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau!", "error");
-                setError('*Lỗi hệ thống. Vui lòng thử lại sau!');
+                // setError("*Lỗi hệ thống. Vui lòng thử lại sau!");
             }
         }
     };
@@ -215,7 +222,8 @@ const LoginPanel = () => {
                         className="flex-1 p-2 outline-none"
                         placeholder="Nhập email"
                         value={user.email}
-                        onChange={(e) => setUser ({ ...user, email: e.target.value })}
+                        onChange={(e) => setUser({ ...user, email: e.target.value })}
+                        onFocus={() => setError("")}
                     />
                 </div>
             </div>
@@ -232,12 +240,13 @@ const LoginPanel = () => {
                 </div>
                 <InputForm
                     value={user.matKhau}
-                    onChange={(e) => setUser ({ ...user, matKhau: e.target.value })}
-                    placeholder="Nhập mật khẩu">
+                    onChange={(e) => setUser({ ...user, matKhau: e.target.value })}
+                    placeholder="Nhập mật khẩu"
+                    onFocus={() => setError("")}>
                 </InputForm>
             </div>
             {error && <p className="text-sm mb-3" style={{ color: "red" }}>{error}</p>}
-            <div className="items-center w-full mb-3 justify-center">
+            <div className="items-center w-full my-3 justify-center">
                 <button type="submit" className="w-full bg-black py-2 mb-3 text-white rounded-md">
                     ĐĂNG NHẬP
                 </button>
@@ -253,11 +262,101 @@ const RegisterPanel = () => {
         matKhau: '',
         xacNhanMatKhau: '',
     });
-    const [error, setError] = useState('')
+
+    const [errors, setErrors] = useState({
+        email: "",
+        fullName: "",
+        passWord: "",
+        confirmPass: ""
+    })
+
     const navigate = useNavigate()
+
+    //  kiểm tra email
+    const checkMail = async (email) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/auth/check-mail?email=${email}`);
+
+            // In ra toàn bộ response để debug
+            console.log('Full response:', response);
+
+            // Kiểm tra kỹ hơn trạng thái và dữ liệu trả về
+            if (response.status === 200) {
+                // Nếu email đã tồn tại, trả về true
+                return true;
+            }
+
+            // Nếu email chưa tồn tại, trả về false
+            return false;
+        } catch (error) {
+            // Nếu có lỗi 404 hoặc các mã lỗi khác, nghĩa là email chưa tồn tại
+            if (error.response && error.response.status === 404) {
+                return false;
+            }
+
+            // Log chi tiết lỗi để debug
+            console.error('Error checking email:', error);
+
+            // Trong trường hợp có lỗi khác, coi như email chưa tồn tại
+            return false;
+        }
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+
+        const newErrors = {}
+        let check = 0
+
+        if (!user.hoTen || !user.hoTen.trim()) {
+            newErrors.fullName = "*Bạn chưa nhập họ tên"
+            check++
+        } else if (user.hoTen.length > 100) {
+            newErrors.fullName = "*Họ tên không dài quá 100 ký tự"
+            check++
+        } else {
+            newErrors.fullName = ""
+        }
+
+        if (!user.email || !user.email.trim()) {
+            newErrors.email = "*Bạn chưa nhập địa chỉ email"
+            check++
+        } else if (!/\S+@\S+\.\S+/.test(user.email.trim())) {
+            newErrors.email = "*Địa chỉ email không hợp lệ"
+            check++
+        } else {
+            // Kiểm tra email đã tồn tại
+            const isEmailExists = await checkMail(user.email);
+            if (isEmailExists) {
+                newErrors.email = "*Email đã tồn tại trong hệ thống"
+                check++
+            }
+        }
+
+        if (!user.matKhau || !user.matKhau.trim()) {
+            newErrors.passWord = "*Bạn chưa nhập mật khẩu"
+            check++
+        } else if (user.matKhau.trim().length <= 5) {
+            newErrors.passWord = "*Mật khẩu phải chứa ít nhất 6 ký tự"
+            check++
+        } else {
+            newErrors.passWord = ""
+        }
+
+        if (!user.xacNhanMatKhau || !user.xacNhanMatKhau.trim()) {
+            newErrors.confirmPass = "*Bạn chưa nhập lại mật khẩu"
+            check++
+        } else if (user.xacNhanMatKhau.trim() !== user.matKhau.trim()) {
+            newErrors.confirmPass = "*Mật khẩu nhập lại không khớp"
+            check++
+        } else {
+            newErrors.confirmPass = ""
+        }
+
+        if (check > 0) {
+            setErrors(newErrors)
+            return
+        }
 
         try {
             const response = await axios.post('http://localhost:8080/auth/signup', {
@@ -266,32 +365,32 @@ const RegisterPanel = () => {
                 matKhau: user.matKhau,
                 xacNhanMatKhau: user.xacNhanMatKhau,
             });
-            
+
             swal("Thành công!", "Đăng ký tài khoản thành công. Đăng nhập ngay nào!", "success");
-            setError('');
+            setErrors({});
             // reset
             setUser({
-                hoTen: '',
-                email: '',
-                matKhau: '',
-                xacNhanMatKhau: '',
+                hoTen: "",
+                email: "",
+                matKhau: "",
+                xacNhanMatKhau: "",
             });
             setTimeout(() => {
                 navigate(0);
             }, 2000);
         } catch (err) {
             if (err.response) {
-                // swal("Thất bại!", "Đăng ký không thành công!", "error");
-                setError('Đăng ký không thành công!');
+                swal("Thất bại!", "Đăng ký không thành công!", "error");
+                // setErrors('Đăng ký không thành công!');
             } else {
                 // swal("Lỗi!", "Đã xảy ra lỗi. Vui lòng thử lại sau!", "error");
-                setError('Lỗi hệ thống. Vui lòng thử lại sau.');
+                setErrors('Lỗi hệ thống. Vui lòng thử lại sau.');
             }
         }
     };
     return (
         <form onSubmit={handleSubmit}>
-            <div className="mb-5">
+            <div className="mb-1">
                 <label className="block text-base font-medium text-gray-700">Họ và tên</label>
                 <div className="flex items-center border-b border-gray hover:border-black mt-1">
                     <UserCircleIcon className="h-7 w-7" />
@@ -299,11 +398,15 @@ const RegisterPanel = () => {
                         type="text"
                         className="flex-1 p-2 outline-none"
                         value={user.hoTen}
-                        onChange={(e) => setUser({ ...user, hoTen: e.target.value })}
+                        onChange={(e) => {
+                            setUser({ ...user, hoTen: e.target.value })
+                            setErrors({ ...errors, fullName: "" })
+                        }}
                     />
                 </div>
             </div>
-            <div className="mb-5">
+            <div className="mb-3">{errors.fullName && (<p className="text-sm" style={{ color: "red" }}>{errors.fullName}</p>)}</div>
+            <div className="mb-1">
                 <label className="block text-base font-medium text-gray-700">Địa chỉ email</label>
                 <div className="flex items-center border-b border-gray hover:border-black mt-1">
                     <EnvelopeIcon className="h-7 w-7" />
@@ -311,30 +414,41 @@ const RegisterPanel = () => {
                         type="text"
                         className="flex-1 p-2 outline-none"
                         value={user.email}
-                        onChange={(e) => setUser({ ...user, email: e.target.value })}
+                        onChange={(e) => {
+                            setUser({ ...user, email: e.target.value })
+                            setErrors({ ...errors, email: "" })
+                        }}
                     />
                 </div>
             </div>
-            <div className="mb-5">
+            <div className="mb-3">{errors.email && (<p className="text-sm" style={{ color: "red" }}>{errors.email}</p>)}</div>
+            <div className="mb-1">
                 <div className="flex justify-between items-center">
                     <label className="block text-base font-medium text-gray-700">Mật khẩu</label>
                 </div>
                 <InputForm
                     value={user.matKhau}
-                    onChange={(e) => setUser({ ...user, matKhau: e.target.value })}
+                    onChange={(e) => {
+                        setUser({ ...user, matKhau: e.target.value })
+                        setErrors({ ...errors, passWord: "" })
+                    }}
                 ></InputForm>
             </div>
-            <div className="mb-5">
+            <div className="mb-3">{errors.passWord && <p className="text-sm" style={{ color: "red" }}>{errors.passWord}</p>}</div>
+            <div className="mb-1">
                 <div className="flex justify-between items-center">
                     <label className="block text-base font-medium text-gray-700">Xác nhận mật khẩu</label>
                 </div>
                 <InputForm
                     value={user.xacNhanMatKhau}
-                    onChange={(e) => setUser({ ...user, xacNhanMatKhau: e.target.value })}
+                    onChange={(e) => {
+                        setUser({ ...user, xacNhanMatKhau: e.target.value })
+                        setErrors({ ...errors, confirmPass: "" })
+                    }}
                 ></InputForm>
             </div>
-            {error && <p className="text-sm mb-3 text-red-600">{error}</p>}
-            <div className="w-full mb-2 justify-center">
+            <div className="mb-5">{errors.confirmPass && <p className="text-sm" style={{ color: "red" }}>{errors.confirmPass}</p>}</div>
+            <div className="w-full my-2 justify-center">
                 <button type="submit" className="w-full bg-black py-2 mb-3 text-white rounded-md">
                     ĐĂNG KÝ
                 </button>
@@ -358,12 +472,6 @@ export default function Login() {
 
     const switchToLogin = () => setIsLogin(true);
     const switchToRegister = () => setIsLogin(false);
-
-    // if (isAuthenticated) {
-    //     if (vaiTro === 'CUSTOMER') {
-    //         return <Navigate to="/" replace={true} />;
-    //     }
-    //     return <Navigate to="/admin" replace={true} />;
 
     if (isAuthenticated) {
         return <Navigate to="/" replace={true} />;
