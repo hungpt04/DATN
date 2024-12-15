@@ -349,8 +349,246 @@ function AddProduct() {
         }
     }, [selectedColors, selectedWeights]);
 
+    // const validate = () => {
+    //     let check = 0
+    //     const errors = {
+    //         productName: '',
+    //         brand: '',
+    //         material: '',
+    //         balancePoint: '',
+    //         hardness: '',
+    //         status: '',
+    //         description: '',
+    //         colors: '',
+    //         weights: '',
+    //         variants: []
+    //     };
+
+    //     console.log("Dữ liệu kiểm tra:", {
+    //         productName,
+    //         brand,
+    //         material,
+    //         balancePoint,
+    //         hardness,
+    //         status,
+    //         description,
+    //         selectedColors,
+    //         selectedWeights,
+    //         variants,
+    //         variantImages
+    //     });
+
+    //     // Validate Tên sản phẩm
+    //     if (!productName.trim()) {
+    //         errors.productName = 'Tên sản phẩm không được để trống';
+
+    //     } else if (productName.trim().length < 3) {
+    //         errors.productName = 'Tên sản phẩm phải từ 3 ký tự trở lên';
+
+    //     } else if (productName.trim().length > 100) {
+    //         errors.productName = 'Tên sản phẩm không được vượt quá 100 ký tự';
+
+    //     }
+    //     //  else if (/[^a-zA-Z0-9\s]/.test(productName.trim())) {
+    //     //     errors.productName = 'Tên sản phẩm không được chứa ký tự đặc biệt';
+    //     // }
+
+    //     // Validate Thương hiệu
+    //     if (!brand) {
+    //         errors.brand = 'Vui lòng chọn thương hiệu';
+
+    //     }
+
+    //     // Validate Chất liệu
+    //     if (!material) {
+    //         errors.material = 'Vui lòng chọn chất liệu';
+
+    //     }
+
+    //     // Validate Điểm cân bằng
+    //     if (!balancePoint) {
+    //         errors.balancePoint = 'Vui lòng chọn điểm cân bằng';
+
+    //     }
+
+    //     // Validate Độ cứng
+    //     if (!hardness) {
+    //         errors.hardness = 'Vui lòng chọn độ cứng';
+
+    //     }
+
+    //     // Validate Trạng thái
+    //     if (!status) {
+    //         errors.status = 'Vui lòng chọn trạng thái';
+
+    //     }
+
+    //     // Validate Mô tả
+    //     if (!description.trim()) {
+    //         errors.description = 'Mô tả sản phẩm không được để trống';
+
+    //     } else if (description.trim().length < 10) {
+    //         errors.description = 'Mô tả sản phẩm phải từ 10 ký tự trở lên';
+
+    //     } else if (description.trim().length > 1000) {
+    //         errors.description = 'Mô tả sản phẩm không được vượt quá 1000 ký tự';
+
+    //     }
+
+    //     // Validate Màu sắc
+    //     if (selectedColors.length === 0) {
+    //         errors.colors = 'Vui lòng chọn ít nhất một màu';
+
+    //     }
+
+    //     // Validate Trọng lượng
+    //     if (selectedWeights.length === 0) {
+    //         errors.weights = 'Vui lòng chọn ít nhất một trọng lượng';
+
+    //     }
+
+    //     // Validate Biến thể
+    //     // selectedColors.forEach(color => {
+    //     //     const colorVariants = variants.filter(variant => variant.color === color);
+
+    //     //     if (colorVariants.length === 0) {
+    //     //         errors.variants.push(`Phải có ít nhất một biến thể cho màu ${color}`);
+    //     //         check++;
+    //     //     } else {
+    //     //         // Kiểm tra từng biến thể của màu này
+    //     //         colorVariants.forEach((variant, index) => {
+    //     //             const variantErrors = [];
+
+    //     //             // Validate số lượng
+    //     //             if (!variant.quantity || Number(variant.quantity) <= 0) {
+    //     //                 variantErrors.push(`Số lượng phải lớn hơn 0`);
+    //     //             } else if (Number(variant.quantity) >= 1000) {
+    //     //                 variantErrors.push(`Số lượng phải nhỏ hơn 1000`);
+    //     //             }
+
+    //     //             // Validate giá
+    //     //             if (!variant.price || Number(variant.price) <= 0) {
+    //     //                 variantErrors.push(`Giá phải lớn hơn 0`);
+    //     //             } else if (Number(variant.price) >= 100000000) {
+    //     //                 variantErrors.push(`Giá phải nhỏ hơn 100 triệu`);
+    //     //             }
+
+    //     //             // Nếu có lỗi ở biến thể này
+    //     //             if (variantErrors.length > 0) {
+    //     //                 errors.variants.push(`Biến thể thứ ${index + 1}: ${variantErrors.join(', ')}`);
+    //     //                 check++;
+    //     //             }
+    //     //         });
+
+    //     //         // Validate ảnh cho màu
+    //     //         if (!variantImages[color]) {
+    //     //             errors.variants.push(`Vui lòng chọn ảnh cho màu ${color}`);
+    //     //             check++;
+    //     //         }
+    //     //     }
+    //     // });
+
+    //     const colorErrors = {}; // Lưu lỗi theo màu
+
+    //     selectedColors.forEach((color) => {
+    //         const colorVariants = variants.filter((variant) => variant.color === color);
+    //         const variantErrors = [];
+
+    //         colorVariants.forEach((variant, index) => {
+    //             const errorsPerVariant = [];
+    //             // Kiểm tra số lượng
+    //             if (!variant.quantity || Number(variant.quantity) <= 0) {
+    //                 errorsPerVariant.push(`Số lượng biến thể ${index + 1} phải lớn hơn 0.`);
+    //             } else if (Number(variant.quantity) >= 1000) {
+    //                 errorsPerVariant.push(`Số lượng biến thể ${index + 1} phải nhỏ hơn 1,000.`);
+    //             }
+
+    //             // Kiểm tra giá
+    //             if (!variant.price || Number(variant.price) <= 0) {
+    //                 errorsPerVariant.push(`Giá biến thể ${index + 1} phải lớn hơn 0.`);
+    //             } else if (Number(variant.price) >= 100000000) {
+    //                 errorsPerVariant.push(`Giá biến thể ${index + 1} phải nhỏ hơn 100 triệu.`);
+    //             }
+
+    //             // Log lỗi chi tiết
+    //             if (errorsPerVariant.length > 0) {
+    //                 console.log(`Biến thể lỗi (${color}, index ${index + 1}):`, errorsPerVariant);
+    //                 variantErrors.push(errorsPerVariant.join(' '));
+    //             }
+    //         });
+
+    //         if (variantErrors.length > 0) {
+    //             colorErrors[color] = variantErrors;
+    //             check++;
+    //         }
+    //     });
+
+
+    //     // selectedColors.forEach(color => {
+    //     //     const colorVariants = variants.filter(variant => variant.color === color);
+
+    //     //     // Gom lỗi cho từng biến thể
+    //     //     const variantErrors = [];
+
+    //     //     colorVariants.forEach((variant, index) => {
+    //     //         const errorsPerVariant = [];
+
+    //     //         // Validate số lượng
+    //     //         if (!variant.quantity || Number(variant.quantity) <= 0) {
+    //     //             errorsPerVariant.push(`Số lượng phải lớn hơn 0`);
+    //     //         } else if (Number(variant.quantity) >= 1000) {
+    //     //             errorsPerVariant.push(`Số lượng phải nhỏ hơn 1000`);
+    //     //         }
+
+    //     //         // Validate giá
+    //     //         if (!variant.price || Number(variant.price) <= 0) {
+    //     //             errorsPerVariant.push(`Giá phải lớn hơn 0`);
+    //     //         } else if (Number(variant.price) >= 100000000) {
+    //     //             errorsPerVariant.push(`Giá phải nhỏ hơn 100 triệu`);
+    //     //         }
+
+    //     //         // Nếu có lỗi ở biến thể
+    //     //         if (errorsPerVariant.length > 0) {
+    //     //             variantErrors.push(`Biến thể thứ ${index + 1}: ${errorsPerVariant.join(', ')}`);
+    //     //         }
+    //     //     });
+
+    //     //     // Validate ảnh cho màu
+    //     //     if (!variantImages[color]) {
+    //     //         variantErrors.push(`Vui lòng chọn ảnh cho màu ${color}`);
+    //     //     }
+
+    //     //     // Lưu lỗi của màu
+    //     //     if (variantErrors.length > 0) {
+    //     //         colorErrors[color] = variantErrors;
+    //     //         check++;
+    //     //     }
+
+    //     // });
+
+    //     for (const key in errors) {
+    //         if (errors[key]) {
+    //             check++
+    //         }
+    //     }
+
+    //     // Cập nhật state errors
+    //     setErrorProductName(errors.productName);
+    //     setErrorBrand(errors.brand);
+    //     setErrorMaterial(errors.material);
+    //     setErrorBalancePoint(errors.balancePoint);
+    //     setErrorHardness(errors.hardness);
+    //     setErrorStatus(errors.status);
+    //     setErrorDescription(errors.description);
+    //     setErrorColors(errors.colors);
+    //     setErrorWeights(errors.weights);
+    //     // setErrorVariants(errors.variants.length > 0 ? errors.variants.join('\n') : '');
+    //     setErrorVariants(colorErrors);
+    //     return check;
+    // };
+
     const validate = () => {
-        let check = 0
+        let check = 0;
         const errors = {
             productName: '',
             brand: '',
@@ -361,172 +599,124 @@ function AddProduct() {
             description: '',
             colors: '',
             weights: '',
-            variants: []
+            variants: {}
         };
-
+    
         // Validate Tên sản phẩm
         if (!productName.trim()) {
             errors.productName = 'Tên sản phẩm không được để trống';
-
+            check++;
         } else if (productName.trim().length < 3) {
             errors.productName = 'Tên sản phẩm phải từ 3 ký tự trở lên';
-
+            check++;
         } else if (productName.trim().length > 100) {
             errors.productName = 'Tên sản phẩm không được vượt quá 100 ký tự';
-
-        } else if (/[^a-zA-Z0-9\s]/.test(productName.trim())) {
-            errors.productName = 'Tên sản phẩm không được chứa ký tự đặc biệt';
+            check++;
         }
-
+    
         // Validate Thương hiệu
         if (!brand) {
             errors.brand = 'Vui lòng chọn thương hiệu';
-
+            check++;
         }
-
+    
         // Validate Chất liệu
         if (!material) {
             errors.material = 'Vui lòng chọn chất liệu';
-
+            check++;
         }
-
+    
         // Validate Điểm cân bằng
         if (!balancePoint) {
             errors.balancePoint = 'Vui lòng chọn điểm cân bằng';
-
+            check++;
         }
-
+    
         // Validate Độ cứng
         if (!hardness) {
             errors.hardness = 'Vui lòng chọn độ cứng';
-
+            check++;
         }
-
+    
         // Validate Trạng thái
         if (!status) {
             errors.status = 'Vui lòng chọn trạng thái';
-
+            check++;
         }
-
+    
         // Validate Mô tả
         if (!description.trim()) {
             errors.description = 'Mô tả sản phẩm không được để trống';
-
+            check++;
         } else if (description.trim().length < 10) {
             errors.description = 'Mô tả sản phẩm phải từ 10 ký tự trở lên';
-
+            check++;
         } else if (description.trim().length > 1000) {
             errors.description = 'Mô tả sản phẩm không được vượt quá 1000 ký tự';
-
+            check++;
         }
-
+    
         // Validate Màu sắc
         if (selectedColors.length === 0) {
             errors.colors = 'Vui lòng chọn ít nhất một màu';
-
+            check++;
         }
-
+    
         // Validate Trọng lượng
         if (selectedWeights.length === 0) {
             errors.weights = 'Vui lòng chọn ít nhất một trọng lượng';
-
+            check++;
         }
-
+    
         // Validate Biến thể
-        // selectedColors.forEach(color => {
-        //     const colorVariants = variants.filter(variant => variant.color === color);
-
-        //     if (colorVariants.length === 0) {
-        //         errors.variants.push(`Phải có ít nhất một biến thể cho màu ${color}`);
-        //         check++;
-        //     } else {
-        //         // Kiểm tra từng biến thể của màu này
-        //         colorVariants.forEach((variant, index) => {
-        //             const variantErrors = [];
-
-        //             // Validate số lượng
-        //             if (!variant.quantity || Number(variant.quantity) <= 0) {
-        //                 variantErrors.push(`Số lượng phải lớn hơn 0`);
-        //             } else if (Number(variant.quantity) >= 1000) {
-        //                 variantErrors.push(`Số lượng phải nhỏ hơn 1000`);
-        //             }
-
-        //             // Validate giá
-        //             if (!variant.price || Number(variant.price) <= 0) {
-        //                 variantErrors.push(`Giá phải lớn hơn 0`);
-        //             } else if (Number(variant.price) >= 100000000) {
-        //                 variantErrors.push(`Giá phải nhỏ hơn 100 triệu`);
-        //             }
-
-        //             // Nếu có lỗi ở biến thể này
-        //             if (variantErrors.length > 0) {
-        //                 errors.variants.push(`Biến thể thứ ${index + 1}: ${variantErrors.join(', ')}`);
-        //                 check++;
-        //             }
-        //         });
-
-        //         // Validate ảnh cho màu
-        //         if (!variantImages[color]) {
-        //             errors.variants.push(`Vui lòng chọn ảnh cho màu ${color}`);
-        //             check++;
-        //         }
-        //     }
-        // });
-
-        const colorErrors = {}; // Lưu lỗi theo màu
-
-        selectedColors.forEach(color => {
-            const colorVariants = variants.filter(variant => variant.color === color);
-
+        const colorErrors = {}; 
+    
+        selectedColors.forEach((color) => {
+            const colorVariants = variants.filter((variant) => variant.color === color);
+            const variantErrors = [];
+    
             if (colorVariants.length === 0) {
-                colorErrors[color] = [`Màu ${color} phải có ít nhất một biến thể.`];
+                variantErrors.push(`Phải có ít nhất một biến thể cho màu ${color}`);
                 check++;
             } else {
-                // Gom lỗi cho từng biến thể
-                const variantErrors = [];
-
                 colorVariants.forEach((variant, index) => {
                     const errorsPerVariant = [];
-
-                    // Validate số lượng
+    
+                    // Kiểm tra số lượng
                     if (!variant.quantity || Number(variant.quantity) <= 0) {
-                        errorsPerVariant.push(`Số lượng phải lớn hơn 0`);
+                        errorsPerVariant.push(`Số lượng biến thể ${index + 1} phải lớn hơn 0.`);
+                        check++;
                     } else if (Number(variant.quantity) >= 1000) {
-                        errorsPerVariant.push(`Số lượng phải nhỏ hơn 1000`);
+                        errorsPerVariant.push(`Số lượng biến thể ${index + 1} phải nhỏ hơn 1,000.`);
+                        check++;
                     }
-
-                    // Validate giá
+    
+                    // Kiểm tra giá
                     if (!variant.price || Number(variant.price) <= 0) {
-                        errorsPerVariant.push(`Giá phải lớn hơn 0`);
+                        errorsPerVariant.push(`Giá biến thể ${index + 1} phải lớn hơn 0.`);
+                        check++;
                     } else if (Number(variant.price) >= 100000000) {
-                        errorsPerVariant.push(`Giá phải nhỏ hơn 100 triệu`);
+                        errorsPerVariant.push(`Giá biến thể ${index + 1} phải nhỏ hơn 100 triệu.`);
+                        check++;
                     }
-
-                    // Nếu có lỗi ở biến thể
+    
+                    // Kiểm tra ảnh
+                    if (!variantImages[color]) {
+                        errorsPerVariant.push(`Vui lòng chọn ảnh cho màu ${color}.`);
+                        check++;
+                    }
+    
                     if (errorsPerVariant.length > 0) {
-                        variantErrors.push(`Biến thể thứ ${index + 1}: ${errorsPerVariant.join(', ')}`);
+                        variantErrors.push(errorsPerVariant.join(' '));
                     }
                 });
-
-                // Validate ảnh cho màu
-                if (!variantImages[color]) {
-                    variantErrors.push(`Vui lòng chọn ảnh cho màu ${color}`);
-                }
-
-                // Lưu lỗi của màu
-                if (variantErrors.length > 0) {
-                    colorErrors[color] = variantErrors;
-                    check++;
-                }
+            }
+    
+            if (variantErrors.length > 0) {
+                colorErrors[color] = variantErrors;
             }
         });
-
-        for (const key in errors) {
-            if (errors[key]) {
-                check++
-            }
-        }
-
+    
         // Cập nhật state errors
         setErrorProductName(errors.productName);
         setErrorBrand(errors.brand);
@@ -537,15 +727,19 @@ function AddProduct() {
         setErrorDescription(errors.description);
         setErrorColors(errors.colors);
         setErrorWeights(errors.weights);
-        // setErrorVariants(errors.variants.length > 0 ? errors.variants.join('\n') : '');
         setErrorVariants(colorErrors);
+    
         return check;
     };
 
     const handleAddProduct = async (e) => {
         e.preventDefault();
         const check = validate()
-
+        console.log("Validation check:", check);
+        if (check > 0) {
+            swal("Thất bại!", "Vui lòng kiểm tra các lỗi bên dưới.", "error");
+            return;
+        }
         if (check < 1) {
 
             const newProduct = {
@@ -619,6 +813,7 @@ function AddProduct() {
                 reset();
                 setVariants([]);
                 setVariantImages({});
+                navigate('/admin/quan-ly-san-pham/san-pham-ct');
             } catch (error) {
                 console.error('Có lỗi xảy ra khi thêm sản phẩm!', error);
                 swal('Thất bại!', 'Có lỗi xảy ra khi thêm sản phẩm!', 'error');
@@ -1035,27 +1230,27 @@ function AddProduct() {
                             </tbody>
                         </table>
                     </div>
-
-                    <div className="text-red-600 text-xs italic">
+                    {errorVariants[color] && (
+                        <div className="text-red-600 text-xs italic mt-2">
+                            {errorVariants[color].map((error, index) => (
+                                <div key={index}>{error}</div>
+                            ))}
+                        </div>
+                    )}
+                    {/* <div className="text-red-600 text-xs italic">
                         {errorVariants[color] &&
                             errorVariants[color].map((error, index) => (
                                 <div key={index}>{error}</div>
                             ))}
-                    </div>
+                    </div> */}
                 </div>
             ))}
 
             <div className="mt-6">
                 <button
                     type="button"
-                    onClick={async (e) => {
-                        const check = validate(); // Gọi validate trước
-                        if (check === 0) { // Nếu không có lỗi
-                            const result = await handleAddProduct(e);
-                            if (result) { // Kiểm tra kết quả trả về từ hàm thêm sản phẩm
-                                window.location.href = 'http://localhost:3000/admin/quan-ly-san-pham/san-pham-ct';
-                            }
-                        }
+                    onClick={(e) => {
+                        handleAddProduct(e)
                     }}
                     className="bg-blue-600 text-white rounded-md px-4 py-2 ml-auto flex items-center"
                 >

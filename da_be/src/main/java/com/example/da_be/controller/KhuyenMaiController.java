@@ -87,7 +87,7 @@ public class KhuyenMaiController {
             @RequestParam(required = false) Integer trangThaiSearch,
             @RequestParam(value = "currentPage", defaultValue = "0") Integer currentPage,  // Trang hiện tại
             @RequestParam(value = "size", defaultValue = "5") Integer size
-            ) {
+    ) {
         KhuyenMaiSearch search = new KhuyenMaiSearch();
         search.setTenSearch(tenSearch);
         search.setTgBatDauSearch(tgBatDauSearch);

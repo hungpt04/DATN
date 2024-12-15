@@ -33,6 +33,10 @@ const SaleDetail = () => {
     const [listDiemCanBang, setListDiemCanBang] = useState([]);
     const [listDoCung, setListDoCung] = useState([]);
 
+    const handleNavigateToSale = () => {
+        navigate('/admin/giam-gia/dot-giam-gia');
+    };
+
     const [searchSanPham, setSearchSanPham] = useState({
         tenSearch: "",
     })
@@ -80,7 +84,6 @@ const SaleDetail = () => {
         return debouncedValue
     }
 
-    // Tìm kiếm sản phẩm chi tiết
     const [inputValueSanPham, setInputValueSanPham] = useState('');
     const debouncedValueSanPham = useDebounce(inputValueSanPham, 300);
 
@@ -101,8 +104,8 @@ const SaleDetail = () => {
     const loadSanPhamSearch = (searchSanPham, currentPage) => {
         const params = new URLSearchParams({
             tenSearch: searchSanPham.tenSearch,
-            currentPage: currentPage, // Thêm tham số cho trang
-            size: size // Kích thước trang cũng có thể được truyền vào nếu cần
+            currentPage: currentPage,
+            size: size
         });
 
         axios.get(`http://localhost:8080/api/khuyen-mai/searchSanPham?${params.toString()}`)
@@ -187,7 +190,7 @@ const SaleDetail = () => {
             idDiemCanBangSearch: fillterSanPhamChiTiet.idDiemCanBangSearch,
             idTrongLuongSearch: fillterSanPhamChiTiet.idTrongLuongSearch,
             idDoCungSearch: fillterSanPhamChiTiet.idDoCungSearch,
-            currentPage: fillterSanPhamChiTiet.currentPage,
+            currentPage: fillterSanPhamChiTiet.currentPage || 0,
             size: size
         });
 
@@ -195,12 +198,9 @@ const SaleDetail = () => {
             selectedProductIds.forEach((id) => params.append('id', id));
         }
 
-        console.log('Params:', params.toString()); // Kiểm tra tham số truyền vào
-
         if (Array.isArray(selectedProductIds) && selectedProductIds.length > 0) {
             axios.get(`http://localhost:8080/api/khuyen-mai/getSanPhamCTBySanPham?${params.toString()}`)
                 .then((response) => {
-                    console.log('Response:', response.data); // Kiểm tra kết quả trả về từ API
                     setGetProductDetailByProduct(response.data.content);
                     setPageCount(response.data.totalPages);
                     setCurrentPage(response.data.currentPage);
@@ -211,37 +211,32 @@ const SaleDetail = () => {
         }
     };
 
-
     useEffect(() => {
         getProductDetailById(fillterSanPhamChiTiet, selectedProductIds);
     }, [fillterSanPhamChiTiet, selectedProductIds]);
 
-    const handleNavigateToSale = () => {
-        navigate('/admin/giam-gia/dot-giam-gia');
-    };
+    const handleSelectAllChangeProduct = (event) => {
+        const selectedIds = event.target.checked ? getProduct.map((row) => row.id) : []
+        setSelectedRowsProduct(selectedIds)
+        setSelectedRows(selectedIds)
+        setSelectAllProduct(event.target.checked)
+        getProductDetailById(fillterSanPhamChiTiet, selectedIds);
+    }
 
     // const handleSelectAllChangeProduct = (event) => {
-    //     const selectedIds = event.target.checked ? getProduct.map((row) => row.id) : []
-    //     setSelectedRowsProduct(selectedIds)
-    //     setSelectedRows(selectedIds)
-    //     setSelectAllProduct(event.target.checked)
+    //     const isChecked = event.target.checked;
+    //     const selectedIds = isChecked ? getProduct.map((row) => row.id) : [];
+
+    //     // Giữ lại các sản phẩm chi tiết đã chọn
+    //     const updatedSelectedRows = isChecked
+    //         ? [...new Set([...selectedRows, ...getProductDetailByProduct.map((row) => row.id)])]
+    //         : [];
+
+    //     setSelectedRowsProduct(selectedIds);
+    //     setSelectedRows(updatedSelectedRows);
+    //     setSelectAllProduct(isChecked);
     //     getProductDetailById(fillterSanPhamChiTiet, selectedIds);
-    // }
-
-    const handleSelectAllChangeProduct = (event) => {
-        const isChecked = event.target.checked;
-        const selectedIds = isChecked ? getProduct.map((row) => row.id) : [];
-
-        // Giữ lại các sản phẩm chi tiết đã chọn
-        const updatedSelectedRows = isChecked
-            ? [...new Set([...selectedRows, ...getProductDetailByProduct.map((row) => row.id)])]
-            : [];
-
-        setSelectedRowsProduct(selectedIds);
-        setSelectedRows(updatedSelectedRows);
-        setSelectAllProduct(isChecked);
-        getProductDetailById(fillterSanPhamChiTiet, selectedIds);
-    };
+    // };
 
 
     const handleSelectAllChangeProductDetail = (event) => {
@@ -250,52 +245,66 @@ const SaleDetail = () => {
         setSelectAllProductDetail(event.target.checked)
     }
 
-    // const handleCheckboxChange1 = (event, productId) => {
-    //     const selectedIndex = selectedRowsProduct.indexOf(productId)
-    //     let newSelected = []
-    //
-    //     if (selectedIndex === -1) {
-    //         newSelected = [...selectedRowsProduct, productId]
-    //     } else {
-    //         newSelected = [
-    //             ...selectedRowsProduct.slice(0, selectedIndex),
-    //             ...selectedRowsProduct.slice(selectedIndex + 1),
-    //         ]
-    //     }
-    //
-    //     setSelectedRowsProduct(newSelected)
-    //     setSelectAllProduct(newSelected.length === getProduct.length)
-    //
-    //     const selectedProductIds = getProduct
-    //         .filter((row) => newSelected.includes(row.id))
-    //         .map((selectedProduct) => selectedProduct.id);
-    //     setSelectedProductIds(selectedProductIds);
-    //     setSelectedRows(selectedProductIds);
-    //     getProductDetailById(fillterSanPhamChiTiet, selectedProductIds);
-    // }
-
     const handleCheckboxChange1 = (event, productId) => {
-        const selectedIndex = selectedRowsProduct.indexOf(productId);
-        let newSelected = [];
-
+        const selectedIndex = selectedRowsProduct.indexOf(productId)
+        let newSelected = []
+    
         if (selectedIndex === -1) {
-            newSelected = [...selectedRowsProduct, productId];
+            newSelected = [...selectedRowsProduct, productId]
         } else {
-            newSelected = selectedRowsProduct.filter(id => id !== productId);
-
-            // Xóa các sản phẩm chi tiết liên quan đến sản phẩm bị bỏ chọn
-            const relatedDetails = getProductDetailByProduct
-                .filter(detail => detail.productId === productId)
-                .map(detail => detail.id);
-            setSelectedRows(selectedRows.filter(id => !relatedDetails.includes(id)));
+            newSelected = [
+                ...selectedRowsProduct.slice(0, selectedIndex),
+                ...selectedRowsProduct.slice(selectedIndex + 1),
+            ]
         }
+    
+        setSelectedRowsProduct(newSelected)
+        setSelectAllProduct(newSelected.length === getProduct.length)
+    
+        const selectedProductIds = getProduct
+            .filter((row) => newSelected.includes(row.id))
+            .map((selectedProduct) => selectedProduct.id);
+        setSelectedProductIds(selectedProductIds);
+        // setSelectedRows(selectedProductIds);
+        getProductDetailById(fillterSanPhamChiTiet, selectedProductIds);
+    }
 
-        setSelectedRowsProduct(newSelected);
-        setSelectAllProduct(newSelected.length === getProduct.length);
-        setSelectedProductIds(newSelected);
-        getProductDetailById(fillterSanPhamChiTiet, newSelected);
-    };
+    // const handleCheckboxChange1 = (event, productId) => {
+    //     const selectedIndex = selectedRowsProduct.indexOf(productId);
+    //     let newSelected = [];
 
+    //     if (selectedIndex === -1) {
+    //         newSelected = [...selectedRowsProduct, productId];
+    //     } else {
+    //         newSelected = selectedRowsProduct.filter(id => id !== productId);
+
+    //         // Xóa các sản phẩm chi tiết liên quan đến sản phẩm bị bỏ chọn
+    //         const relatedDetails = getProductDetailByProduct
+    //             .filter(detail => detail.productId === productId)
+    //             .map(detail => detail.id);
+    //         setSelectedRows(selectedRows.filter(id => !relatedDetails.includes(id)));
+    //     }
+
+    //     setSelectedRowsProduct(newSelected);
+    //     setSelectAllProduct(newSelected.length === getProduct.length);
+    //     setSelectedProductIds(newSelected);
+    //     getProductDetailById(fillterSanPhamChiTiet, newSelected);
+    // };
+
+
+    // const handleCheckboxChange2 = (event, productDetailId) => {
+    //     const selectedIndex = selectedRows.indexOf(productDetailId)
+    //     let newSelected = []
+
+    //     if (selectedIndex === -1) {
+    //         newSelected = [...selectedRows, productDetailId]
+    //     } else {
+    //         newSelected = selectedRows.filter(id => id !== productDetailId)
+    //     }
+
+    //     setSelectedRows(newSelected)
+    //     setSelectAllProductDetail(newSelected.length === getProductDetailByProduct.length)
+    // }
 
     const handleCheckboxChange2 = (event, productDetailId) => {
         const selectedIndex = selectedRows.indexOf(productDetailId)
@@ -304,7 +313,10 @@ const SaleDetail = () => {
         if (selectedIndex === -1) {
             newSelected = [...selectedRows, productDetailId]
         } else {
-            newSelected = selectedRows.filter(id => id !== productDetailId)
+            newSelected = [
+                ...selectedRows.slice(0, selectedIndex),
+                ...selectedRows.slice(selectedIndex + 1),
+            ]
         }
 
         setSelectedRows(newSelected)
@@ -499,19 +511,18 @@ const SaleDetail = () => {
 
     const handlePageClick = (event) => {
         const selectedPage = event.selected;
-        loadSanPhamSearch(searchSanPham, selectedPage); // Gọi hàm tìm kiếm với trang mới
+        loadSanPhamSearch(searchSanPham, selectedPage);
     };
 
     const handlePageSPCTClick = (event) => {
         const selectedPage = event.selected;
 
-
-
         setFillterSanPhamChiTiet((prev) => ({
             ...prev,
             currentPage: selectedPage
-        }));
-        getProductDetailById(fillterSanPhamChiTiet, selectedPage); // Gọi hàm tìm kiếm với trang mới
+        }))
+
+        getProductDetailById(fillterSanPhamChiTiet, selectedPage);
     };
 
     return (

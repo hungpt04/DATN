@@ -201,10 +201,15 @@ const CreateSale = () => {
         setSelectedRowsProduct(newSelected)
         setSelectAllProduct(newSelected.length === getProduct.length)
 
+        // Khôi phục việc set selectedProductIds
         const selectedProductIds = getProduct
             .filter((row) => newSelected.includes(row.id))
             .map((selectedProduct) => selectedProduct.id)
         setSelectedProductIds(selectedProductIds)
+
+        // Gọi getProductDetailById với selectedProductIds mới
+        getProductDetailById(fillterSanPhamChiTiet, selectedProductIds);
+
     }
 
     const handleCheckboxChange2 = (event, productDetailId) => {
@@ -414,18 +419,30 @@ const CreateSale = () => {
         loadSanPhamSearch(searchSanPham, selectedPage);
     };
 
+    // const handlePageSPCTClick = (event) => {
+    //     const selectedPage = event.selected;
+
+    //     setFillterSanPhamChiTiet((prev) => ({
+    //         ...prev,
+    //         currentPage: selectedPage
+    //     }));
+
+    //     getProductDetailById(fillterSanPhamChiTiet, selectedPage);
+    // };
     const handlePageSPCTClick = (event) => {
         const selectedPage = event.selected;
-
-
 
         setFillterSanPhamChiTiet((prev) => ({
             ...prev,
             currentPage: selectedPage
         }));
 
-        getProductDetailById(fillterSanPhamChiTiet, selectedPage);
-    };
+        // Truyền selectedProductIds để giữ các sản phẩm đã chọn
+        getProductDetailById(
+            { ...fillterSanPhamChiTiet, currentPage: selectedPage },
+            selectedProductIds
+        );
+    }
 
     return (
         <div>
@@ -518,13 +535,13 @@ const CreateSale = () => {
                                         setErrorTgBatDau('')
                                     }}
                                 />
-                            </LocalizationProvider> 
+                            </LocalizationProvider>
                             <span className='text-red-600 text-xs italic'>{errorTgBatDau}</span>
                         </div>
 
                         <div className='mt-4'>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <label className="block text-gray-600 mb-1">Đến ngày</label>
+                                <label className="block text-gray-600 mb-1">Đến ngày</label>
                                 <DateTimePicker
                                     format={'DD-MM-YYYY HH:mm:ss'}
                                     slotProps={{
