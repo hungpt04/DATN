@@ -80,11 +80,29 @@ export default function AddressUser() {
             axios.get(`https://provinces.open-api.vn/api/w/${address.idXa}`)
           ]);
 
+
+          // const provinceResponse = await fetch(`https://provinces.open-api.vn/api/p/${address.idTinh}`);
+          // const provinceData = await provinceResponse.json();
+
+          // const districtResponse = await fetch(`https://provinces.open-api.vn/api/d/${address.idHuyen}`);
+          // const districtData = await districtResponse.json();
+
+          // const wardResponse = await fetch(`https://provinces.open-api.vn/api/d/${address.idXa}`);
+          // const wardData = await wardResponse.json();
+
+
           return {
             ...address,
             tenTinh: provinceResponse.data.name || '',
             tenHuyen: districtResponse.data.name || '',
             tenXa: wardResponse.data.name || ''
+
+
+            // ...address,
+            // tenTinh: provinceData.name || '',
+            // tenHuyen: districtData.name || '',
+            // tenXa: wardData.name || '',
+
           };
         } catch (error) {
           console.error('Error fetching address details:', error);
@@ -151,6 +169,40 @@ export default function AddressUser() {
       return [];
     }
   };
+
+
+
+  // const fetchWards = async (districtId) => {
+  //   try {
+  //     if (!districtId) {
+  //       // setWards([]);
+  //       return;
+  //     }
+
+  //     const response = await fetch(`https://provinces.open-api.vn/api/d/${districtId}?depth=2`);
+  //     // const data = await response.json();
+
+  //     // if (!data || !data.wards) {
+  //     //   setWards([]);
+  //     //   return;
+  //     // }
+
+
+  //     // const validWards = data.wards.filter(ward =>
+  //     //   ward && ward.code && ward.name
+  //     // );
+
+  //     // setWards(validWards);
+
+  //     // if (validWards.length === 0) {
+  //     //   setSelectedWard('');
+  //     // }
+  //   } catch (error) {
+  //     console.error('Error fetching wards:', error);
+  //     setWards([]);
+  //     setSelectedWard('');
+  //   }
+  // };
 
   const fetchWards = async (districtId) => {
     try {
