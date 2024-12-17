@@ -79,11 +79,34 @@ export default function AddressUser() {
             axios.get(`https://provinces.open-api.vn/api/d/${address.idHuyen}`),
             axios.get(`https://provinces.open-api.vn/api/w/${address.idXa}`)
           ]);
+
+
+
+
+          // const provinceResponse = await fetch(`https://provinces.open-api.vn/api/p/${address.idTinh}`);
+          // const provinceData = await provinceResponse.json();
+
+          // const districtResponse = await fetch(`https://provinces.open-api.vn/api/d/${address.idHuyen}`);
+          // const districtData = await districtResponse.json();
+
+          // const wardResponse = await fetch(`https://provinces.open-api.vn/api/d/${address.idXa}`);
+          // const wardData = await wardResponse.json();
+
+
           return {
             ...address,
             tenTinh: provinceResponse.data.name || '',
             tenHuyen: districtResponse.data.name || '',
             tenXa: wardResponse.data.name || ''
+
+
+
+
+            // ...address,
+            // tenTinh: provinceData.name || '',
+            // tenHuyen: districtData.name || '',
+            // tenXa: wardData.name || '',
+
           };
         } catch (error) {
           console.error('Error fetching address details:', error);
@@ -150,6 +173,8 @@ export default function AddressUser() {
       return [];
     }
   };
+
+
 
   // const fetchWards = async (districtId) => {
   //   try {

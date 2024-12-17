@@ -98,7 +98,9 @@ function EditCustomer() {
                 errors.ngaySinh = '*Năm sinh không hợp lệ';
                 check++;
             } else if (ngaySinh > currentDate) {
-                errors.ngaySinh = '*Ngày sinh không hợp lệ';
+
+                errors.ngaySinh = '*Ngày sinh không được lớn hơn ngày hiện tại';
+
                 check++;
             }
         }

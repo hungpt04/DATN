@@ -23,4 +23,11 @@ public interface HoaDonCTRepository extends JpaRepository<HoaDonCT, Integer> {
     List<HoaDonCT> findByHoaDonId(Long hoaDonId);
 
     List<HoaDonCT> findByHoaDon(HoaDon hoaDon);
+
+    @Query(
+            """
+        SELECT hdct FROM HoaDonCT hdct WHERE hdct.hoaDon.id = :idHD
+"""
+    )
+    List<HoaDonCT> listHoaDonChiTietByIdHoaDon(@Param("idHD") Long idHD);
 }

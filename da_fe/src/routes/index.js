@@ -48,6 +48,7 @@ import UserOrder from '../pages/users/Profile/Order.jsx';
 import MyVoucher from '../pages/users/Profile/MyVoucher.jsx';
 import ChangePassword from '../pages/users/Profile/ChangePassword.jsx';
 import ForgotPassword from '../pages/users/Login/ForgotPassword.jsx';
+import OrderDetail from '../pages/users/Profile/OrderDetail.jsx';
 
 
 // Public routes
@@ -101,8 +102,9 @@ const publicRoutes = [
         { path: 'user', component: UserProfile, layout: null},
         { path: 'address', component: AddressUser, layout: null },
         { path: 'change-password', component: ChangePassword, layout: null },
-        { path: 'order', component: UserOrder, layout: null },
+        { path: 'order', component: UserOrder, layout: null},
         { path: 'my-voucher', component: MyVoucher, layout: null },
+        { path: 'order-detail/:id', component: OrderDetail, layout: null },
     ]},
 ];
 

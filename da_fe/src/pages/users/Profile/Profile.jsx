@@ -15,6 +15,7 @@ export default function Profile({ children }) {
     hoTen: "",
     avatar: null
   })
+
   useEffect(() => {
     const token = localStorage.getItem('token'); // Lấy token từ localStorage
     if (token) {
@@ -34,7 +35,6 @@ export default function Profile({ children }) {
 
       fetchUserInfo();
     }
-
   }, []);
 
   const handleClick = () => {

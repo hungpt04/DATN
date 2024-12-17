@@ -6,6 +6,8 @@ import { useForm } from 'react-hook-form';
 import swal from 'sweetalert';
 import AddIcon from '@mui/icons-material/Add';
 import { TbEyeEdit } from 'react-icons/tb';
+import numeral from 'numeral';
+import { NumericFormat } from 'react-number-format';
 
 function ProductVariants() {
     const navigate = useNavigate();
@@ -210,7 +212,11 @@ function ProductVariants() {
         reset,
         formState: { errors },
         setValue,
-    } = useForm();
+    } = useForm(
+
+        );
+
+
 
     const handleCloseModal = () => {
         setShowUpdateModal(false);
@@ -359,7 +365,7 @@ function ProductVariants() {
             // Cập nhật thông tin cho variant được chọn
             const updatedVariant = {
                 ...selectedProduct,
-                donGia: parseFloat(formData.price),
+                donGia: parseFloat(formData.price.replace(/,/g, '')),
                 soLuong: formData.quantity,
                 trangThai: formData.status === 'Active' ? 1 : 0,
                 chatLieu: { id: parseInt(formData.material) },
@@ -880,7 +886,7 @@ function ProductVariants() {
                             <div className="bg-white p-4 rounded-md shadow-lg mt-4">
                                 {/* Thêm các trường giá và số lượng */}
                                 <div className="mb-2 grid grid-cols-2 gap-4 w-[85%] mx-auto">
-                                    <div>
+                                    {/* <div>
                                         <label className="block text-sm font-bold text-gray-700" htmlFor="price">
                                             <span className="text-red-600">*</span>Giá sản phẩm
                                         </label>
@@ -897,9 +903,43 @@ function ProductVariants() {
                                                     value: 1000000000, // Giá tối đa 1 tỷ VND
                                                     message: 'Giá sản phẩm không được vượt quá 1 tỷ VND',
                                                 },
+                                                
+                                            })}
+                                           
+                                    
+                                           
+                                            className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"
+                                        />
+                                        {errors.price && <span className="text-red-500">{errors.price.message}</span>}
+                                    </div> */}
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700" htmlFor="price">
+                                            <span className="text-red-600">*</span>Giá sản phẩm
+                                        </label>
+                                        <NumericFormat
+                                            id="price"
+                                            thousandSeparator={true}
+                                            suffix={" ₫"}
+                                            decimalScale={0}
+                                            allowNegative={false}
+                                            value={selectedProduct.donGia}  // Truyền trực tiếp giá trị từ selectedProduct
+                                            onValueChange={(values) => {
+                                                setValue('price', values.value); // Cập nhật giá trị trong react-hook-form khi người dùng thay đổi
+                                            }}
+                                            {...register('price', {
+                                                required: 'Giá sản phẩm là bắt buộc',
+                                                min: {
+                                                    value: 1000,
+                                                    message: 'Giá sản phẩm phải lớn hơn 1,000 VND',
+                                                },
+                                                max: {
+                                                    value: 1000000000,
+                                                    message: 'Giá sản phẩm không được vượt quá 1 tỷ VND',
+                                                },
                                             })}
                                             className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"
                                         />
+
                                         {errors.price && <span className="text-red-500">{errors.price.message}</span>}
                                     </div>
 

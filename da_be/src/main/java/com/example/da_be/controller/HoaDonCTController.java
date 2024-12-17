@@ -84,4 +84,10 @@ public class HoaDonCTController {
         }
         return new ResponseEntity<>(updatedHoaDonCT, HttpStatus.OK);
     }
+
+    @GetMapping("/get-hd-ct-by-id-hd/{idHD}")
+    public List<HoaDonCT> getHoaDonCTByIdHD (@PathVariable("idHD") Long idHD) {
+        return hoaDonCTService.getHoaDonCTByIdHD(idHD);
+    }
+
 }

@@ -755,6 +755,7 @@ import swal from 'sweetalert';
 import { useNavigate } from 'react-router-dom';
 import { useAddress } from './AddressContext';
 import { CartContext } from '../Cart/CartContext';
+import numeral from 'numeral';
 
 const OrderSummary = () => {
     const [carts, setCarts] = useState([]);
@@ -773,6 +774,10 @@ const OrderSummary = () => {
     const { selectedAddress } = useAddress();
 
     const [paymentMethod, setPaymentMethod] = useState('COD');
+
+    const formatCurrency = (money) => {
+        return numeral(money).format('0,0') + ' ₫'
+    }
 
     // Lấy id người dùng
     const [customerId, setCustomerId] = useState(null);
@@ -880,27 +885,55 @@ const OrderSummary = () => {
     };
 
     // Sử dụng trong useEffect
+    // useEffect(() => {
+    //     const fetchTotalPrice = async () => {
+    //         if (carts.length > 0) {
+    //             const firstCartItems = getFirstCartItemPerProduct(carts);
+    //             const total = await calculateTotalPrice(firstCartItems);
+    //             const totalQuantity = calculateTotalQuantity(firstCartItems);
+
+    //             setTotalQuantity(totalQuantity);
+    //             setTotalPrice(total);
+
+    //             // Tính toán giảm giá từ voucher
+    //             const voucherDiscount = calculateDiscount(total);
+    //             const totalAmount = total - voucherDiscount + shippingFee;
+    //             setTotalAmount(totalAmount);
+
+    //             console.log('tong tien: ', total);
+    //             console.log('giam gia: ', voucherDiscount);
+    //             console.log('Thanh tien: ', totalAmount);
+    //         }
+    //     };
+
+    //     fetchTotalPrice();
+    // }, [carts, selectedVoucher, shippingFee]);
+
     useEffect(() => {
         const fetchTotalPrice = async () => {
             if (carts.length > 0) {
                 const firstCartItems = getFirstCartItemPerProduct(carts);
                 const total = await calculateTotalPrice(firstCartItems);
                 const totalQuantity = calculateTotalQuantity(firstCartItems);
-
+    
                 setTotalQuantity(totalQuantity);
                 setTotalPrice(total);
-
+    
                 // Tính toán giảm giá từ voucher
                 const voucherDiscount = calculateDiscount(total);
-                const totalAmount = total - voucherDiscount + shippingFee;
+                let totalAmount = total - voucherDiscount + shippingFee;
+    
+                // Đảm bảo tổng tiền không âm
+                totalAmount = Math.max(totalAmount, 0);
+    
                 setTotalAmount(totalAmount);
-
-                console.log('tong tien: ', total);
-                console.log('giam gia: ', voucherDiscount);
-                console.log('Thanh tien: ', totalAmount);
+    
+                console.log('Tổng tiền: ', total);
+                console.log('Giảm giá: ', voucherDiscount);
+                console.log('Thanh tiền: ', totalAmount);
             }
         };
-
+    
         fetchTotalPrice();
     }, [carts, selectedVoucher, shippingFee]);
 
@@ -931,7 +964,7 @@ const OrderSummary = () => {
     // Fetch vouchers
     const fetchVouchers = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/voucher/hien-thi'); //sửa lại api vì lấy cả voucher kêt thúc
+            const response = await axios.get('http://localhost:8080/api/voucher/hien-thi-voucher'); 
             setVouchers(response.data);
         } catch (error) {
             console.error('Failed to fetch vouchers', error);
@@ -939,17 +972,31 @@ const OrderSummary = () => {
     };
 
     // Sửa lại hàm tính giảm giá
+    // const calculateDiscount = (currentTotalPrice) => {
+    //     if (!selectedVoucher) return 0;
+
+    //     const discountAmount = isVoucherValid(selectedVoucher, currentTotalPrice);
+
+    //     // Nếu voucher không hợp lệ, trả về 0
+    //     if (discountAmount === false) {
+    //         setSelectedVoucher(null);
+    //         return 0;
+    //     }
+
+    //     return discountAmount;
+    // };
+
     const calculateDiscount = (currentTotalPrice) => {
         if (!selectedVoucher) return 0;
-
+    
         const discountAmount = isVoucherValid(selectedVoucher, currentTotalPrice);
-
+    
         // Nếu voucher không hợp lệ, trả về 0
         if (discountAmount === false) {
             setSelectedVoucher(null);
             return 0;
         }
-
+    
         return discountAmount;
     };
 
@@ -1343,7 +1390,8 @@ const OrderSummary = () => {
                                 >
                                     <div className="flex justify-between">
                                         <span className="font-bold">{voucher.ma}</span>
-                                        <span className="text-green-600">Giảm {voucher.giaTri}%</span>
+                                        {/* <span className="text-green-600">Giảm {voucher.giaTri}%</span> */}
+                                        <span className="text-green-600">{voucher.kieuGiaTri === 0 ? voucher.giaTri + "%" : formatCurrency(voucher.giaTri)}</span>
                                     </div>
                                     <div className="text-sm text-gray-600">
                                         Hiệu lực: {new Date(voucher.ngayBatDau).toLocaleDateString()} -

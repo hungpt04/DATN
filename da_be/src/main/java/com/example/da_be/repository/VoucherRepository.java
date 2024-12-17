@@ -27,6 +27,15 @@ public interface VoucherRepository extends JpaRepository<Voucher, Integer> {
     @Query(
             """
         SELECT new com.example.da_be.response.VoucherResponse(v.id, v.ma, v.ten, v.giaTri, v.giaTriMax, v.dieuKienNhoNhat, v.kieu, v.soLuong, v.ngayBatDau, v.ngayKetThuc, v.trangThai,  v.kieuGiaTri)
+        FROM Voucher v 
+        WHERE v.trangThai = 1
+    """
+    )
+    List<VoucherResponse> getAllVoucherConHan();
+
+    @Query(
+            """
+        SELECT new com.example.da_be.response.VoucherResponse(v.id, v.ma, v.ten, v.giaTri, v.giaTriMax, v.dieuKienNhoNhat, v.kieu, v.soLuong, v.ngayBatDau, v.ngayKetThuc, v.trangThai,  v.kieuGiaTri)
         FROM Voucher v
     """
     )

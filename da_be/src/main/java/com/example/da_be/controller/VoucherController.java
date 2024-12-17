@@ -24,7 +24,7 @@ import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
-@RequestMapping("/api/admin/voucher")
+@RequestMapping("/api/voucher")
 public class VoucherController {
     @Autowired
     private VoucherService voucherService;
@@ -32,6 +32,11 @@ public class VoucherController {
     @GetMapping("/hien-thi")
     public List<VoucherResponse> getAllVoucher() {
         return voucherService.getAllVoucher();
+    }
+
+    @GetMapping("/hien-thi-voucher")
+    public List<VoucherResponse> getAllVoucherConHan() {
+        return voucherService.getAllVoucherConHan();
     }
 
     @GetMapping("/list-khachhang")

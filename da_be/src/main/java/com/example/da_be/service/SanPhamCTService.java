@@ -10,6 +10,7 @@ import com.example.da_be.repository.SanPhamCTRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -122,5 +123,20 @@ public class SanPhamCTService {
             newHinhAnh.setSanPhamCT(sanPhamCT); // Thiết lập sản phẩm liên quan
             hinhAnhRepository.save(newHinhAnh);
         }
+    }
+
+    @Transactional
+    public void updateQuantity(Long id, Integer soLuong) {
+        SanPhamCT sanPhamCT = sanPhamCTRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Sản phẩm chi tiết không tồn tại"));
+
+        // Kiểm tra số lượng không âm
+        if (soLuong < 0) {
+            throw new IllegalArgumentException("Số lượng không được âm");
+        }
+
+        // Cập nhật tạm thời (cho việc điều chỉnh số lượng trong đơn hàng)
+        sanPhamCT.setSoLuong(soLuong);
+        sanPhamCTRepository.save(sanPhamCT);
     }
 }

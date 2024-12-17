@@ -18,4 +18,10 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
 
     Optional<HoaDon> findTopByOrderByIdDesc();
 
+    @Query(
+            """
+        SELECT hd FROM HoaDon hd WHERE hd.taiKhoan.id = :idKH
+"""
+    )
+    List<HoaDon> getHoaDonByIdKhachHang(Integer idKH);
 }
