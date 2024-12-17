@@ -283,9 +283,8 @@ const RegisterPanel = () => {
             console.log('Full response:', response);
 
             // Kiểm tra kỹ hơn trạng thái và dữ liệu trả về
-            if (response.status === 200) {
-                // Nếu email đã tồn tại, trả về true
-                return true;
+            if (response.data && response.data.exists) {
+                return true; // Email exists
             }
 
             // Nếu email chưa tồn tại, trả về false

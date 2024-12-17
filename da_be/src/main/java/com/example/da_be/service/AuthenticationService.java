@@ -39,7 +39,7 @@ public class AuthenticationService {
     public TaiKhoan registerUser  (SignupRequest signupRequest) {
         // Kiểm tra xem email đã tồn tại chưa
         String email = signupRequest.getEmail().trim(); // Trim email
-        Optional<TaiKhoan> existingTaiKhoan = taiKhoanRepository.findByEmail(email);
+        Optional<TaiKhoan> existingTaiKhoan = checkMail(email);
         if (existingTaiKhoan.isPresent()) {
             throw new RuntimeException("Email đã tồn tại!"); // Ném ra lỗi nếu email đã có trong hệ thống
         }

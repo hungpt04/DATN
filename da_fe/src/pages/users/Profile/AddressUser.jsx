@@ -79,24 +79,11 @@ export default function AddressUser() {
             axios.get(`https://provinces.open-api.vn/api/d/${address.idHuyen}`),
             axios.get(`https://provinces.open-api.vn/api/w/${address.idXa}`)
           ]);
-          // const provinceResponse = await fetch(`https://provinces.open-api.vn/api/p/${address.idTinh}`);
-          // const provinceData = await provinceResponse.json();
-
-          // const districtResponse = await fetch(`https://provinces.open-api.vn/api/d/${address.idHuyen}`);
-          // const districtData = await districtResponse.json();
-
-          // const wardResponse = await fetch(`https://provinces.open-api.vn/api/d/${address.idXa}`);
-          // const wardData = await wardResponse.json();
-
           return {
             ...address,
             tenTinh: provinceResponse.data.name || '',
             tenHuyen: districtResponse.data.name || '',
             tenXa: wardResponse.data.name || ''
-            // ...address,
-            // tenTinh: provinceData.name || '',
-            // tenHuyen: districtData.name || '',
-            // tenXa: wardData.name || '',
           };
         } catch (error) {
           console.error('Error fetching address details:', error);
@@ -638,7 +625,7 @@ export default function AddressUser() {
                   <label className='block mb-1'>Tên</label>
                   <input
                     type='text'
-                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.fullName ? "border-red-500 focus:outline-red-500 hover:border-red-600" : ""}`}
+                    className={`w-full px-3 py-2 border rounded outline-blue-500 ${errors.fullName ? "border-red-500 focus:outline-red-500 hover:border-red-600" : ""}`}
                     name='ten'
                     value={diaChiData.ten}
                     onChange={(e) => {
@@ -652,7 +639,7 @@ export default function AddressUser() {
                   <label className='block mb-1'>Số điện thoại</label>
                   <input
                     type='text'
-                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.phoneNumber ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
+                    className={`w-full px-3 py-2 border rounded outline-blue-500 ${errors.phoneNumber ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
                     name='sdt'
                     value={diaChiData.sdt}
                     onChange={(e) => {
@@ -668,7 +655,7 @@ export default function AddressUser() {
               <div className='grid grid-cols-1 gap-4 mt-4'>
                 <div className='mb-2'>
                   <label className='block mb-1'>Tỉnh/thành phố</label>
-                  <select className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.provinceId ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
+                  <select className={`w-full px-3 py-2 border rounded outline-blue-500 ${errors.provinceId ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
                     value={selectedProvince}
                     onChange={(e) => {
                       setSelectedProvince(e.target.value)
@@ -688,7 +675,7 @@ export default function AddressUser() {
                 <div className='mb-2'>
                   <label className='block mb-1'>Quận/huyện</label>
                   <select
-                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.districtId ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
+                    className={`w-full px-3 py-2 border rounded outline-blue-500 ${errors.districtId ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
                     value={selectedDistrict}
                     onChange={(e) => {
                       setSelectedDistrict(e.target.value)
@@ -709,7 +696,7 @@ export default function AddressUser() {
                 <div className='mb-2'>
                   <label className='block mb-1'>Xã/phường</label>
                   <select
-                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.wardId ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
+                    className={`w-full px-3 py-2 border rounded outline-blue-500 ${errors.wardId ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
                     value={selectedWard}
                     onChange={(e) => {
                       setSelectedWard(e.target.value)
@@ -731,7 +718,7 @@ export default function AddressUser() {
                   <label className='block mb-1'>Địa chỉ cụ thể</label>
                   <input
                     type='text'
-                    className={`w-full px-3 py-2 border rounded outline-gray-600 ${errors.specificAddress ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
+                    className={`w-full px-3 py-2 border rounded outline-blue-500 ${errors.specificAddress ? "border-red-500 hover:border-red-600 focus:outline-red-500" : ""}`}
                     placeholder='Địa chỉ cụ thể'
                     name='diaChiCuThe'
                     value={diaChiData.diaChiCuThe}

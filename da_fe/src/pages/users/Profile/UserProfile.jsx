@@ -111,17 +111,13 @@ export default function UserProfile() {
         newErrors.phoneNumber = "*Số điện thoại không hợp lệ"
         check++
       }
-      // else if (isPhoneNumberDuplicate(khachHang.sdt, khachHang.id)) {
-      //   newErrors.phoneNumber = "*Số điện thoại đã tồn tại"
-      //   check++
-      // }
       else {
         newErrors.phoneNumber = ""
       }
     }
 
     if (!khachHang.ngaySinh) {
-      newErrors.dateBirth = "*Ngày sinh không được để trống";
+      newErrors.dateBirth = "*Bạn chưa nhập ngày sinh";
       check++;
     } else {
       const ngaySinh = new Date(khachHang.ngaySinh); // Chuyển đổi ngày sinh thành đối tượng Date
