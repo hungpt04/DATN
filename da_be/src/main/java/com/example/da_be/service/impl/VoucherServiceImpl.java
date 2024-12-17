@@ -384,4 +384,9 @@ public class VoucherServiceImpl implements VoucherService {
             }
         }
     }
+
+    @Override
+    public List<VoucherResponse> getAllVoucherConHan() {
+        return voucherRepository.getAllVoucherConHan();
+    }
 }

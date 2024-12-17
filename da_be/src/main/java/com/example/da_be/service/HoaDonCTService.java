@@ -68,4 +68,8 @@ public class HoaDonCTService {
         }
         return null; // Hoặc ném ngoại lệ nếu không tìm thấy hóa đơn
     }
+
+    public List<HoaDonCT> getHoaDonCTByIdHD(Long idHD) {
+        return hoaDonCTRepository.listHoaDonChiTietByIdHoaDon(idHD);
+    }
 }

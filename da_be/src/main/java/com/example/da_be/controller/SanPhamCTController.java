@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -117,6 +118,30 @@ public class SanPhamCTController {
     public ResponseEntity<Void> updateHinhAnhUrls(@PathVariable int id, @RequestBody List<String> hinhAnhUrls) {
         sanPhamCTService.updateHinhAnhUrls(id, hinhAnhUrls);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/update-quantity/{id}")
+    public ResponseEntity<?> updateQuantity(
+            @PathVariable Long id,
+            @RequestBody Map<String, Integer> payload
+    ) {
+        try {
+            Integer soLuong = payload.get("soLuong");
+            sanPhamCTService.updateQuantity(id, soLuong);
+            return ResponseEntity.ok().build();
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("Sản phẩm không tồn tại");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Có lỗi xảy ra: " + e.getMessage());
+        }
     }
 
 }

@@ -999,7 +999,20 @@ function OfflineSale() {
                                                             <span className="mx-2">{detail.hoaDonCT.soLuong}</span>
                                                             <button
                                                                 className="border border-gray-300 px-2 py-1"
-                                                                onClick={() => increaseQuantity(detail)}
+                                                                onClick={() => {
+                                                                    // Kiểm tra số lượng tối đa trước khi tăng
+                                                                    const maxQuantity =
+                                                                        detail.hoaDonCT.sanPhamCT.soLuong; // Số lượng tối đa trong kho
+                                                                    if (detail.hoaDonCT.soLuong >= maxQuantity) {
+                                                                        swal(
+                                                                            'Thông báo',
+                                                                            `Số lượng sản phẩm đã hết`,
+                                                                            'warning',
+                                                                        );
+                                                                    } else {
+                                                                        increaseQuantity(detail);
+                                                                    }
+                                                                }}
                                                             >
                                                                 {' + '}
                                                             </button>

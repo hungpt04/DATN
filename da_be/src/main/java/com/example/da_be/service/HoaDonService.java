@@ -92,4 +92,8 @@ public class HoaDonService {
          lichSuDonHangRepository.deleteByIdHoaDon(Math.toIntExact(id));
             hoaDonRepository.deleteById(id);
     }
+
+    public List<HoaDon> getHoaDonByIdKhachHang(Integer idKH) {
+        return hoaDonRepository.getHoaDonByIdKhachHang(idKH);
+    }
 }

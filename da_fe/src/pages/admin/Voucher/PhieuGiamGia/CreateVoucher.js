@@ -74,24 +74,22 @@ const CreateVoucher = () => {
     const [inputValue, setInputValue] = useState('');
 
     useEffect(() => {
-        // Kiểm tra giá trị nhập vào có hợp lệ không
         if (validateSearchInput(inputValue)) {
             setSearchKhachHang((prev) => ({
                 ...prev,
                 tenSearch: inputValue
             }));
 
-            // Gọi hàm tìm kiếm mỗi khi có sự thay đổi
             loadKhachHangSearch({
                 ...searchKhachHang,
                 tenSearch: inputValue
-            }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
+            }, 0);
         }
-    }, [inputValue]); // Chạy khi inputValue thay đổi
+    }, [inputValue]);
 
 
     const handleAllMaVoucher = () => {
-        axios.get(`http://localhost:8080/api/admin/voucher/list-ma-voucher`)
+        axios.get(`http://localhost:8080/api/voucher/list-ma-voucher`)
             .then((response) => {
                 setAllMaVoucher(response.data)
             })
@@ -101,7 +99,7 @@ const CreateVoucher = () => {
     }
 
     const handleAllTenVoucher = () => {
-        axios.get(`http://localhost:8080/api/admin/voucher/list-ten-voucher`)
+        axios.get(`http://localhost:8080/api/voucher/list-ten-voucher`)
             .then((response) => {
                 setAllTenVoucher(response.data)
             })
@@ -117,7 +115,7 @@ const CreateVoucher = () => {
             size: size // Kích thước trang cũng có thể được truyền vào nếu cần
         });
 
-        axios.get(`http://localhost:8080/api/admin/voucher/searchKhachHang?${params.toString()}`)
+        axios.get(`http://localhost:8080/api/voucher/searchKhachHang?${params.toString()}`)
             .then((response) => {
                 setAllCustomer(response.data.content);
                 setPageCount(response.data.totalPages);
@@ -135,7 +133,7 @@ const CreateVoucher = () => {
     }, []);
 
     const handleAllKhachHang = async () => {
-        axios.get("http://localhost:8080/api/admin/voucher/list-khachhang")
+        axios.get("http://localhost:8080/api/voucher/list-khachhang")
             .then((response) => {
                 console.log('List customer:', response.data);
                 setAllCustomer(response.data);
@@ -311,7 +309,7 @@ const CreateVoucher = () => {
                     setLoading(true)
                     const updatedVoucherAdd = { ...voucherAdd, listIdCustomer: selectedCustomerIds };
 
-                    axios.post('http://localhost:8080/api/admin/voucher/add', updatedVoucherAdd, {
+                    axios.post('http://localhost:8080/api/voucher/add', updatedVoucherAdd, {
                         headers: {
                             'Content-Type': 'application/json',
                         },

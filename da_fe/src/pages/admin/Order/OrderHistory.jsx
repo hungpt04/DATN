@@ -206,39 +206,90 @@ const OrderHistory = () => {
         setIsModalOpen(false);
     };
 
+    // const handleSavePayment = async () => {
+    //     const paymentData = {
+    //         taiKhoan: { id: 1 }, // Thay đổi id này nếu cần
+    //         hoaDon: { id: currentOrder.id },
+    //         ma: null,
+    //         tongTien: totalAmount,
+    //         phuongThucThanhToan: paymentMethod === 'chuyen-khoan' ? 'Chuyển khoản' : 'Tiền mặt', // Sử dụng giá trị từ state
+    //         ngayTao: new Date(),
+    //         trangThai: 1,
+    //     };
+
+    //     try {
+    //         const response = await axios.post('http://localhost:8080/api/thanh-toan', paymentData);
+    //         swal('Thành công!', 'Thanh toán đã được lưu!', 'success');
+
+    //         // Cập nhật paymentHistory ngay lập tức
+    //         setPaymentHistory((prevHistory) => [
+    //             ...prevHistory,
+    //             {
+    //                 ...paymentData,
+    //                 id: response.data.id, // Giả sử API trả về id của thanh toán vừa tạo
+    //                 ngayTao: new Date().toISOString(), // Cập nhật thời gian tạo
+    //             },
+    //         ]);
+
+    //         // Cập nhật trạng thái hóa đơn
+    //         const updatedOrder = { ...currentOrder, trangThai: 5 }; // 5 là trạng thái "Đã thanh toán"
+    //         setCurrentOrder(updatedOrder);
+
+    //         // Cập nhật sự kiện
+    //         handleConfirmPayment();
+
+    //         handleCloseModal(); // Đóng modal
+    //     } catch (error) {
+    //         console.error('Có lỗi xảy ra khi lưu thanh toán!', error);
+    //         swal('Thất bại!', 'Có lỗi xảy ra khi lưu thanh toán!', 'error');
+    //     }
+    // };
+
     const handleSavePayment = async () => {
         const paymentData = {
-            taiKhoan: { id: 1 }, // Thay đổi id này nếu cần
+            taiKhoan: { id: 1 },
             hoaDon: { id: currentOrder.id },
             ma: null,
             tongTien: totalAmount,
-            phuongThucThanhToan: paymentMethod === 'chuyen-khoan' ? 'Chuyển khoản' : 'Tiền mặt', // Sử dụng giá trị từ state
+            phuongThucThanhToan: paymentMethod === 'chuyen-khoan' ? 'Chuyển khoản' : 'Tiền mặt',
             ngayTao: new Date(),
             trangThai: 1,
         };
 
         try {
+            // Thanh toán
             const response = await axios.post('http://localhost:8080/api/thanh-toan', paymentData);
+
+            // Cập nhật số lượng trong kho cho từng sản phẩm
+            for (const detail of billDetails) {
+                if (detail.hoaDonCT.trangThai === 1) {
+                    // Chỉ cập nhật sản phẩm chưa trả
+                    await axios.put(
+                        `http://localhost:8080/api/san-pham-ct/update-quantity/${detail.hoaDonCT.sanPhamCT.id}`,
+                        {
+                            soLuong: detail.hoaDonCT.sanPhamCT.soLuong - detail.hoaDonCT.soLuong,
+                        },
+                    );
+                }
+            }
+
             swal('Thành công!', 'Thanh toán đã được lưu!', 'success');
 
-            // Cập nhật paymentHistory ngay lập tức
+            // Các logic cập nhật state còn lại giữ nguyên
             setPaymentHistory((prevHistory) => [
                 ...prevHistory,
                 {
                     ...paymentData,
-                    id: response.data.id, // Giả sử API trả về id của thanh toán vừa tạo
-                    ngayTao: new Date().toISOString(), // Cập nhật thời gian tạo
+                    id: response.data.id,
+                    ngayTao: new Date().toISOString(),
                 },
             ]);
 
-            // Cập nhật trạng thái hóa đơn
-            const updatedOrder = { ...currentOrder, trangThai: 5 }; // 5 là trạng thái "Đã thanh toán"
+            const updatedOrder = { ...currentOrder, trangThai: 5 };
             setCurrentOrder(updatedOrder);
 
-            // Cập nhật sự kiện
             handleConfirmPayment();
-
-            handleCloseModal(); // Đóng modal
+            handleCloseModal();
         } catch (error) {
             console.error('Có lỗi xảy ra khi lưu thanh toán!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi lưu thanh toán!', 'error');
@@ -814,7 +865,8 @@ const OrderHistory = () => {
                                                             currentOrder.trangThai === 4 ||
                                                             currentOrder.trangThai === 5 ||
                                                             currentOrder.trangThai === 6 ||
-                                                            currentOrder.trangThai === 7
+                                                            currentOrder.trangThai === 7 ||
+                                                            detail.hoaDonCT.soLuong >= detail.hoaDonCT.sanPhamCT.soLuong
                                                             ? 'text-gray-400 cursor-not-allowed'
                                                             : ''
                                                         }`}
@@ -824,11 +876,15 @@ const OrderHistory = () => {
                                                         currentOrder.trangThai === 4 ||
                                                         currentOrder.trangThai === 5 ||
                                                         currentOrder.trangThai === 6 ||
-                                                        currentOrder.trangThai === 7
+                                                        currentOrder.trangThai === 7 ||
+                                                        detail.hoaDonCT.soLuong >= detail.hoaDonCT.sanPhamCT.soLuong
                                                     }
                                                 >
                                                     {' + '}
                                                 </button>
+                                            </div>
+                                            <div className="text-gray-500 text-sm ml-2">
+                                                Còn {detail.hoaDonCT.sanPhamCT.soLuong} sản phẩm trong kho
                                             </div>
                                             <div className="text-red-500 font-bold ml-8">
                                                 {(
@@ -943,12 +999,12 @@ const OrderHistory = () => {
                                             <div className="flex items-center ml-auto">
                                                 <button
                                                     className={`border border-gray-300 px-2 py-1 ${currentOrder.trangThai === 3 ||
-                                                            currentOrder.trangThai === 4 ||
-                                                            currentOrder.trangThai === 5 ||
-                                                            currentOrder.trangThai === 6 ||
-                                                            currentOrder.trangThai === 7
-                                                            ? 'text-gray-400 cursor-not-allowed'
-                                                            : ''
+                                                        currentOrder.trangThai === 4 ||
+                                                        currentOrder.trangThai === 5 ||
+                                                        currentOrder.trangThai === 6 ||
+                                                        currentOrder.trangThai === 7
+                                                        ? 'text-gray-400 cursor-not-allowed'
+                                                        : ''
                                                         }`}
                                                     onClick={() => decreaseQuantity(detail)}
                                                     disabled={
@@ -964,12 +1020,13 @@ const OrderHistory = () => {
                                                 <span className="mx-2">{detail.hoaDonCT.soLuong}</span>
                                                 <button
                                                     className={`border border-gray-300 px-2 py-1 ${currentOrder.trangThai === 3 ||
-                                                            currentOrder.trangThai === 4 ||
-                                                            currentOrder.trangThai === 5 ||
-                                                            currentOrder.trangThai === 6 ||
-                                                            currentOrder.trangThai === 7
-                                                            ? 'text-gray-400 cursor-not-allowed'
-                                                            : ''
+                                                        currentOrder.trangThai === 4 ||
+                                                        currentOrder.trangThai === 5 ||
+                                                        currentOrder.trangThai === 6 ||
+                                                        currentOrder.trangThai === 7 ||
+                                                        detail.hoaDonCT.soLuong >= detail.hoaDonCT.sanPhamCT.soLuong
+                                                        ? 'text-gray-400 cursor-not-allowed'
+                                                        : ''
                                                         }`}
                                                     onClick={() => increaseQuantity(detail)}
                                                     disabled={
@@ -977,11 +1034,15 @@ const OrderHistory = () => {
                                                         currentOrder.trangThai === 4 ||
                                                         currentOrder.trangThai === 5 ||
                                                         currentOrder.trangThai === 6 ||
-                                                        currentOrder.trangThai === 7
+                                                        currentOrder.trangThai === 7 ||
+                                                        detail.hoaDonCT.soLuong >= detail.hoaDonCT.sanPhamCT.soLuong
                                                     }
                                                 >
                                                     {' + '}
                                                 </button>
+                                            </div>
+                                            <div className="text-gray-500 text-sm ml-2">
+                                                Còn {detail.hoaDonCT.sanPhamCT.soLuong} sản phẩm trong kho
                                             </div>
                                             <div className="text-red-500 font-bold ml-8">
                                                 {(
@@ -992,12 +1053,12 @@ const OrderHistory = () => {
                                             </div>
                                             <button
                                                 className={`ml-4 text-red-500 ${currentOrder.trangThai === 3 ||
-                                                        currentOrder.trangThai === 4 ||
-                                                        currentOrder.trangThai === 5 ||
-                                                        currentOrder.trangThai === 6 ||
-                                                        currentOrder.trangThai === 7
-                                                        ? 'text-gray-400 cursor-not-allowed'
-                                                        : ''
+                                                    currentOrder.trangThai === 4 ||
+                                                    currentOrder.trangThai === 5 ||
+                                                    currentOrder.trangThai === 6 ||
+                                                    currentOrder.trangThai === 7
+                                                    ? 'text-gray-400 cursor-not-allowed'
+                                                    : ''
                                                     }`}
                                                 onClick={() => handleDeleteDetail(detail.hoaDonCT.id)}
                                                 disabled={
@@ -1083,7 +1144,7 @@ const OrderHistory = () => {
                             <label className="block text-gray-700">Tiền thừa</label>
                             <input
                                 type="text"
-                                value={`${Math.max(0, customerMoney - totalAmount - shippingFee).toLocaleString()} VND`}
+                                value={`${Math.max(0, customerMoney - (currentOrder.tongTien)).toLocaleString()} VND`}
                                 className="w-full p-2 border border-gray-300 rounded mt-1"
                                 readOnly
                             />
@@ -1136,10 +1197,10 @@ const OrderHistory = () => {
                                 Đóng
                             </button>
                             <button
-                                className={`bg-orange-500 text-white px-4 py-2 rounded ${customerMoney < totalAmount ? 'opacity-50 cursor-not-allowed' : ''
+                                className={`bg-orange-500 text-white px-4 py-2 rounded ${customerMoney < (currentOrder.tongTien) ? 'opacity-50 cursor-not-allowed' : ''
                                     }`}
                                 onClick={() => {
-                                    if (parseFloat(customerMoney) < totalAmount) {
+                                    if (parseFloat(customerMoney) < (currentOrder.tongTien)) {
                                         swal(
                                             'Thất bại!',
                                             'Số tiền khách đưa phải lớn hơn hoặc bằng tổng tiền!',
@@ -1149,7 +1210,7 @@ const OrderHistory = () => {
                                         handleSavePayment(); // Gọi hàm lưu thanh toán nếu hợp lệ
                                     }
                                 }}
-                                disabled={customerMoney < totalAmount} // Disable button nếu tiền khách đưa không đủ
+                                disabled={customerMoney < (currentOrder.tongTien)} // Disable button nếu tiền khách đưa không đủ
                             >
                                 Lưu
                             </button>

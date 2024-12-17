@@ -126,8 +126,8 @@ function Order() {
         { label: 'CHỜ GIAO HÀNG', value: '2' },
         { label: 'ĐANG VẬN CHUYỂN', value: '3' },
         { label: 'ĐÃ GIAO HÀNG', value: '4' },
-        { label: 'ĐÃ THANH TOÁN', value: '5' },
-        { label: 'CHỜ THANH TOÁN', value: '6' },
+        { label: 'CHỜ THANH TOÁN', value: '5' },
+        { label: 'ĐÃ THANH TOÁN', value: '6' },
         { label: 'HOÀN THÀNH', value: '7' },
     ];
 
@@ -165,8 +165,8 @@ function Order() {
             2: 'Chờ giao hàng',
             3: 'Đang vận chuyển',
             4: 'Đã giao hàng',
-            5: 'Đã thanh toán',
-            6: 'Chờ thanh toán',
+            5: 'Chờ thanh toán',
+            6: 'Đã thanh toán',
             7: 'Hoàn thành',
             8: 'Đã hủy',
             9: 'Trả hàng'

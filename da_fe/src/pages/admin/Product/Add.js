@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 import { useNavigate } from 'react-router-dom';
 import numeral from 'numeral';
+import { CircularProgress } from '@mui/material';
 
 function AddProduct() {
     const navigate = useNavigate();
@@ -50,7 +51,8 @@ function AddProduct() {
     const [errorColors, setErrorColors] = useState('');
     const [errorWeights, setErrorWeights] = useState('');
     const [errorVariants, setErrorVariants] = useState('');
-
+    const [loading, setLoading] = useState(false)
+    const [confirmClicked, setConfirmClicked] = useState(false)
 
     // Hàm mở modal chọn ảnh cho biến thể
     const openVariantImageModal = (color) => {
@@ -303,12 +305,6 @@ function AddProduct() {
         setShowAddWeightModal(true);
     };
 
-    // const handleAddImage = (e) => {
-    //     const files = Array.from(e.target.files);
-    //     const newImages = files.map((file) => URL.createObjectURL(file));
-    //     setImageList((prev) => [...prev, ...newImages]);
-    // };
-
     const handleSelectImage = (image) => {
         if (selectedImages.includes(image)) {
             setSelectedImages(selectedImages.filter((img) => img !== image));
@@ -353,244 +349,6 @@ function AddProduct() {
             setVariants([]);
         }
     }, [selectedColors, selectedWeights]);
-
-    // const validate = () => {
-    //     let check = 0
-    //     const errors = {
-    //         productName: '',
-    //         brand: '',
-    //         material: '',
-    //         balancePoint: '',
-    //         hardness: '',
-    //         status: '',
-    //         description: '',
-    //         colors: '',
-    //         weights: '',
-    //         variants: []
-    //     };
-
-    //     console.log("Dữ liệu kiểm tra:", {
-    //         productName,
-    //         brand,
-    //         material,
-    //         balancePoint,
-    //         hardness,
-    //         status,
-    //         description,
-    //         selectedColors,
-    //         selectedWeights,
-    //         variants,
-    //         variantImages
-    //     });
-
-    //     // Validate Tên sản phẩm
-    //     if (!productName.trim()) {
-    //         errors.productName = 'Tên sản phẩm không được để trống';
-
-    //     } else if (productName.trim().length < 3) {
-    //         errors.productName = 'Tên sản phẩm phải từ 3 ký tự trở lên';
-
-    //     } else if (productName.trim().length > 100) {
-    //         errors.productName = 'Tên sản phẩm không được vượt quá 100 ký tự';
-
-    //     }
-    //     //  else if (/[^a-zA-Z0-9\s]/.test(productName.trim())) {
-    //     //     errors.productName = 'Tên sản phẩm không được chứa ký tự đặc biệt';
-    //     // }
-
-    //     // Validate Thương hiệu
-    //     if (!brand) {
-    //         errors.brand = 'Vui lòng chọn thương hiệu';
-
-    //     }
-
-    //     // Validate Chất liệu
-    //     if (!material) {
-    //         errors.material = 'Vui lòng chọn chất liệu';
-
-    //     }
-
-    //     // Validate Điểm cân bằng
-    //     if (!balancePoint) {
-    //         errors.balancePoint = 'Vui lòng chọn điểm cân bằng';
-
-    //     }
-
-    //     // Validate Độ cứng
-    //     if (!hardness) {
-    //         errors.hardness = 'Vui lòng chọn độ cứng';
-
-    //     }
-
-    //     // Validate Trạng thái
-    //     if (!status) {
-    //         errors.status = 'Vui lòng chọn trạng thái';
-
-    //     }
-
-    //     // Validate Mô tả
-    //     if (!description.trim()) {
-    //         errors.description = 'Mô tả sản phẩm không được để trống';
-
-    //     } else if (description.trim().length < 10) {
-    //         errors.description = 'Mô tả sản phẩm phải từ 10 ký tự trở lên';
-
-    //     } else if (description.trim().length > 1000) {
-    //         errors.description = 'Mô tả sản phẩm không được vượt quá 1000 ký tự';
-
-    //     }
-
-    //     // Validate Màu sắc
-    //     if (selectedColors.length === 0) {
-    //         errors.colors = 'Vui lòng chọn ít nhất một màu';
-
-    //     }
-
-    //     // Validate Trọng lượng
-    //     if (selectedWeights.length === 0) {
-    //         errors.weights = 'Vui lòng chọn ít nhất một trọng lượng';
-
-    //     }
-
-    //     // Validate Biến thể
-    //     // selectedColors.forEach(color => {
-    //     //     const colorVariants = variants.filter(variant => variant.color === color);
-
-    //     //     if (colorVariants.length === 0) {
-    //     //         errors.variants.push(`Phải có ít nhất một biến thể cho màu ${color}`);
-    //     //         check++;
-    //     //     } else {
-    //     //         // Kiểm tra từng biến thể của màu này
-    //     //         colorVariants.forEach((variant, index) => {
-    //     //             const variantErrors = [];
-
-    //     //             // Validate số lượng
-    //     //             if (!variant.quantity || Number(variant.quantity) <= 0) {
-    //     //                 variantErrors.push(`Số lượng phải lớn hơn 0`);
-    //     //             } else if (Number(variant.quantity) >= 1000) {
-    //     //                 variantErrors.push(`Số lượng phải nhỏ hơn 1000`);
-    //     //             }
-
-    //     //             // Validate giá
-    //     //             if (!variant.price || Number(variant.price) <= 0) {
-    //     //                 variantErrors.push(`Giá phải lớn hơn 0`);
-    //     //             } else if (Number(variant.price) >= 100000000) {
-    //     //                 variantErrors.push(`Giá phải nhỏ hơn 100 triệu`);
-    //     //             }
-
-    //     //             // Nếu có lỗi ở biến thể này
-    //     //             if (variantErrors.length > 0) {
-    //     //                 errors.variants.push(`Biến thể thứ ${index + 1}: ${variantErrors.join(', ')}`);
-    //     //                 check++;
-    //     //             }
-    //     //         });
-
-    //     //         // Validate ảnh cho màu
-    //     //         if (!variantImages[color]) {
-    //     //             errors.variants.push(`Vui lòng chọn ảnh cho màu ${color}`);
-    //     //             check++;
-    //     //         }
-    //     //     }
-    //     // });
-
-    //     const colorErrors = {}; // Lưu lỗi theo màu
-
-    //     selectedColors.forEach((color) => {
-    //         const colorVariants = variants.filter((variant) => variant.color === color);
-    //         const variantErrors = [];
-
-    //         colorVariants.forEach((variant, index) => {
-    //             const errorsPerVariant = [];
-    //             // Kiểm tra số lượng
-    //             if (!variant.quantity || Number(variant.quantity) <= 0) {
-    //                 errorsPerVariant.push(`Số lượng biến thể ${index + 1} phải lớn hơn 0.`);
-    //             } else if (Number(variant.quantity) >= 1000) {
-    //                 errorsPerVariant.push(`Số lượng biến thể ${index + 1} phải nhỏ hơn 1,000.`);
-    //             }
-
-    //             // Kiểm tra giá
-    //             if (!variant.price || Number(variant.price) <= 0) {
-    //                 errorsPerVariant.push(`Giá biến thể ${index + 1} phải lớn hơn 0.`);
-    //             } else if (Number(variant.price) >= 100000000) {
-    //                 errorsPerVariant.push(`Giá biến thể ${index + 1} phải nhỏ hơn 100 triệu.`);
-    //             }
-
-    //             // Log lỗi chi tiết
-    //             if (errorsPerVariant.length > 0) {
-    //                 console.log(`Biến thể lỗi (${color}, index ${index + 1}):`, errorsPerVariant);
-    //                 variantErrors.push(errorsPerVariant.join(' '));
-    //             }
-    //         });
-
-    //         if (variantErrors.length > 0) {
-    //             colorErrors[color] = variantErrors;
-    //             check++;
-    //         }
-    //     });
-
-
-    //     // selectedColors.forEach(color => {
-    //     //     const colorVariants = variants.filter(variant => variant.color === color);
-
-    //     //     // Gom lỗi cho từng biến thể
-    //     //     const variantErrors = [];
-
-    //     //     colorVariants.forEach((variant, index) => {
-    //     //         const errorsPerVariant = [];
-
-    //     //         // Validate số lượng
-    //     //         if (!variant.quantity || Number(variant.quantity) <= 0) {
-    //     //             errorsPerVariant.push(`Số lượng phải lớn hơn 0`);
-    //     //         } else if (Number(variant.quantity) >= 1000) {
-    //     //             errorsPerVariant.push(`Số lượng phải nhỏ hơn 1000`);
-    //     //         }
-
-    //     //         // Validate giá
-    //     //         if (!variant.price || Number(variant.price) <= 0) {
-    //     //             errorsPerVariant.push(`Giá phải lớn hơn 0`);
-    //     //         } else if (Number(variant.price) >= 100000000) {
-    //     //             errorsPerVariant.push(`Giá phải nhỏ hơn 100 triệu`);
-    //     //         }
-
-    //     //         // Nếu có lỗi ở biến thể
-    //     //         if (errorsPerVariant.length > 0) {
-    //     //             variantErrors.push(`Biến thể thứ ${index + 1}: ${errorsPerVariant.join(', ')}`);
-    //     //         }
-    //     //     });
-
-    //     //     // Validate ảnh cho màu
-    //     //     if (!variantImages[color]) {
-    //     //         variantErrors.push(`Vui lòng chọn ảnh cho màu ${color}`);
-    //     //     }
-
-    //     //     // Lưu lỗi của màu
-    //     //     if (variantErrors.length > 0) {
-    //     //         colorErrors[color] = variantErrors;
-    //     //         check++;
-    //     //     }
-
-    //     // });
-
-    //     for (const key in errors) {
-    //         if (errors[key]) {
-    //             check++
-    //         }
-    //     }
-
-    //     // Cập nhật state errors
-    //     setErrorProductName(errors.productName);
-    //     setErrorBrand(errors.brand);
-    //     setErrorMaterial(errors.material);
-    //     setErrorBalancePoint(errors.balancePoint);
-    //     setErrorHardness(errors.hardness);
-    //     setErrorStatus(errors.status);
-    //     setErrorDescription(errors.description);
-    //     setErrorColors(errors.colors);
-    //     setErrorWeights(errors.weights);
-    //     // setErrorVariants(errors.variants.length > 0 ? errors.variants.join('\n') : '');
-    //     setErrorVariants(colorErrors);
-    //     return check;
-    // };
 
     const validate = () => {
         let check = 0;
@@ -733,99 +491,100 @@ function AddProduct() {
         setErrorColors(errors.colors);
         setErrorWeights(errors.weights);
         setErrorVariants(colorErrors);
-
+        
         return check;
     };
 
     const handleAddProduct = async (e) => {
         e.preventDefault();
+        setConfirmClicked(true)
+        
         const check = validate()
         console.log("Validation check:", check);
         if (check > 0) {
             swal("Thất bại!", "Vui lòng kiểm tra các lỗi bên dưới.", "error");
             return;
         }
-        if (check < 1) {
+        setLoading(true)
+        const newProduct = {
+            ten: productName,
+            trangThai: 1,
+        };
 
-            const newProduct = {
-                ten: productName,
-                trangThai: 1,
-            };
+        try {
+            const productResponse = await axios.post('http://localhost:8080/api/san-pham', newProduct);
+            const newProductId = productResponse.data.id;
 
-            try {
-                const productResponse = await axios.post('http://localhost:8080/api/san-pham', newProduct);
-                const newProductId = productResponse.data.id;
+            // Nhóm variants theo màu
+            const colorGroups = {};
+            variants.forEach((variant) => {
+                if (!colorGroups[variant.color]) {
+                    colorGroups[variant.color] = [];
+                }
+                colorGroups[variant.color].push(variant);
+            });
 
-                // Nhóm variants theo màu
-                const colorGroups = {};
-                variants.forEach((variant) => {
-                    if (!colorGroups[variant.color]) {
-                        colorGroups[variant.color] = [];
-                    }
-                    colorGroups[variant.color].push(variant);
-                });
+            // Duyệt qua từng nhóm màu
+            for (const color in colorGroups) {
+                const colorVariants = colorGroups[color];
+                const colorImage = variantImages[color];
 
-                // Duyệt qua từng nhóm màu
-                for (const color in colorGroups) {
-                    const colorVariants = colorGroups[color];
-                    const colorImage = variantImages[color];
+                console.log('co lo image:', colorImage);
+                // Nếu có ảnh cho màu này
+                if (colorImage) {
+                    // Upload ảnh cho TẤT CẢ các variant của màu này
+                    for (const variant of colorVariants) {
+                        const newSanPhamCT = {
+                            sanPham: { id: newProductId },
+                            thuongHieu: { id: brand },
+                            mauSac: { id: variant.colorId },
+                            chatLieu: { id: material },
+                            trongLuong: { id: variant.weightId },
+                            diemCanBang: { id: balancePoint },
+                            doCung: { id: hardness },
+                            ma: `SPCT${variant.id}`,
+                            soLuong: variant.quantity,
+                            donGia: variant.price,
+                            moTa: description,
+                            trangThai: status === 'Active' ? 1 : 0,
+                        };
 
-                    console.log('co lo image:', colorImage);
-                    // Nếu có ảnh cho màu này
-                    if (colorImage) {
-                        // Upload ảnh cho TẤT CẢ các variant của màu này
-                        for (const variant of colorVariants) {
-                            const newSanPhamCT = {
-                                sanPham: { id: newProductId },
-                                thuongHieu: { id: brand },
-                                mauSac: { id: variant.colorId },
-                                chatLieu: { id: material },
-                                trongLuong: { id: variant.weightId },
-                                diemCanBang: { id: balancePoint },
-                                doCung: { id: hardness },
-                                ma: `SPCT${variant.id}`,
-                                soLuong: variant.quantity,
-                                donGia: variant.price,
-                                moTa: description,
-                                trangThai: status === 'Active' ? 1 : 0,
-                            };
+                        const sanPhamCTResponse = await axios.post(
+                            'http://localhost:8080/api/san-pham-ct',
+                            newSanPhamCT,
+                        );
+                        const sanPhamCTId = sanPhamCTResponse.data.id;
 
-                            const sanPhamCTResponse = await axios.post(
-                                'http://localhost:8080/api/san-pham-ct',
-                                newSanPhamCT,
-                            );
-                            const sanPhamCTId = sanPhamCTResponse.data.id;
+                        // Upload ảnh cho mỗi sản phẩm chi tiết
+                        const formData = new FormData();
+                        formData.append('images', colorImage);
+                        formData.append('idSanPhamCT', sanPhamCTId);
 
-                            // Upload ảnh cho mỗi sản phẩm chi tiết
-                            const formData = new FormData();
-                            formData.append('images', colorImage);
-                            formData.append('idSanPhamCT', sanPhamCTId);
-
-                            try {
-                                await axios.post('http://localhost:8080/api/hinh-anh/upload-image', formData, {
-                                    headers: {
-                                        'Content-Type': 'multipart/form-data',
-                                    },
-                                });
-                            } catch (error) {
-                                console.error(`Lỗi upload ảnh cho sản phẩm chi tiết ${sanPhamCTId}:`, error);
-                            }
+                        try {
+                            await axios.post('http://localhost:8080/api/hinh-anh/upload-image', formData, {
+                                headers: {
+                                    'Content-Type': 'multipart/form-data',
+                                },
+                            });
+                        } catch (error) {
+                            console.error(`Lỗi upload ảnh cho sản phẩm chi tiết ${sanPhamCTId}:`, error);
                         }
                     }
                 }
-
-                swal('Thành công!', 'Sản phẩm đã được thêm!', 'success');
-                reset();
-                setVariants([]);
-                setVariantImages({});
-                navigate('/admin/quan-ly-san-pham/san-pham-ct');
-            } catch (error) {
-                console.error('Có lỗi xảy ra khi thêm sản phẩm!', error);
-                swal('Thất bại!', 'Có lỗi xảy ra khi thêm sản phẩm!', 'error');
             }
-        } else {
-            swal("Thất bại!", "Không thể thêm sản phẩm", "error");
+
+            swal('Thành công!', 'Sản phẩm đã được thêm!', 'success');
+            reset();
+            setVariants([]);
+            setVariantImages({});
+            navigate('/admin/quan-ly-san-pham/san-pham-ct');
+        } catch (error) {
+            console.error('Có lỗi xảy ra khi thêm sản phẩm!', error);
+            swal('Thất bại!', 'Có lỗi xảy ra khi thêm sản phẩm!', 'error');
+        } finally {
+            setLoading(false);
         }
+
     };
 
     const handleNavigateToProduct = () => {
@@ -1243,24 +1002,31 @@ function AddProduct() {
                             ))}
                         </div>
                     )}
-                    {/* <div className="text-red-600 text-xs italic">
-                        {errorVariants[color] &&
-                            errorVariants[color].map((error, index) => (
-                                <div key={index}>{error}</div>
-                            ))}
-                    </div> */}
                 </div>
             ))}
 
             <div className="mt-6">
+                {confirmClicked && loading && (
+                    <div
+                        style={{
+                            position: 'fixed',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            zIndex: 9999,
+                        }}>
+                        <CircularProgress size={50} />
+                    </div>
+                )}
                 <button
                     type="button"
                     onClick={(e) => {
                         handleAddProduct(e)
                     }}
+                    disabled={loading}
                     className="bg-blue-600 text-white rounded-md px-4 py-2 ml-auto flex items-center"
                 >
-                    Lưu thay đổi
+                    {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </button>
             </div>
 

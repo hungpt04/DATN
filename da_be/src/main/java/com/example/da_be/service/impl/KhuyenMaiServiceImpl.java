@@ -151,47 +151,108 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
         return (int) Math.round(discountPrice); // Làm tròn giá sau khi tính toán
     }
 
+    // cập nhật lại hàm voucher vì thêm tính giá tiền: chưa làm
+//    @Override
+//    public KhuyenMai updateKhuyenMai(KhuyenMaiRequest khuyenMaiRequest, Integer id) {
+//        KhuyenMai existingKhuyenMai = khuyenMaiRepository.findById(id)
+//                .orElseThrow(() -> new IllegalArgumentException("KhuyenMai not found for ID: " + id));
+//
+//        // Xóa tất cả sản phẩm khuyến mãi cũ
+//        List<SanPhamKhuyenMai> oldSanPhamKhuyenMai = sanPhamKhuyenMaiRepository.getListSanPhamKhuyenMaiByIdKhuyenMai(id);
+//        if (!oldSanPhamKhuyenMai.isEmpty()) {
+//            sanPhamKhuyenMaiRepository.deleteAll(oldSanPhamKhuyenMai);
+//        }
+//
+//        // Cập nhật thông tin khuyến mãi
+//        KhuyenMai updatedKhuyenMai = khuyenMaiRequest.newKhuyenMaiAddSanPham(existingKhuyenMai);
+//        khuyenMaiRepository.save(updatedKhuyenMai);
+//
+//        // Thêm mới danh sách sản phẩm khuyến mãi
+//        List<SanPhamKhuyenMai> newSanPhamKhuyenMaiList = new ArrayList<>();
+//        if (!khuyenMaiRequest.getLoai()) {
+//            List<SanPhamCT> spctList = sanPhamChiTietRepository.findAll();
+//            for (SanPhamCT spct : spctList) {
+//                SanPhamKhuyenMai newSanPhamKhuyenMai = new SanPhamKhuyenMai();
+//                newSanPhamKhuyenMai.setKhuyenMai(updatedKhuyenMai);
+//                newSanPhamKhuyenMai.setSanPhamCT(spct);
+//                newSanPhamKhuyenMaiList.add(newSanPhamKhuyenMai);
+//            }
+//        } else {
+//            for (Integer idProductDetail : khuyenMaiRequest.getIdProductDetail()) {
+//                SanPhamCT spct = sanPhamChiTietRepository.findById(idProductDetail)
+//                        .orElseThrow(() -> new IllegalArgumentException("SanPhamChiTiet not found for ID: " + idProductDetail));
+//                SanPhamKhuyenMai newSanPhamKhuyenMai = new SanPhamKhuyenMai();
+//                newSanPhamKhuyenMai.setKhuyenMai(updatedKhuyenMai);
+//                newSanPhamKhuyenMai.setSanPhamCT(spct);
+//                newSanPhamKhuyenMaiList.add(newSanPhamKhuyenMai);
+//            }
+//        }
+//        sanPhamKhuyenMaiRepository.saveAll(newSanPhamKhuyenMaiList);
+//
+//        return updatedKhuyenMai;
+//    }
 
     @Override
     public KhuyenMai updateKhuyenMai(KhuyenMaiRequest khuyenMaiRequest, Integer id) {
+        // Lấy thông tin khuyến mãi hiện có từ cơ sở dữ liệu
         KhuyenMai existingKhuyenMai = khuyenMaiRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("KhuyenMai not found for ID: " + id));
 
-        // Xóa tất cả sản phẩm khuyến mãi cũ
+        // Xóa tất cả các sản phẩm khuyến mãi cũ liên quan đến khuyến mãi
         List<SanPhamKhuyenMai> oldSanPhamKhuyenMai = sanPhamKhuyenMaiRepository.getListSanPhamKhuyenMaiByIdKhuyenMai(id);
         if (!oldSanPhamKhuyenMai.isEmpty()) {
             sanPhamKhuyenMaiRepository.deleteAll(oldSanPhamKhuyenMai);
         }
 
-        // Cập nhật thông tin khuyến mãi
+        // Cập nhật thông tin khuyến mãi từ request
         KhuyenMai updatedKhuyenMai = khuyenMaiRequest.newKhuyenMaiAddSanPham(existingKhuyenMai);
         khuyenMaiRepository.save(updatedKhuyenMai);
 
         // Thêm mới danh sách sản phẩm khuyến mãi
         List<SanPhamKhuyenMai> newSanPhamKhuyenMaiList = new ArrayList<>();
+
+        // Lấy giá trị phần trăm giảm từ request
+        double discountPercent = khuyenMaiRequest.getGiaTri(); // Phần trăm khuyến mãi
+
         if (!khuyenMaiRequest.getLoai()) {
+            // Nếu loại khuyến mãi là false, áp dụng cho tất cả sản phẩm
             List<SanPhamCT> spctList = sanPhamChiTietRepository.findAll();
             for (SanPhamCT spct : spctList) {
                 SanPhamKhuyenMai newSanPhamKhuyenMai = new SanPhamKhuyenMai();
                 newSanPhamKhuyenMai.setKhuyenMai(updatedKhuyenMai);
                 newSanPhamKhuyenMai.setSanPhamCT(spct);
+
+                // Tính giá khuyến mãi
+                double originalPrice = spct.getDonGia();
+                int discountPrice = calculateDiscountPrice(originalPrice, discountPercent);
+
+                newSanPhamKhuyenMai.setGiaKhuyenMai(discountPrice);
                 newSanPhamKhuyenMaiList.add(newSanPhamKhuyenMai);
             }
         } else {
+            // Nếu loại khuyến mãi là true, áp dụng cho các sản phẩm được chọn
             for (Integer idProductDetail : khuyenMaiRequest.getIdProductDetail()) {
                 SanPhamCT spct = sanPhamChiTietRepository.findById(idProductDetail)
                         .orElseThrow(() -> new IllegalArgumentException("SanPhamChiTiet not found for ID: " + idProductDetail));
+
                 SanPhamKhuyenMai newSanPhamKhuyenMai = new SanPhamKhuyenMai();
                 newSanPhamKhuyenMai.setKhuyenMai(updatedKhuyenMai);
                 newSanPhamKhuyenMai.setSanPhamCT(spct);
+
+                // Tính giá khuyến mãi
+                double originalPrice = spct.getDonGia();
+                int discountPrice = calculateDiscountPrice(originalPrice, discountPercent);
+
+                newSanPhamKhuyenMai.setGiaKhuyenMai(discountPrice);
                 newSanPhamKhuyenMaiList.add(newSanPhamKhuyenMai);
             }
         }
+
+        // Lưu tất cả các sản phẩm khuyến mãi mới vào cơ sở dữ liệu
         sanPhamKhuyenMaiRepository.saveAll(newSanPhamKhuyenMaiList);
 
         return updatedKhuyenMai;
     }
-
 
     @Override
     public KhuyenMai getKhuyenMaiById(Integer id) {

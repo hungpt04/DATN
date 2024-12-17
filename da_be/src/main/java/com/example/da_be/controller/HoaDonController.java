@@ -83,4 +83,9 @@ public class HoaDonController {
         hoaDonService.deleteHoaDon(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @GetMapping("/get-hd-by-id-kh/{idKH}")
+    public List<HoaDon> getHoaDonByIdKhachHang(@PathVariable("idKH") Integer idKH) {
+        return hoaDonService.getHoaDonByIdKhachHang(idKH);
+    }
 }
