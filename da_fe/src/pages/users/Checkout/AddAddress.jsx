@@ -26,6 +26,7 @@ const AddAddress = () => {
 
     // Lấy id người dùng
     const [customerId, setCustomerId] = useState(null);
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
@@ -51,6 +52,10 @@ const AddAddress = () => {
 
     const loadAddress = async (customerId) => {
         try {
+            if (!customerId) {
+                console.error("Customer ID is null");
+                return;
+            }
             const response = await axios.get(`http://localhost:8080/api/dia-chi/tai-khoan/${customerId}`);
             setAddressList(response.data);
         } catch (error) {
@@ -104,7 +109,9 @@ const AddAddress = () => {
     };
 
     useEffect(() => {
-        loadAddress(customerId); // Tải địa chỉ cho tài khoản 1
+        if (customerId) {
+        loadAddress(customerId);
+        }
         loadProvinces(); // Tải danh sách tỉnh/thành phố
     }, [customerId]);
 

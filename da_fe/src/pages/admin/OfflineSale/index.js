@@ -100,10 +100,13 @@ function OfflineSale() {
                         return isUnique;
                     });
 
-                const totalItems = uniqueDetails.reduce(
-                    (acc, detail) => acc + detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan,
-                    0,
-                );
+                const totalItems = uniqueDetails.reduce((acc, detail) => {
+                    const priceInfo = productPrices[detail.hoaDonCT.id] || {
+                        originalPrice: detail.hoaDonCT.giaBan,
+                        discountedPrice: detail.hoaDonCT.giaBan,
+                    };
+                    return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice; // Sử dụng giá đã giảm
+                }, 0);
 
                 // Tìm voucher tốt nhất với tổng tiền
                 const bestVoucher = findBestVoucher(vouchers, totalItems);
@@ -356,6 +359,7 @@ function OfflineSale() {
         // Nhận sản phẩm đã chọn
         setSelectedProduct(product); // Cập nhật sản phẩm đã chọn
         setShowQuantityModal(true);
+        setQuantity(1);
     };
 
     // const handleCustomerModal = () => {
@@ -708,6 +712,66 @@ function OfflineSale() {
         return matchesSearchTerm && matchesBrand && matchesColor && matchesWeight && matchesPrice;
     });
 
+    // useEffect(() => {
+    //     const fetchProductPrices = async () => {
+    //         if (!selectedBill || !billDetails.length) return;
+
+    //         const uniqueProductIds = new Set();
+    //         const uniqueDetails = billDetails
+    //             .filter(
+    //                 (detail) =>
+    //                     detail.hoaDonCT &&
+    //                     detail.hoaDonCT.hoaDon.id === selectedBill.id &&
+    //                     detail.hoaDonCT.trangThai === 1,
+    //             )
+    //             .filter((detail) => {
+    //                 const isUnique = !uniqueProductIds.has(detail.hoaDonCT.id);
+    //                 if (isUnique) {
+    //                     uniqueProductIds.add(detail.hoaDonCT.id);
+    //                 }
+    //                 return isUnique;
+    //             });
+
+    //         const pricePromises = uniqueDetails.map(async (detail) => {
+    //             try {
+    //                 const response = await axios.get(
+    //                     `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${detail.hoaDonCT.sanPhamCT.id}`,
+    //                 );
+
+    //                 return {
+    //                     [detail.hoaDonCT.id]:
+    //                         response.data.length > 0
+    //                             ? {
+    //                                 originalPrice: detail.hoaDonCT.giaBan,
+    //                                 discountedPrice: response.data[0].giaKhuyenMai,
+    //                                 promotion: response.data[0],
+    //                             }
+    //                             : {
+    //                                 originalPrice: detail.hoaDonCT.giaBan,
+    //                                 discountedPrice: detail.hoaDonCT.giaBan,
+    //                                 promotion: null,
+    //                             },
+    //                 };
+    //             } catch (error) {
+    //                 console.error('Error fetching product promotion:', error);
+    //                 return {
+    //                     [detail.hoaDonCT.id]: {
+    //                         originalPrice: detail.hoaDonCT.giaBan,
+    //                         discountedPrice: detail.hoaDonCT.giaBan,
+    //                         promotion: null,
+    //                     },
+    //                 };
+    //             }
+    //         });
+
+    //         const priceResults = await Promise.all(pricePromises);
+    //         const priceMap = priceResults.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+    //         setProductPrices(priceMap);
+    //     };
+
+    //     fetchProductPrices();
+    // }, [billDetails]);
+
     useEffect(() => {
         const fetchProductPrices = async () => {
             if (!selectedBill || !billDetails.length) return;
@@ -731,22 +795,39 @@ function OfflineSale() {
             const pricePromises = uniqueDetails.map(async (detail) => {
                 try {
                     const response = await axios.get(
-                        `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${detail.hoaDonCT.sanPhamCT.id}`,
+                        `http://localhost:8080/api/san-pham-khuyen-mai/san-pham/${detail.hoaDonCT.sanPhamCT.id}`,
                     );
 
-                    return {
-                        [detail.hoaDonCT.id]:
-                            response.data.length > 0
-                                ? {
+                    if (response.data.length > 0) {
+                        const promotion = response.data[0];
+                        // Kiểm tra trạng thái khuyến mãi
+                        if (promotion.khuyenMai.trangThai === 0 || promotion.khuyenMai.trangThai === 2) {
+                            // Nếu trạng thái là 0 hoặc 2, sử dụng giá gốc
+                            return {
+                                [detail.hoaDonCT.id]: {
                                     originalPrice: detail.hoaDonCT.giaBan,
-                                    discountedPrice: response.data[0].giaKhuyenMai,
-                                    promotion: response.data[0],
-                                }
-                                : {
-                                    originalPrice: detail.hoaDonCT.giaBan,
-                                    discountedPrice: detail.hoaDonCT.giaBan,
+                                    discountedPrice: detail.hoaDonCT.giaBan, // Giá gốc
                                     promotion: null,
                                 },
+                            };
+                        }
+                        // Nếu có khuyến mãi hợp lệ, sử dụng giá khuyến mãi
+                        return {
+                            [detail.hoaDonCT.id]: {
+                                originalPrice: detail.hoaDonCT.giaBan,
+                                discountedPrice: detail.hoaDonCT.giaBan * (1 - promotion.khuyenMai.giaTri / 100),
+                                promotion: promotion,
+                            },
+                        };
+                    }
+
+                    // Nếu không có khuyến mãi, trả về giá gốc
+                    return {
+                        [detail.hoaDonCT.id]: {
+                            originalPrice: detail.hoaDonCT.giaBan,
+                            discountedPrice: detail.hoaDonCT.giaBan,
+                            promotion: null,
+                        },
                     };
                 } catch (error) {
                     console.error('Error fetching product promotion:', error);
@@ -798,6 +879,41 @@ function OfflineSale() {
         }
     }, [transactions]);
 
+    // useEffect(() => {
+    //     const fetchPromotions = async () => {
+    //         try {
+    //             if (!filteredProducts?.length) return;
+
+    //             const promotionPromises = filteredProducts.map(async (product) => {
+    //                 const response = await axios.get(
+    //                     `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${product.id}`,
+    //                 );
+    //                 return {
+    //                     productId: product.id,
+    //                     promotion: response.data.length > 0 ? response.data[0] : null,
+    //                 };
+    //             });
+
+    //             const promotionResults = await Promise.all(promotionPromises);
+
+    //             const promotionMap = promotionResults.reduce((acc, result) => {
+    //                 acc[result.productId] = result.promotion;
+    //                 return acc;
+    //             }, {});
+
+    //             setProductPromotions(promotionMap);
+    //         } catch (error) {
+    //             console.error('Error fetching promotions:', error);
+    //         }
+    //     };
+
+    //     const timeoutId = setTimeout(() => {
+    //         fetchPromotions();
+    //     }, 500);
+
+    //     return () => clearTimeout(timeoutId);
+    // }, [JSON.stringify(filteredProducts)]);
+
     useEffect(() => {
         const fetchPromotions = async () => {
             try {
@@ -805,11 +921,23 @@ function OfflineSale() {
 
                 const promotionPromises = filteredProducts.map(async (product) => {
                     const response = await axios.get(
-                        `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${product.id}`,
+                        `http://localhost:8080/api/san-pham-khuyen-mai/san-pham/${product.id}`,
                     );
+
+                    // Kiểm tra trạng thái khuyến mãi
+                    const promotion = response.data.length > 0 ? response.data[0] : null;
+
+                    // Nếu có khuyến mãi và trạng thái là 0 hoặc 2, trả về null
+                    if (promotion && (promotion.khuyenMai.trangThai === 0 || promotion.khuyenMai.trangThai === 2)) {
+                        return {
+                            productId: product.id,
+                            promotion: null, // Không sử dụng khuyến mãi
+                        };
+                    }
+
                     return {
                         productId: product.id,
-                        promotion: response.data.length > 0 ? response.data[0] : null,
+                        promotion: promotion,
                     };
                 });
 
@@ -832,6 +960,7 @@ function OfflineSale() {
 
         return () => clearTimeout(timeoutId);
     }, [JSON.stringify(filteredProducts)]);
+
 
     return (
         <div className="h-[500px] flex justify-between items-start p-4">
@@ -895,9 +1024,9 @@ function OfflineSale() {
                         <div className="mb-4 flex justify-between items-center">
                             <h2 className="text-2xl font-bold text-blue-700">Sản phẩm</h2>
                             <div className="flex space-x-2">
-                                <button className="border border-blue-950 text-blue-900 px-2 py-1 rounded">
+                                {/* <button className="border border-blue-950 text-blue-900 px-2 py-1 rounded">
                                     QUÉT QR SẢN PHẨM
-                                </button>
+                                </button> */}
                                 <button
                                     className="border border-blue-950 text-blue-900 px-2 py-1 rounded"
                                     onClick={handleProductModal}
@@ -1096,7 +1225,7 @@ function OfflineSale() {
                                                             type="text"
                                                             className="border border-gray-300 rounded px-2 py-1 bg-gray-100 cursor-not-allowed w-full"
                                                             placeholder="Phần trăm giảm"
-                                                            value={bestVoucher ? `${bestVoucher.giaTri}%` : ''}
+                                                            value={bestVoucher ? `${bestVoucher.giaTri}%` : ''} 
                                                             readOnly
                                                         />
                                                     </div>
@@ -1718,7 +1847,7 @@ function OfflineSale() {
                                         {promotion && (
                                             <div className="absolute text-white px-2 py-1 rounded-full text-xs z-10">
                                                 <p className="text-green-600 font-semibold">
-                                                    -{Math.round((1 - promotion.giaKhuyenMai / product.donGia) * 100)}%
+                                                    -{promotion.khuyenMai.giaTri}%
                                                 </p>
                                             </div>
                                         )}
@@ -1733,7 +1862,11 @@ function OfflineSale() {
                                         {promotion ? (
                                             <div className="flex items-center space-x-2">
                                                 <p className="text-red-500 font-bold">
-                                                    {promotion.giaKhuyenMai.toLocaleString()} VND
+                                                    {(
+                                                        product.donGia *
+                                                        (1 - promotion.khuyenMai.giaTri / 100)
+                                                    ).toLocaleString()}{' '}
+                                                    VND
                                                 </p>
                                                 <p className="text-gray-500 line-through">
                                                     {product.donGia.toLocaleString()} VND
@@ -1764,7 +1897,26 @@ function OfflineSale() {
                         <h2 className="text-xl font-bold text-center my-4">Chọn Số Lượng</h2>
                         <div className="mb-4">
                             <p className="font-semibold">{selectedProduct.sanPhamTen}</p>
-                            <p className="text-gray-500">Giá: {selectedProduct.donGia.toLocaleString()} VND</p>
+                            <div className="flex items-center">
+                                {/* Hiển thị giá mới */}
+                                {productPromotions[selectedProduct.id] ? (
+                                    <p className="text-red-500 font-bold mr-2">
+                                        {(
+                                            selectedProduct.donGia * (1 - productPromotions[selectedProduct.id].khuyenMai.giaTri / 100)
+                                        ).toLocaleString()} VND
+                                    </p>
+                                ) : (
+                                    <p className="text-red-500 font-bold mr-2">
+                                        {selectedProduct.donGia.toLocaleString()} VND
+                                    </p>
+                                )}
+                                {/* Hiển thị giá gốc gạch ngang */}
+                                {productPromotions[selectedProduct.id] && (
+                                    <p className="text-gray-400 line-through">
+                                        {selectedProduct.donGia.toLocaleString()} VND
+                                    </p>
+                                )}
+                            </div>
                             <p className="text-gray-500">Số lượng hiện có: {selectedProduct.soLuong}</p>
                         </div>
                         <div className="mb-4">
@@ -1783,6 +1935,11 @@ function OfflineSale() {
                                 className="bg-blue-500 text-white py-2 px-4 rounded"
                                 onClick={() => {
                                     // Kiểm tra số lượng
+                                    if (quantity <= 0) {
+                                        swal('Thất bại!', 'Số lượng phải lớn hơn 0!', 'warning'); // Hiển thị thông báo lỗi
+                                        return; // Dừng hàm nếu số lượng không hợp lệ
+                                    }
+
                                     if (quantity > selectedProduct.soLuong) {
                                         swal('Thất bại!', 'Số lượng trong kho không đủ!', 'warning');
                                     } else {

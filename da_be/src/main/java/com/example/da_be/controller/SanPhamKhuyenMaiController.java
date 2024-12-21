@@ -59,4 +59,15 @@ public class SanPhamKhuyenMaiController {
 
         return ResponseEntity.ok(sanPhamKhuyenMais);
     }
+
+    @GetMapping("/san-pham/{idSanPhamCT}")
+    public ResponseEntity<List<SanPhamKhuyenMai>> getSanPhamKhuyenMaiBySanPhamCTId(@PathVariable Integer idSanPhamCT) {
+        List<SanPhamKhuyenMai> sanPhamKhuyenMais = sanPhamKhuyenMaiService.getSanPhamKhuyenMaiBySanPhamCTId(idSanPhamCT);
+
+        if (sanPhamKhuyenMais.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(sanPhamKhuyenMais);
+    }
 }

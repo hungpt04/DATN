@@ -11,11 +11,15 @@ function ProductCard({ product }) {
         const fetchPromotion = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${product.id}`,
+                    `http://localhost:8080/api/san-pham-khuyen-mai/san-pham/${product.id}`,
                 );
-
+                console.log('giam giaa: ', response.data);
                 if (response.data.length > 0) {
-                    setPromotion(response.data[0]);
+                    const fetchedPromotion = response.data[0];
+                    // Kiểm tra trạng thái khuyến mãi
+                    if (fetchedPromotion.khuyenMai.trangThai !== 0 && fetchedPromotion.khuyenMai.trangThai !== 2) {
+                        setPromotion(fetchedPromotion);
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching promotion:', error);
@@ -40,10 +44,10 @@ function ProductCard({ product }) {
             <div className="productCard w-[195px] m-3 transition-all cursor-pointer relative">
                 {/* Sale badge */}
                 {promotion && (
-                    <div className="absolute  text-white px-2 py-1 rounded-full text-xs z-10">
+                    <div className="absolute text-white px-2 py-1 rounded-full text-xs z-10">
                         <p className="text-green-600 font-semibold text-sm">
                             {/* Thêm kiểm tra null */}
-                            {Math.round((1 - (promotion.giaKhuyenMai || 0) / (product.donGia || 0)) * 100)}% off
+                            {promotion.khuyenMai.giaTri}% off
                         </p>
                     </div>
                 )}
@@ -62,7 +66,7 @@ function ProductCard({ product }) {
                         {promotion ? (
                             <>
                                 <p className="font-bold text-red-500 text-sm">
-                                    {(promotion.giaKhuyenMai || 0).toLocaleString()} ₫
+                                    {(product.donGia * (1 - promotion.khuyenMai.giaTri / 100)).toLocaleString()} ₫
                                 </p>
                                 <p className="line-through opacity-50 text-sm">
                                     {(product.donGia || 0).toLocaleString()} ₫

@@ -17,4 +17,7 @@ public interface SanPhamKhuyenMaiRepository extends JpaRepository<SanPhamKhuyenM
     List<SanPhamKhuyenMai> getListSanPhamKhuyenMaiByIdKhuyenMai(Integer idKhuyenMai);
 
     List<SanPhamKhuyenMai> findBySanPhamCT_Id(Integer sanPhamCtId);
+
+    @Query("SELECT spkm FROM SanPhamKhuyenMai spkm WHERE spkm.sanPhamCT.id = :idSanPhamCT")
+    List<SanPhamKhuyenMai> findBySanPhamCTId(Integer idSanPhamCT);
 }

@@ -283,6 +283,8 @@ const VoucherDetail = () => {
 
         if (voucherDetail.dieuKienNhoNhat === null) {
             errors.dieuKienNhoNhat = 'Điều kiện không được để trống'
+        }else if (Number.parseInt(voucherDetail.dieuKienNhoNhat) < Number.parseInt(voucherDetail.giaTriMax)) {
+            errors.dieuKienNhoNhat = 'Điều kiện tối thiểu phải lớn hơn hoặc bằng giá trị tối đa'
         } else if (!Number.isInteger(parseInt(voucherDetail.dieuKienNhoNhat))) {
             errors.dieuKienNhoNhat = 'Điều kiện chỉ được nhập số nguyên'
         } else if (voucherDetail.dieuKienNhoNhat < 1) {

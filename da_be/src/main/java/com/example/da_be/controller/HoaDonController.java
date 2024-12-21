@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -88,4 +89,34 @@ public class HoaDonController {
     public List<HoaDon> getHoaDonByIdKhachHang(@PathVariable("idKH") Integer idKH) {
         return hoaDonService.getHoaDonByIdKhachHang(idKH);
     }
+
+    @PutMapping("/update-status/{id}")
+    public ResponseEntity<Void> updateHoaDonStatus(@PathVariable Long id) {
+        hoaDonService.chuyenTrangThaiHoaDon(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/anh-san-pham/{hoaDonId}/{sanPhamCTId}")
+    public ResponseEntity<String> getAnhSanPhamChinhByHoaDonId(
+            @PathVariable Long hoaDonId,
+            @PathVariable Integer sanPhamCTId) {
+
+        Optional<String> anhSanPhamChinh = hoaDonService.getAnhSanPhamByHoaDonId(hoaDonId, sanPhamCTId);
+
+        return anhSanPhamChinh.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+//    @GetMapping("/anh-san-pham/{hoaDonId}")
+//    public ResponseEntity<List<String>> getAnhSanPhamChinhByHoaDonId(
+//            @PathVariable Long hoaDonId,
+//            @RequestParam List<Integer> sanPhamCTId) { // Use @RequestParam for a list
+//
+//        List<String> anhSanPhamChinh = hoaDonService.getAnhSanPhamByHoaDonId(hoaDonId, sanPhamCTId);
+//
+//        return anhSanPhamChinh.isEmpty()
+//                ? ResponseEntity.notFound().build()
+//                : ResponseEntity.ok(anhSanPhamChinh);
+//    }
+
 }

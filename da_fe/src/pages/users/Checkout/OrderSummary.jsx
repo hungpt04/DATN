@@ -808,6 +808,10 @@ const OrderSummary = () => {
     const loadCarts = async (customerId) => {
         console.log('giohang', customerId);
         try {
+            if (!customerId) {
+                console.error("Customer ID is null");
+                return;
+            }
             const response = await axios.get(`http://localhost:8080/api/gio-hang/with-images/${customerId}`);
             setCarts(response.data);
             console.log(response.data);
@@ -860,16 +864,51 @@ const OrderSummary = () => {
     };
 
     // Hàm tính tổng giá tiền
+    // const calculateTotalPrice = async (firstCartItems) => {
+    //     const totalPromises = firstCartItems.map(async (cart) => {
+    //         try {
+    //             const response = await axios.get(
+    //                 `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${cart.gioHang.sanPhamCT.id}`,
+    //             );
+
+    //             if (response.data.length > 0) {
+    //                 // Nếu có khuyến mãi, sử dụng giá khuyến mãi
+    //                 return response.data[0].giaKhuyenMai * cart.gioHang.soLuong;
+    //             }
+    //             // Nếu không có khuyến mãi, sử dụng giá gốc
+    //             return cart.gioHang.sanPhamCT.donGia * cart.gioHang.soLuong;
+    //         } catch (error) {
+    //             console.error('Error fetching promotion:', error);
+    //             return cart.gioHang.sanPhamCT.donGia * cart.gioHang.soLuong;
+    //         }
+    //     });
+
+    //     // Đợi tất cả các promise hoàn thành và tính tổng
+    //     const totals = await Promise.all(totalPromises);
+    //     return totals.reduce((sum, current) => sum + current, 0);
+    // };
+
     const calculateTotalPrice = async (firstCartItems) => {
         const totalPromises = firstCartItems.map(async (cart) => {
             try {
                 const response = await axios.get(
-                    `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${cart.gioHang.sanPhamCT.id}`,
+                    `http://localhost:8080/api/san-pham-khuyen-mai/san-pham/${cart.gioHang.sanPhamCT.id}`,
                 );
 
                 if (response.data.length > 0) {
-                    // Nếu có khuyến mãi, sử dụng giá khuyến mãi
-                    return response.data[0].giaKhuyenMai * cart.gioHang.soLuong;
+                    const fetchedPromotion = response.data[0];
+                    // Kiểm tra trạng thái khuyến mãi
+                    if (fetchedPromotion.khuyenMai.trangThai === 0 || fetchedPromotion.khuyenMai.trangThai === 2) {
+                        // Nếu trạng thái là 0 hoặc 2, sử dụng giá gốc
+                        return cart.gioHang.sanPhamCT.donGia * cart.gioHang.soLuong;
+                    } else {
+                        // Nếu có khuyến mãi, sử dụng giá khuyến mãi
+                        return (
+                            cart.gioHang.sanPhamCT.donGia *
+                            (1 - fetchedPromotion.khuyenMai.giaTri / 100) *
+                            cart.gioHang.soLuong
+                        );
+                    }
                 }
                 // Nếu không có khuyến mãi, sử dụng giá gốc
                 return cart.gioHang.sanPhamCT.donGia * cart.gioHang.soLuong;
@@ -883,6 +922,7 @@ const OrderSummary = () => {
         const totals = await Promise.all(totalPromises);
         return totals.reduce((sum, current) => sum + current, 0);
     };
+
 
     // Sử dụng trong useEffect
     // useEffect(() => {
@@ -1002,7 +1042,9 @@ const OrderSummary = () => {
 
     // Load dữ liệu ban đầu
     useEffect(() => {
-        loadCarts(customerId);
+        if (customerId) {
+            loadCarts(customerId);
+        }
         fetchVouchers();
     }, [customerId]);
 
@@ -1230,11 +1272,11 @@ const OrderSummary = () => {
                     });
 
                     // Cập nhật số lượng sản phẩm
-                    const newQuantity = groupedCart.sanPhamCT.soLuong - groupedCart.soLuong;
-                    await axios.put(`http://localhost:8080/api/san-pham-ct/${groupedCart.sanPhamCT.id}`, {
-                        ...groupedCart.sanPhamCT,
-                        soLuong: newQuantity,
-                    });
+                    // const newQuantity = groupedCart.sanPhamCT.soLuong - groupedCart.soLuong;
+                    // await axios.put(`http://localhost:8080/api/san-pham-ct/${groupedCart.sanPhamCT.id}`, {
+                    //     ...groupedCart.sanPhamCT,
+                    //     soLuong: newQuantity,
+                    // });
                 }),
             );
 

@@ -75,6 +75,8 @@ function Analytic() {
                 const monthResponse = await axios.get('http://localhost:8080/api/statistics/month');
                 const yearResponse = await axios.get('http://localhost:8080/api/statistics/year');
 
+                console.log('dataaaa: ', todayResponse);
+
                 setStatistics({
                     today: todayResponse.data,
                     thisWeek: weekResponse.data,
@@ -142,19 +144,19 @@ function Analytic() {
                     />
                     <StatCard
                         title="Đơn thành công"
-                        value={data.successOrders}
+                        value={data.successorders}
                         icon={<FaCheckCircle className="text-green-500" />}
                         className="flex-grow"
                     />
                     <StatCard
                         title="Đơn hủy"
-                        value={data.cancelOrders}
+                        value={data.cancelorders}
                         icon={<FaTimesCircle className="text-red-500" />}
                         className="flex-grow"
                     />
                     <StatCard
                         title="Đơn trả"
-                        value={data.returnOrders}
+                        value={data.returnorders}
                         icon={<FaUndo className="text-yellow-500" />}
                         className="flex-grow"
                     />

@@ -28,7 +28,7 @@ function HeaderAdmin() {
     });
 
     useEffect(() => {
-        const token = localStorage.getItem('token'); 
+        const token = localStorage.getItem('token');
 
         if (token) {
             const fetchUserInfo = async () => {
@@ -57,7 +57,7 @@ function HeaderAdmin() {
                 setIsLoggedIn(true);
                 const decodedToken = jwtDecode(token);
                 setUsername(decodedToken.hoTen);
-                setUserRole(decodedToken.vaiTro || decodedToken.authorities); 
+                setUserRole(decodedToken.vaiTro || decodedToken.authorities);
             } else {
                 setIsLoggedIn(false);
                 setUserRole(null);
@@ -137,7 +137,7 @@ function HeaderAdmin() {
                         <p className="ext-gray-500 text-sm">-<span className="mx-1">{admin.vaiTro}</span>-</p>
                     </div>
                     {/* Avatar */}
-                    <div className='relative'>
+                    {/* <div className='relative'>
                         <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="relative">
                             <Avatar src={admin.avatar} alt="" className="w-10 h-8" />
                             {isMenuOpen && (
@@ -164,6 +164,50 @@ function HeaderAdmin() {
                                 </ul>
                             )}
                         </button>
+                    </div> */}
+                    <div className='relative'>
+                        <button
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="relative"
+                        >
+                            <Avatar src={admin.avatar} alt="" className="w-10 h-8" />
+                        </button>
+
+                        {isMenuOpen && (
+                            <ul className="absolute right-0 mt-2 bg-white shadow-lg rounded-md w-48 py-2 text-gray-700 z-50" ref={menuRef}>
+                                {isLoggedIn ? (
+                                    <>
+                                        {userRole === "Admin" && (
+                                            <li className="flex px-4 py-2 hover:bg-gray-100 space-x-3">
+                                                <User className='h-5 w-5' />
+                                                <Link
+                                                    to="/profile/user"
+                                                    onClick={() => { setIsMenuOpen(false) }}
+                                                >
+                                                    Tài khoản của tôi
+                                                </Link>
+                                            </li>
+                                        )}
+                                        <li className="flex px-4 py-2 hover:bg-gray-100 space-x-3">
+                                            <LogOut className='w-5 h-5' />
+                                            <span onClick={handleAccount} className="cursor-pointer">
+                                                Đăng xuất
+                                            </span>
+                                        </li>
+                                    </>
+                                ) : (
+                                    <li className="flex px-4 py-2 hover:bg-gray-100 space-x-3">
+                                        <LogIn className='w-5 h-5' />
+                                        <Link
+                                            to="/login"
+                                            onClick={() => { setIsMenuOpen(false) }}
+                                        >
+                                            Đăng nhập
+                                        </Link>
+                                    </li>
+                                )}
+                            </ul>
+                        )}
                     </div>
                 </div>
             </div>

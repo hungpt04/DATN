@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-// import ModalUpdateAddressBillClient from './ModalUpdateAddressBillClient';
-// import ClientModalThemSP from './ModalThemSPBillClient';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import './Order.css';
 import axios from 'axios';
 import numeral from 'numeral';
+import swal from 'sweetalert';
 
 export default function OrderDetail() {
     const { id } = useParams();
@@ -13,9 +12,8 @@ export default function OrderDetail() {
     const [voucherId, setVoucherId] = useState(null);
     const [voucher, setVoucher] = useState(null);
     const [hoaDonChiTiet, setHoaDonChiTiet] = useState(null);
+    const [sanPhamChiTietId, setSanPhamChiTietId] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
-    const [openModalUpdate, setOpenModalUpdate] = useState(false);
-    const [openModalAddProduct, setOpenModalAddProduct] = useState(false);
 
     const formatCurrency = (money) => {
         return numeral(money).format('0,0') + ' ₫'
@@ -35,19 +33,27 @@ export default function OrderDetail() {
     const getHoaDonCT = (id) => {
         return axios.get(`http://localhost:8080/api/hoa-don-ct/get-hd-ct-by-id-hd/${id}`)
             .then((response) => {
-                setHoaDonChiTiet(response.data);         
+                console.log(response.data); // In ra dữ liệu để kiểm tra cấu trúc
+
+                // Giả sử response.data là một mảng
+                if (response.data.length > 0) {
+                    setHoaDonChiTiet(response.data); // Lưu toàn bộ chi tiết hóa đơn
+                    setSanPhamChiTietId(response.data[0].sanPhamCT.id);
+                    // Lấy id của sanPhamCT từ phần tử đầu tiên
+                } else {
+                    console.warn("Không có dữ liệu hóa đơn chi tiết.");
+                }
             })
             .catch((error) => {
                 console.error("Failed to fetch orders:", error);
-            })
+            });
     }
 
     const getAnhByHoaDon = (id) => {
-        return axios.get(`http://localhost:8080/api/hoa-don-ct/with-images/${id}`)
+        return axios.get(`http://localhost:8080/api/hoa-don/anh-san-pham/${id}/${sanPhamChiTietId}`)
             .then((response) => {
                 console.log("image", response.data)
-                setPreviewImage(response.data.link);
-                
+                setPreviewImage(response.data);
             })
             .catch((error) => {
                 console.error("Failed to fetch orders:", error);
@@ -78,10 +84,19 @@ export default function OrderDetail() {
         setLoading(true);
         Promise.all([
             loadHoaDonById(id),
-            getHoaDonCT(id),
-            getAnhByHoaDon(id)
-        ]).finally(() => setLoading(false));
-    }, [id])
+            getHoaDonCT(id),  // Get Hoa Don details, including product info
+        ])
+        .finally(() => {
+            setLoading(false);
+        });
+    }, [id]);
+    
+    useEffect(() => {
+        if (sanPhamChiTietId) {
+            getAnhByHoaDon(id);
+        }
+    }, [sanPhamChiTietId]);
+
 
     // Hàm tính toán giảm giá
     const calculateDiscountAmount = () => {
@@ -103,6 +118,39 @@ export default function OrderDetail() {
         }
 
         return 0;
+    }
+
+    const handleHuyDonHang = (id) => {
+        const title = 'Xác nhận hủy đơn hàng?';
+        const text = 'Bạn chắc chắn muốn hủy đơn hàng này?';
+
+        // Hiển thị SweetAlert để xác nhận
+        swal({
+            title: title,
+            text: text,
+            icon: 'warning',
+            buttons: {
+                cancel: "Hủy",
+                confirm: "Xác nhận",
+            },
+        }).then((willConfirm) => {
+            if (willConfirm) {
+                // Thực hiện gọi API với axios
+                axios.put(`http://localhost:8080/api/hoa-don/update-status/${id}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                    .then(() => {
+                        swal('Thành công!', 'Hủy đơn hàng thành công', 'success');
+                        
+                    })
+                    .catch((error) => {
+                        console.error("Lỗi cập nhật:", error);
+                        swal('Thất bại!', 'Hủy đơn hàng thất bại', 'error');
+                    });
+            }
+        });
     }
 
     return (
@@ -160,44 +208,21 @@ export default function OrderDetail() {
                             <span>{formatCurrency(billDetail.tongTien)}</span>
                         </div>
                     </div>
-
-                    <div className="mt-6">
-                        <button
-                            className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
-                            onClick={() => setOpenModalUpdate(true)}
-                        >
-                            Cập nhật địa chỉ
-                        </button>
-                        <button
-                            className="bg-green-500 text-white px-4 py-2 rounded"
-                            onClick={() => setOpenModalAddProduct(true)}
-                        >
-                            Thêm sản phẩm
-                        </button>
-                    </div>
                 </>
             )}
-            <div>
+            <div className='flex justify-between items-center'>
                 <Link
                     to={`/profile/order`}
                     className="mt-2 inline-block bg-indigo-500 text-white px-4 py-2 rounded-sm"
                 >
                     Trở về
                 </Link>
+                {billDetail.trangThai === 1 && (
+                    <button onClick={() => handleHuyDonHang(billDetail.id)} className="mt-2 inline-block bg-orange-400 text-white px-4 py-2 rounded-sm ml-2">
+                        Hủy đơn hàng
+                    </button>
+                )}
             </div>
-
-            {/* <ModalUpdateAddressBillClient
-        loading={setLoading}
-        open={openModalUpdate}
-        setOPen={setOpenModalUpdate}
-        billDetail={billClient}
-      />
-      <ClientModalThemSP
-        open={openModalAddProduct}
-        setOPen={setOpenModalAddProduct}
-        idBill={billClient.id}
-        load={setLoading}
-      /> */}
         </div>
     );
 }

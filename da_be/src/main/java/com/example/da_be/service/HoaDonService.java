@@ -4,6 +4,7 @@ import com.example.da_be.entity.HoaDon;
 import com.example.da_be.entity.LichSuDonHang;
 import com.example.da_be.repository.HoaDonRepository;
 import com.example.da_be.repository.LichSuDonHangRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,8 +51,21 @@ public class HoaDonService {
         return null; // Hoặc ném ngoại lệ nếu không tìm thấy hóa đơn
     }
 
-    public List<HoaDon> getSuccessfulOrders() {
-        return hoaDonRepository.findByTrangThai(7);
+
+
+    private String getMonth(Date date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM");
+        return sdf.format(date);
+    }
+
+    @Transactional
+    public void deleteHoaDon(Long id) {
+         lichSuDonHangRepository.deleteByIdHoaDon(Math.toIntExact(id));
+            hoaDonRepository.deleteById(id);
+    }
+
+    public List<HoaDon> getHoaDonByIdKhachHang(Integer idKH) {
+        return hoaDonRepository.getHoaDonByIdKhachHang(idKH);
     }
 
     public List<Map<String, Object>> getMonthlySalesData() {
@@ -82,18 +96,89 @@ public class HoaDonService {
         return result;
     }
 
-    private String getMonth(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM");
-        return sdf.format(date);
+    public Map<String, Object> getStatisticsToday() {
+        return convertMapKeys(hoaDonRepository.getStatisticsToday());
     }
 
-    @Transactional
-    public void deleteHoaDon(Long id) {
-         lichSuDonHangRepository.deleteByIdHoaDon(Math.toIntExact(id));
-            hoaDonRepository.deleteById(id);
+    public Map<String, Object> getStatisticsThisWeek() {
+        return convertMapKeys(hoaDonRepository.getStatisticsThisWeek());
     }
 
-    public List<HoaDon> getHoaDonByIdKhachHang(Integer idKH) {
-        return hoaDonRepository.getHoaDonByIdKhachHang(idKH);
+    public Map<String, Object> getStatisticsThisMonth() {
+        return convertMapKeys(hoaDonRepository.getStatisticsThisMonth());
     }
+
+    public Map<String, Object> getStatisticsThisYear() {
+        return convertMapKeys(hoaDonRepository.getStatisticsThisYear());
+    }
+
+    // Phương thức hỗ trợ chuyển đổi key từ SQL sang camelCase
+    private Map<String, Object> convertMapKeys(Map<String, Object> originalMap) {
+        Map<String, Object> convertedMap = new HashMap<>();
+        for (Map.Entry<String, Object> entry : originalMap.entrySet()) {
+            String camelCaseKey = convertToCamelCase(entry.getKey());
+            convertedMap.put(camelCaseKey, entry.getValue());
+        }
+        return convertedMap;
+    }
+
+    // Chuyển đổi snake_case sang camelCase
+    private String convertToCamelCase(String snakeCase) {
+        if (snakeCase == null || snakeCase.isEmpty()) {
+            return snakeCase;
+        }
+
+        StringBuilder camelCase = new StringBuilder();
+        boolean capitalizeNext = false;
+
+        for (char c : snakeCase.toCharArray()) {
+            if (c == '_') {
+                capitalizeNext = true;
+            } else if (capitalizeNext) {
+                camelCase.append(Character.toUpperCase(c));
+                capitalizeNext = false;
+            } else {
+                camelCase.append(Character.toLowerCase(c));
+            }
+        }
+
+        return camelCase.toString();
+    }
+
+//    public List<Map<String, Object>> getMonthlySalesData() {
+//        List<Map<String, Object>> salesData = hoaDonRepository.getMonthlySalesData();
+//
+//        // Chuyển đổi key sang camelCase
+//        return salesData.stream()
+//                .map(this::convertMapKeys)
+//                .collect(Collectors.toList());
+//    }
+
+    public List<HoaDon> getSuccessfulOrders() {
+        return hoaDonRepository.findByTrangThai(7); // Giả sử 7 là trạng thái đơn hàng thành công
+    }
+
+    public void chuyenTrangThaiHoaDon(Long id) {
+       Optional<HoaDon> optionalHoaDon = hoaDonRepository.findById(id);
+
+        if (optionalHoaDon.isEmpty()) {
+            throw new EntityNotFoundException("Hóa đơn với ID " + id + " không tồn tại");
+        }
+
+        if (optionalHoaDon.isPresent()) {
+           HoaDon hoaDon = optionalHoaDon.get();
+           hoaDon.setTrangThai(8);
+           hoaDonRepository.save(hoaDon);
+       }
+    }
+
+    public Optional<String> getAnhSanPhamByHoaDonId(Long id, Integer idSPCT) {
+        return hoaDonRepository.getAnhSanPhamByHoaDonId(id, idSPCT);
+    }
+
+//    public List<String> getAnhSanPhamByHoaDonId(Long id, List<Integer> idSPCT) {
+//        // Pass the updated parameter (List<Integer>) to the repository method
+//        return hoaDonRepository.getAnhSanPhamByHoaDonId(id, idSPCT);
+//    }
+
 }

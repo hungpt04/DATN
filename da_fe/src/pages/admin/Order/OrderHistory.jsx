@@ -37,6 +37,67 @@ const OrderHistory = () => {
         setCustomerMoney(value ? parseInt(value, 10) : 0);
     };
 
+    // useEffect(() => {
+    //     const fetchProductPrices = async () => {
+    //         if (!currentOrder || !billDetails.length) return;
+
+    //         const uniqueProductIds = new Set();
+    //         // Kết hợp cả sản phẩm và sản phẩm trả hàng
+    //         const uniqueDetails = billDetails
+    //             .filter(
+    //                 (detail) =>
+    //                     detail.hoaDonCT &&
+    //                     detail.hoaDonCT.hoaDon.id === currentOrder.id &&
+    //                     (detail.hoaDonCT.trangThai === 1 || detail.hoaDonCT.trangThai === 2),
+    //             )
+    //             .filter((detail) => {
+    //                 const isUnique = !uniqueProductIds.has(detail.hoaDonCT.id);
+    //                 if (isUnique) {
+    //                     uniqueProductIds.add(detail.hoaDonCT.id);
+    //                 }
+    //                 return isUnique;
+    //             });
+
+    //         const pricePromises = uniqueDetails.map(async (detail) => {
+    //             try {
+    //                 const response = await axios.get(
+    //                     `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${detail.hoaDonCT.sanPhamCT.id}`,
+    //                 );
+
+    //                 return {
+    //                     [detail.hoaDonCT.id]:
+    //                         response.data.length > 0
+    //                             ? {
+    //                                 originalPrice: detail.hoaDonCT.giaBan,
+    //                                 discountedPrice: response.data[0].giaKhuyenMai,
+    //                                 promotion: response.data[0],
+    //                             }
+    //                             : {
+    //                                 originalPrice: detail.hoaDonCT.giaBan,
+    //                                 discountedPrice: detail.hoaDonCT.giaBan,
+    //                                 promotion: null,
+    //                             },
+    //                 };
+    //             } catch (error) {
+    //                 console.error('Error fetching product promotion:', error);
+    //                 return {
+    //                     [detail.hoaDonCT.id]: {
+    //                         originalPrice: detail.hoaDonCT.giaBan,
+    //                         discountedPrice: detail.hoaDonCT.giaBan,
+    //                         promotion: null,
+    //                     },
+    //                 };
+    //             }
+    //         });
+
+    //         const priceResults = await Promise.all(pricePromises);
+    //         const priceMap = priceResults.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+    //         setProductPrices(priceMap);
+    //     };
+
+    //     fetchProductPrices();
+    // }, [billDetails]);
+
     useEffect(() => {
         const fetchProductPrices = async () => {
             if (!currentOrder || !billDetails.length) return;
@@ -61,22 +122,39 @@ const OrderHistory = () => {
             const pricePromises = uniqueDetails.map(async (detail) => {
                 try {
                     const response = await axios.get(
-                        `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${detail.hoaDonCT.sanPhamCT.id}`,
+                        `http://localhost:8080/api/san-pham-khuyen-mai/san-pham/${detail.hoaDonCT.sanPhamCT.id}`,
                     );
 
-                    return {
-                        [detail.hoaDonCT.id]:
-                            response.data.length > 0
-                                ? {
+                    if (response.data.length > 0) {
+                        const promotion = response.data[0];
+                        // Kiểm tra trạng thái khuyến mãi
+                        if (promotion.khuyenMai.trangThai === 0 || promotion.khuyenMai.trangThai === 2) {
+                            // Nếu trạng thái là 0 hoặc 2, sử dụng giá gốc
+                            return {
+                                [detail.hoaDonCT.id]: {
                                     originalPrice: detail.hoaDonCT.giaBan,
-                                    discountedPrice: response.data[0].giaKhuyenMai,
-                                    promotion: response.data[0],
-                                }
-                                : {
-                                    originalPrice: detail.hoaDonCT.giaBan,
-                                    discountedPrice: detail.hoaDonCT.giaBan,
+                                    discountedPrice: detail.hoaDonCT.giaBan, // Giá gốc
                                     promotion: null,
                                 },
+                            };
+                        }
+                        // Nếu có khuyến mãi hợp lệ, sử dụng giá khuyến mãi
+                        return {
+                            [detail.hoaDonCT.id]: {
+                                originalPrice: detail.hoaDonCT.giaBan,
+                                discountedPrice: detail.hoaDonCT.giaBan * (1 - promotion.khuyenMai.giaTri / 100),
+                                promotion: promotion,
+                            },
+                        };
+                    }
+
+                    // Nếu không có khuyến mãi, trả về giá gốc
+                    return {
+                        [detail.hoaDonCT.id]: {
+                            originalPrice: detail.hoaDonCT.giaBan,
+                            discountedPrice: detail.hoaDonCT.giaBan,
+                            promotion: null,
+                        },
                     };
                 } catch (error) {
                     console.error('Error fetching product promotion:', error);
@@ -121,18 +199,57 @@ const OrderHistory = () => {
     }, [currentOrder]);
 
     // Thêm hàm để lấy giá khuyến mãi
+    // const getProductPrice = async (sanPhamCT) => {
+    //     try {
+    //         const response = await axios.get(
+    //             `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${sanPhamCT.id}`,
+    //         );
+
+    //         if (response.data.length > 0) {
+    //             // Nếu có khuyến mãi, sử dụng giá khuyến mãi
+    //             return {
+    //                 originalPrice: sanPhamCT.donGia,
+    //                 discountedPrice: response.data[0].giaKhuyenMai,
+    //                 promotion: response.data[0],
+    //             };
+    //         }
+
+    //         // Nếu không có khuyến mãi, trả về giá gốc
+    //         return {
+    //             originalPrice: sanPhamCT.donGia,
+    //             discountedPrice: sanPhamCT.donGia,
+    //             promotion: null,
+    //         };
+    //     } catch (error) {
+    //         console.error('Error fetching product promotion:', error);
+    //         return {
+    //             originalPrice: sanPhamCT.donGia,
+    //             discountedPrice: sanPhamCT.donGia,
+    //             promotion: null,
+    //         };
+    //     }
+    // };
+
     const getProductPrice = async (sanPhamCT) => {
         try {
-            const response = await axios.get(
-                `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${sanPhamCT.id}`,
-            );
+            const response = await axios.get(`http://localhost:8080/api/san-pham-khuyen-mai/san-pham/${sanPhamCT.id}`);
 
             if (response.data.length > 0) {
+                const promotion = response.data[0];
+                // Kiểm tra trạng thái khuyến mãi
+                if (promotion.khuyenMai.trangThai === 0 || promotion.khuyenMai.trangThai === 2) {
+                    // Nếu có khuyến mãi nhưng trạng thái là 0 hoặc 2, sử dụng giá gốc
+                    return {
+                        originalPrice: sanPhamCT.donGia,
+                        discountedPrice: sanPhamCT.donGia,
+                        promotion: null,
+                    };
+                }
                 // Nếu có khuyến mãi, sử dụng giá khuyến mãi
                 return {
                     originalPrice: sanPhamCT.donGia,
-                    discountedPrice: response.data[0].giaKhuyenMai,
-                    promotion: response.data[0],
+                    discountedPrice: sanPhamCT.donGia * (1 - promotion.khuyenMai.giaTri / 100),
+                    promotion: promotion,
                 };
             }
 
@@ -841,12 +958,12 @@ const OrderHistory = () => {
                                             <div className="flex items-center ml-auto">
                                                 <button
                                                     className={`border border-gray-300 px-2 py-1 ${currentOrder.trangThai === 3 ||
-                                                            currentOrder.trangThai === 4 ||
-                                                            currentOrder.trangThai === 5 ||
-                                                            currentOrder.trangThai === 6 ||
-                                                            currentOrder.trangThai === 7
-                                                            ? 'text-gray-400 cursor-not-allowed'
-                                                            : ''
+                                                        currentOrder.trangThai === 4 ||
+                                                        currentOrder.trangThai === 5 ||
+                                                        currentOrder.trangThai === 6 ||
+                                                        currentOrder.trangThai === 7
+                                                        ? 'text-gray-400 cursor-not-allowed'
+                                                        : ''
                                                         }`}
                                                     onClick={() => decreaseQuantity(detail)}
                                                     disabled={
@@ -862,13 +979,13 @@ const OrderHistory = () => {
                                                 <span className="mx-2">{detail.hoaDonCT.soLuong}</span>
                                                 <button
                                                     className={`border border-gray-300 px-2 py-1 ${currentOrder.trangThai === 3 ||
-                                                            currentOrder.trangThai === 4 ||
-                                                            currentOrder.trangThai === 5 ||
-                                                            currentOrder.trangThai === 6 ||
-                                                            currentOrder.trangThai === 7 ||
-                                                            detail.hoaDonCT.soLuong >= detail.hoaDonCT.sanPhamCT.soLuong
-                                                            ? 'text-gray-400 cursor-not-allowed'
-                                                            : ''
+                                                        currentOrder.trangThai === 4 ||
+                                                        currentOrder.trangThai === 5 ||
+                                                        currentOrder.trangThai === 6 ||
+                                                        currentOrder.trangThai === 7 ||
+                                                        detail.hoaDonCT.soLuong >= detail.hoaDonCT.sanPhamCT.soLuong
+                                                        ? 'text-gray-400 cursor-not-allowed'
+                                                        : ''
                                                         }`}
                                                     onClick={() => increaseQuantity(detail)}
                                                     disabled={
@@ -895,12 +1012,12 @@ const OrderHistory = () => {
                                             </div>
                                             <button
                                                 className={`ml-4 text-red-500 ${currentOrder.trangThai === 3 ||
-                                                        currentOrder.trangThai === 4 ||
-                                                        currentOrder.trangThai === 5 ||
-                                                        currentOrder.trangThai === 6 ||
-                                                        currentOrder.trangThai === 7
-                                                        ? 'text-gray-400 cursor-not-allowed'
-                                                        : ''
+                                                    currentOrder.trangThai === 4 ||
+                                                    currentOrder.trangThai === 5 ||
+                                                    currentOrder.trangThai === 6 ||
+                                                    currentOrder.trangThai === 7
+                                                    ? 'text-gray-400 cursor-not-allowed'
+                                                    : ''
                                                     }`}
                                                 onClick={() => handleDeleteDetail(detail.hoaDonCT.id)}
                                                 disabled={

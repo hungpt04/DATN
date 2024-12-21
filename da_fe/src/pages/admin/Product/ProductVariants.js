@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import swal from 'sweetalert';
 import AddIcon from '@mui/icons-material/Add';
 import { TbEyeEdit } from 'react-icons/tb';
-import numeral from 'numeral';
 import { NumericFormat } from 'react-number-format';
 
 function ProductVariants() {
@@ -49,6 +48,15 @@ function ProductVariants() {
     const [colorFilter, setColorFilter] = useState('');
     const [weightFilter, setWeightFilter] = useState('');
     const [priceFilter, setPriceFilter] = useState('');
+
+    const ForwardRefNumericFormat = forwardRef((props, ref) => {
+        return (
+            <NumericFormat
+                {...props}
+                getInputRef={ref}
+            />
+        );
+    });
 
     const handleAddWeightModal = () => {
         setShowAddWeightModal(true);
@@ -362,10 +370,16 @@ function ProductVariants() {
 
     const handleUpdateProduct = async (formData) => {
         try {
+            // Xử lý giá an toàn
+            const safePrice = typeof formData.price === 'string'
+                ? formData.price.replace(/,/g, '')
+                : String(formData.price || 0).replace(/,/g, '');
+
             // Cập nhật thông tin cho variant được chọn
             const updatedVariant = {
                 ...selectedProduct,
-                donGia: parseFloat(formData.price.replace(/,/g, '')),
+                donGia: parseFloat(safePrice),
+                // donGia: parseFloat(formData.price.replace(/,/g, '')),
                 soLuong: formData.quantity,
                 trangThai: formData.status === 'Active' ? 1 : 0,
                 chatLieu: { id: parseInt(formData.material) },
@@ -912,7 +926,7 @@ function ProductVariants() {
                                         />
                                         {errors.price && <span className="text-red-500">{errors.price.message}</span>}
                                     </div> */}
-                                    <div>
+                                    {/* <div>
                                         <label className="block text-sm font-bold text-gray-700" htmlFor="price">
                                             <span className="text-red-600">*</span>Giá sản phẩm
                                         </label>
@@ -941,8 +955,37 @@ function ProductVariants() {
                                         />
 
                                         {errors.price && <span className="text-red-500">{errors.price.message}</span>}
-                                    </div>
+                                    </div> */}
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700" htmlFor="price">
+                                            <span className="text-red-600">*</span>Giá sản phẩm
+                                        </label>
+                                        <ForwardRefNumericFormat
+                                            id="price"
+                                            thousandSeparator={true}
+                                            suffix={" ₫"}
+                                            decimalScale={0}
+                                            allowNegative={false}
+                                            value={selectedProduct.donGia}
+                                            onValueChange={(values) => {
+                                                setValue('price', values.value);
+                                            }}
+                                            {...register('price', {
+                                                required: 'Giá sản phẩm là bắt buộc',
+                                                min: {
+                                                    value: 1000,
+                                                    message: 'Giá sản phẩm phải lớn hơn 1,000 VND',
+                                                },
+                                                max: {
+                                                    value: 1000000000,
+                                                    message: 'Giá sản phẩm không được vượt quá 1 tỷ VND',
+                                                },
+                                            })}
+                                            className="mt-1 block w-full h-10 border border-gray-300 rounded-md p-2 text-sm"
+                                        />
 
+                                        {errors.price && <span className="text-red-500">{errors.price.message}</span>}
+                                    </div>
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700" htmlFor="quantity">
                                             <span className="text-red-600">*</span>Số lượng

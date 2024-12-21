@@ -16,19 +16,52 @@ function ReturnOrder() {
 
     const [productPrices, setProductPrices] = useState({});
 
+    // Lấy id người dùng
+    const [customerId, setCustomerId] = useState(null);
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const fetchUserInfo = async () => {
+                try {
+                    const response = await axios.get('http://localhost:8080/api/tai-khoan/my-info', {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
+
+                    // Lưu ID người dùng
+                    const userId = response.data.id; // Trong trường hợp này là 11
+                    console.log('User ID:', userId);
+                    setCustomerId(userId);
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            };
+            fetchUserInfo();
+        }
+    }, []);
+
     // Thêm hàm lấy giá khuyến mãi
     const getProductPrice = async (sanPhamCT) => {
         try {
-            const response = await axios.get(
-                `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${sanPhamCT.id}`,
-            );
+            const response = await axios.get(`http://localhost:8080/api/san-pham-khuyen-mai/san-pham/${sanPhamCT.id}`);
 
             if (response.data.length > 0) {
-                // Nếu có khuyến mãi, sử dụng giá khuyến mãi
+                const promotion = response.data[0];
+                // Kiểm tra trạng thái khuyến mãi
+                if (promotion.khuyenMai.trangThai === 0 || promotion.khuyenMai.trangThai === 2) {
+                    // Nếu trạng thái là 0 hoặc 2, sử dụng giá gốc
+                    return {
+                        originalPrice: sanPhamCT.donGia,
+                        discountedPrice: sanPhamCT.donGia,
+                        promotion: null,
+                    };
+                }
+                // Nếu có khuyến mãi hợp lệ, sử dụng giá khuyến mãi
                 return {
                     originalPrice: sanPhamCT.donGia,
-                    discountedPrice: response.data[0].giaKhuyenMai,
-                    promotion: response.data[0],
+                    discountedPrice: promotion.giaKhuyenMai,
+                    promotion: promotion,
                 };
             }
 
@@ -206,7 +239,31 @@ function ReturnOrder() {
         }
     };
 
+    // const handleReturnOrder = async () => {
+    //     // Cập nhật trạng thái hóa đơn
+    //     const billUpdateResponse = await updateBillStatus(orderId, 9);
+    //     if (billUpdateResponse) {
+    //         // Cập nhật trạng thái cho từng hóa đơn chi tiết đã chọn
+    //         for (const item of returnItems) {
+    //             await updateBillDetailStatus(item.hoaDonCT.id, 2); // Cập nhật trạng thái cho hóa đơn chi tiết
+    //         }
+
+    //         // Thêm lịch sử đơn hàng
+    //         await addOrderHistory('Trả hàng', 9); // Mô tả và trạng thái
+    //         navigate('/admin/tra-hang');
+    //         swal('Thành công!', 'Trả hàng thành công!', 'success');
+    //     } else {
+    //         swal('Thất bại!', 'Có lỗi xảy ra khi trả hàng!', 'error');
+    //     }
+    // };
+
     const handleReturnOrder = async () => {
+        // Kiểm tra xem có sản phẩm nào được chọn không
+        if (returnItems.length === 0) {
+            swal('Thất bại!', 'Vui lòng chọn ít nhất một sản phẩm để trả!', 'warning');
+            return; // Dừng hàm nếu không có sản phẩm nào được chọn
+        }
+
         // Cập nhật trạng thái hóa đơn
         const billUpdateResponse = await updateBillStatus(orderId, 9);
         if (billUpdateResponse) {
@@ -223,6 +280,7 @@ function ReturnOrder() {
             swal('Thất bại!', 'Có lỗi xảy ra khi trả hàng!', 'error');
         }
     };
+
 
     useEffect(() => {
         console.log('voucher: ', usedVoucher);
@@ -440,7 +498,7 @@ function ReturnOrder() {
                     <div className="mb-2 font-bold">
                         <i className="fas fa-user mr-2"></i>
                         <span>Khách hàng:</span>
-                        <span className="ml-2">Nguyen Van A</span>
+                        <span className="ml-2">{bills.taiKhoan.hoTen}</span>
                     </div>
                     <div className="mb-2 font-bold">
                         <i className="fas fa-user mr-2"></i>

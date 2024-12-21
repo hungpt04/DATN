@@ -236,6 +236,8 @@ const CreateVoucher = () => {
         if (voucherAdd.dieuKienNhoNhat === null) {
             setVoucherAdd({ ...voucherAdd, dieuKienNhoNhat: 0 })
             errors.dieuKienNhoNhat = 'Điều kiện tối thiểu 1 ₫'
+        } else if (Number.parseInt(voucherAdd.dieuKienNhoNhat) < Number.parseInt(voucherAdd.giaTriMax)) {
+            errors.dieuKienNhoNhat = 'Điều kiện tối thiểu phải lớn hơn hoặc bằng giá trị tối đa'
         } else if (!Number.isInteger(parseInt(voucherAdd.dieuKienNhoNhat))) {
             errors.dieuKienNhoNhat = 'Điều kiện chỉ được nhập số nguyên'
         } else if (voucherAdd.dieuKienNhoNhat < 1) {

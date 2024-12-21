@@ -25,7 +25,7 @@ public class JwtTokenProvider {
 		// Tạo jwt
 		String jwt = Jwts.builder()
 				.setIssuedAt(new Date())
-				.setExpiration(new Date(new Date().getTime() + 3600000)) // 1 tiếng
+				.setExpiration(new Date(new Date().getTime() + 7 * 86400000))
 				.claim("email", taiKhoan.getEmail())
 				.claim("authorities", vaiTro)
 				.signWith(key)

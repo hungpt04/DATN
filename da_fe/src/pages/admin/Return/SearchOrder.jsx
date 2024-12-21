@@ -76,10 +76,10 @@ function SearchOrder() {
                         <Search className="mr-2" />
                         Tìm kiếm
                     </button>
-                    <button className="border border-[#2f19ae] text-[#2f19ae] px-2 py-2 rounded-lg ml-2 flex items-center hover:bg-[#f0eaff] transition-colors">
+                    {/* <button className="border border-[#2f19ae] text-[#2f19ae] px-2 py-2 rounded-lg ml-2 flex items-center hover:bg-[#f0eaff] transition-colors">
                         <QrCodeScanner className="mr-2" />
                         Quét mã
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Hình ảnh minh họa */}

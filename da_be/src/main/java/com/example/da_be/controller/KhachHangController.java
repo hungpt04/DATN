@@ -11,8 +11,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -64,8 +66,34 @@ public class KhachHangController {
         return ResponseEntity.ok(khachHangService.getKhachHangById(id));
     }
 
+//    @PutMapping("/update/{id}")
+//    public ResponseEntity<?> updateKhachHang(@PathVariable Integer id, @ModelAttribute KhachHangRequest khachHangRequest) throws ParseException {
+//        return ResponseEntity.ok(khachHangService.update(id, khachHangRequest));
+//    }
+
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateKhachHang(@PathVariable Integer id, KhachHangRequest khachHangRequest) throws ParseException {
+    public ResponseEntity<?> updateKhachHang(
+            @PathVariable Integer id,
+            @RequestParam("hoTen") String hoTen,
+            @RequestParam("sdt") String sdt,
+            @RequestParam("email") String email,
+            @RequestParam("gioiTinh") String gioiTinh,
+            @RequestParam("vaiTro") String vaiTro,
+            @RequestParam("ngaySinh") LocalDate ngaySinh,
+            @RequestParam("trangThai") Integer trangThai,
+            @RequestParam(value = "avatar", required = false) MultipartFile avatar) throws ParseException {
+
+        KhachHangRequest khachHangRequest = new KhachHangRequest();
+        khachHangRequest.setHoTen(hoTen);
+        khachHangRequest.setSdt(sdt);
+        khachHangRequest.setEmail(email);
+        khachHangRequest.setGioiTinh(Integer.parseInt(gioiTinh));
+        khachHangRequest.setVaiTro(vaiTro);
+        khachHangRequest.setNgaySinh(ngaySinh);
+        khachHangRequest.setTrangThai(trangThai);
+        khachHangRequest.setAvatar(avatar);
+
+
         return ResponseEntity.ok(khachHangService.update(id, khachHangRequest));
     }
 }

@@ -50,4 +50,8 @@ public class SanPhamKhuyenMaiService {
                 })
                 .collect(Collectors.toList());
     }
+
+    public List<SanPhamKhuyenMai> getSanPhamKhuyenMaiBySanPhamCTId(Integer idSanPhamCT) {
+        return sanPhamKhuyenMaiRepository.findBySanPhamCTId(idSanPhamCT);
+    }
 }

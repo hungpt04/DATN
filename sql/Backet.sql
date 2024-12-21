@@ -128,7 +128,6 @@
 		IdXa NVARCHAR(255),
 		Loai BIT,
 		DiaChiCuThe NVARCHAR(255),
-		Loai bit,
 		FOREIGN KEY (IdTaiKhoan) REFERENCES TaiKhoan(Id)
 	);
 
@@ -277,24 +276,6 @@ INSERT INTO DoCung (Ten, TrangThai) VALUES
 ('Siêu dẻo', 0),
 ('Siêu cứng', 0);
 
-	-- KhuyenMai
-INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc,GiaTri, Loai, TrangThai) VALUES
-('Khuyen mai 10%', '2024-01-01', '2024-01-10',10,1, 1),
-('Khuyen mai 20%', '2024-02-01', '2024-02-15',20,0, 1),
-('Khuyen mai 30%', '2024-03-01', '2024-03-10',50,0, 0),
-('Khuyen mai 40%', '2024-04-01', '2024-04-15',30,1, 0),
-('Khuyen mai 50%', '2024-05-01', '2024-05-10',40,0, 0);
-
-
-
-	INSERT INTO TaiKhoan ( HoTen, Sdt, Email, MatKhau, GioiTinh, VaiTro, Avatar, NgaySinh, CCCD, TrangThai) VALUES
-	( 'Nguyen Van A', '0123456789', 'a@example.com', 'password123', 1, 'Customer', 'https://gcs.tripi.vn/public-tripi/tripi-feed/img/474622SvZ/tom-cruise-1020088.jpg', '1990-01-01', '123456789', 1),
-	('Tran Thi B', '0987654321', 'b@example.com', 'password123', 0, 'User', 'https://source.boomplaymusic.com/buzzgroup1/M00/3D/A7/rBEevGLXpSiAU3jLAAIwlwO9nlo220.jpg', '1985-02-15', '987654321', 1),
-	('Le Van C', '0912345678', 'c@example.com', 'password123', 1, 'Customer', 'https://images.javatpoint.com/top10-technologies/images/top-10-hollywood-actors6.png', '1992-03-10', '345678912', 0),
-	( 'Pham Thi D', '0908765432', 'd@example.com', 'password123', 0, 'Customer', 'https://images.javatpoint.com/top10-technologies/images/top-10-hollywood-actors9.png', '1991-04-20', '654321987', 1),
-	('Hoang Van E', '0897654321', 'e@example.com', 'password123', 1, 'User', 'https://images.javatpoint.com/top10-technologies/images/top-10-hollywood-actors5.png', '1988-05-30', '234567891', 0),
-	('Nguyen Tien N', '0981238651', 'e@example.com', 'password123', 1, 'User', 'https://cdn.shopify.com/s/files/1/0182/8937/files/tom_hordy_1024x1024.jpg?v=1482502984', '1986-08-30', '214557791', 0);
-
 	INSERT INTO SanPham (Ma, Ten, TrangThai) VALUES
 	('SP001', 'Yonex Nanoflare 700 Pro', 1),
 	('SP002', 'Yonex Astrox 99 Pro', 1),
@@ -346,80 +327,8 @@ INSERT INTO KhuyenMai (Ten, TG_BatDau, TG_KetThuc,GiaTri, Loai, TrangThai) VALUE
 	(8, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-bkex-noi-dia-trung-1_1719176469.webp', 1);
 
 
-	INSERT INTO DiaChi (IdTaiKhoan, Ten, Sdt, IdTinh, IdHuyen, IdXa,Loai, DiaChiCuThe) VALUES
-	(1, 'Nguyen Van A', '0123456789', 'Hanoi', 'Dong Da', 'Khuong Thuong',0, 'So 10, Pho ABC'),
-	(2, 'Tran Thi B', '0987654321', 'Ho Chi Minh', 'District 1', 'Ben Nghe',1, '123 Nguyen Hue'),
-	(3, 'Le Van C', '0912345678', 'Da Nang', 'Hai Chau', 'Thach Thang',1, '45 Bach Dang'),
-	(4, 'Pham Thi D', '0908765432', 'Can Tho', 'Ninh Kieu', 'An Hoa',0, '67 Hung Vuong'),
-	(5, 'Hoang Van E', '0897654321', 'Hai Phong', 'Le Chan', 'Niem Nghia',1, '21 Tran Phu');
-
-
-	INSERT INTO ThongBao (IdKhachHang, TieuDe, NoiDung, IdRedirect, KieuThongBao, TrangThai) VALUES
-	(1, 'Khuyến mãi 10%', 'Bạn nhận được khuyến mãi 10% từ hệ thống', 'SP001', 'Promotion', 1),
-	(2, 'Thông báo đơn hàng', 'Đơn hàng của bạn đã được giao', 'HD001', 'Order', 1),
-	(3, 'Thông báo hệ thống', 'Hệ thống sẽ bảo trì trong 2 giờ', 'System', 'System', 0),
-	(4, 'Khuyến mãi 20%', 'Bạn nhận được khuyến mãi 20% từ hệ thống', 'SP002', 'Promotion', 1),
-	(5, 'Thông báo giao hàng', 'Đơn hàng của bạn đang được giao', 'HD002', 'Order', 0);
-
-	INSERT INTO GioHang (IdSanPhamCT, IdTaiKhoan, soLuong, NgayTao, NgaySua) VALUES
-	(1, 1, 3, '2024-09-01', '2024-09-02'),
-	(2, 2,4,  '2024-09-03', '2024-09-04'),
-	(3, 1,7,  '2024-09-05', '2024-09-06'),
-	(4, 4,5,  '2024-09-07', '2024-09-08'),
-	(5, 5,2,   '2024-09-09', '2024-09-10');
-
-	INSERT INTO HoaDon (IdTaiKhoan, Ma, DiaChiNguoiNhan, SdtNguoiNhan, PhiShip, TongTien, TrangThai) VALUES
-	(1, 'HD001', 'So 10, Pho ABC, Hanoi', '0123456789', 30000, 6030000, 1),
-	(2, 'HD002', '123 Nguyen Hue, Ho Chi Minh', '0987654321', 50000, 2550000, 2),
-	(3, 'HD003', '45 Bach Dang, Da Nang', '0912345678', 40000, 8440000, 3),
-	(4, 'HD004', '67 Hung Vuong, Can Tho', '0908765432', 20000, 2720000, 1),
-	(5, 'HD005', '21 Tran Phu, Hai Phong', '0897654321', 30000, 4430000, 0);
-
-
-
-
-	INSERT INTO HoaDonCT (IdSanPhamCT, IdHoaDon, SoLuong, GiaBan, TrangThai) VALUES
-	(1, 1, 2, 3000000, 1),
-	(2, 2, 1, 2500000, 2),
-	(3, 3, 3, 2800000, 3),
-	(4, 4, 1, 2700000, 1),
-	(5, 5, 2, 2200000, 0);
-
-
 	
-	INSERT INTO SanPham_KhuyenMai (IdSanPhamCT, IdKhuyenMai, GiaKhuyenMai) VALUES
-	(1, 1, 2700000),
-	(2, 2, 2000000),
-	(3, 3, 2500000),
-	(4, 4, 2300000),
-	(5, 5, 1800000);
 
-
-
-	INSERT INTO ThanhToan (IdTaiKhoan, IdHoaDon, Ma, TongTien, PhuongThucThanhToan, TrangThai) VALUES
-	(1, 1, 'TT001', 6030000, 'Credit Card', 1),
-	(2, 2, 'TT002', 2550000, 'Cash', 0),
-	(3, 3, 'TT003', 8440000, 'Bank Transfer', 2),
-	(4, 4, 'TT004', 2720000, 'Credit Card', 1),
-	(5, 5, 'TT005', 4430000, 'Cash', 0);
-
-
-
-	INSERT INTO KhachHang_Voucher (IdKhachHang, IdVoucher) VALUES
-	(1, 1),
-	(2, 2),
-	(3, 3),
-	(4, 4),
-	(5, 5);
-
-
-
-	INSERT INTO LichSuDonHang (IdTaiKhoan, IdHoaDon, MoTa, NgayTao, NgaySua, TrangThai) VALUES
-	(1, 1, 'Đơn hàng đã được giao', '2024-09-01', '2024-09-02', 1),
-	(2, 2, 'Đơn hàng đang trong quá trình vận chuyển', '2024-09-03', '2024-09-04', 2),
-	(3, 3, 'Đơn hàng đã bị hủy', '2024-09-05', '2024-09-06', 3),
-	(4, 4, 'Đơn hàng đã được giao', '2024-09-07', '2024-09-08', 1),
-	(5, 5, 'Đơn hàng đang chờ xử lý', '2024-09-09', '2024-09-10', 0);
 
 
 

@@ -189,15 +189,15 @@ const LoginPanel = () => {
             swal("Thành công!", "Đăng nhập thành công!", "success");
 
 
-                setTimeout(() => {
-                    // navigate(0)
-                    if (vaiTro.toLowerCase() === 'customer' ) {
-                        navigate(0)
-                    } else {
-                        navigate('/admin')
-                    }
-                }, 2000);
-            
+            setTimeout(() => {
+                // navigate(0)
+                if (vaiTro.toLowerCase() === 'customer') {
+                    navigate(0)
+                } else {
+                    navigate('/admin')
+                }
+            }, 2000);
+
 
             setError("");
 
@@ -272,33 +272,37 @@ const RegisterPanel = () => {
         confirmPass: ""
     })
 
+    const [emailExists, setEmailExists] = useState(false)
+
     const navigate = useNavigate()
 
     //  kiểm tra email
     const checkMail = async (email) => {
         try {
             const response = await axios.get(`http://localhost:8080/auth/check-mail?email=${email}`);
+            console.log('Full response data:', response.data);
 
-            // In ra toàn bộ response để debug
-            console.log('Full response:', response);
+            // Log thông tin chi tiết để kiểm tra
+            console.log('Response status:', response.status);
 
-            // Kiểm tra kỹ hơn trạng thái và dữ liệu trả về
-            if (response.data && response.data.exists) {
-                return true; // Email exists
-            }
-
-            // Nếu email chưa tồn tại, trả về false
-            return false;
+            // Kiểm tra nhiều điều kiện
+            return !!(response.data &&
+                // response.data.id &&
+                response.data.email === email);
         } catch (error) {
-            // Nếu có lỗi 404 hoặc các mã lỗi khác, nghĩa là email chưa tồn tại
-            if (error.response && error.response.status === 404) {
-                return false;
+            // Xử lý chi tiết các loại lỗi
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                console.log('Error data:', error.response.data);
+                console.log('Error status:', error.response.status);
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.log('No response received:', error.request);
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                console.log('Error message:', error.message);
             }
 
-            // Log chi tiết lỗi để debug
-            console.error('Error checking email:', error);
-
-            // Trong trường hợp có lỗi khác, coi như email chưa tồn tại
             return false;
         }
     };
@@ -325,15 +329,14 @@ const RegisterPanel = () => {
         } else if (!/\S+@\S+\.\S+/.test(user.email.trim())) {
             newErrors.email = "*Địa chỉ email không hợp lệ"
             check++
-        } 
-        // else {
-        //     // Kiểm tra email đã tồn tại
-        //     const isEmailExists = await checkMail(user.email);
-        //     if (isEmailExists) {
-        //         newErrors.email = "*Email đã tồn tại trong hệ thống"
-        //         check++
-        //     }
-        // }
+        } else {
+            // Kiểm tra xem email đã tồn tại chưa
+            const emailExists = await checkMail(user.email);
+            if (emailExists) {
+                newErrors.email = "*Email đã tồn tại trong hệ thống";
+                check++;
+            }
+        }
 
         if (!user.matKhau || !user.matKhau.trim()) {
             newErrors.passWord = "*Bạn chưa nhập mật khẩu"
