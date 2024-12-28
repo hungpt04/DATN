@@ -281,7 +281,6 @@ function ReturnOrder() {
         }
     };
 
-
     useEffect(() => {
         console.log('voucher: ', usedVoucher);
     }, []);
@@ -498,7 +497,7 @@ function ReturnOrder() {
                     <div className="mb-2 font-bold">
                         <i className="fas fa-user mr-2"></i>
                         <span>Khách hàng:</span>
-                        <span className="ml-2">{bills.taiKhoan.hoTen}</span>
+                        <span className="ml-2">Khách lẻ</span>
                     </div>
                     <div className="mb-2 font-bold">
                         <i className="fas fa-user mr-2"></i>
