@@ -854,10 +854,9 @@ const OrderSummary = () => {
         const productMap = new Map();
 
         carts.forEach((cart) => {
-            const productId = cart.gioHang.sanPhamCT.sanPham.id;
-            if (!productMap.has(productId)) {
-                productMap.set(productId, cart);
-            }
+            // Sử dụng cả ID sản phẩm chi tiết để phân biệt các biến thể
+            const productKey = `${cart.gioHang.sanPhamCT.sanPham.id}-${cart.gioHang.sanPhamCT.id}`;
+            productMap.set(productKey, cart);
         });
 
         return Array.from(productMap.values());

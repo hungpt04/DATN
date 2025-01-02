@@ -234,14 +234,10 @@ const CreateVoucher = () => {
         }
 
         if (voucherAdd.dieuKienNhoNhat === null) {
-            setVoucherAdd({ ...voucherAdd, dieuKienNhoNhat: 0 })
-            errors.dieuKienNhoNhat = 'Điều kiện tối thiểu 1 ₫'
-        } else if (Number.parseInt(voucherAdd.dieuKienNhoNhat) < Number.parseInt(voucherAdd.giaTriMax)) {
-            errors.dieuKienNhoNhat = 'Điều kiện tối thiểu phải lớn hơn hoặc bằng giá trị tối đa'
+            // setVoucherAdd({ ...voucherAdd, dieuKienNhoNhat: 0 })
+            errors.dieuKienNhoNhat = 'Điều kiện không được bỏ trống'
         } else if (!Number.isInteger(parseInt(voucherAdd.dieuKienNhoNhat))) {
             errors.dieuKienNhoNhat = 'Điều kiện chỉ được nhập số nguyên'
-        } else if (voucherAdd.dieuKienNhoNhat < 1) {
-            errors.dieuKienNhoNhat = 'Điều kiện tối thiểu 1 ₫'
         } else if (voucherAdd.dieuKienNhoNhat > 50000000) {
             errors.dieuKienNhoNhat = 'Điều kiện tối thiểu tối đa 50,000,000 ₫'
         }
@@ -334,30 +330,30 @@ const CreateVoucher = () => {
         }
     }
 
-    const handleSelectAllCustomer = (event) => {
-        const allCustomerIds = allCustomer.map((customer) => customer.id);
-        const selectedIds = event.target.checked ? [...selectedCustomerIds, ...allCustomerIds] : []
+    // const handleSelectAllCustomer = (event) => {
+    //     const allCustomerIds = allCustomer.map((customer) => customer.id);
+    //     const selectedIds = event.target.checked ? [...selectedCustomerIds, ...allCustomerIds] : []
 
-        setSelectedCustomerIds(selectedIds)
-        setSelectAllCustomer(event.target.checked)
-    };
+    //     setSelectedCustomerIds(selectedIds)
+    //     setSelectAllCustomer(event.target.checked)
+    // };
 
-    const handleCheckboxChange = (event, customerId) => {
-        const selectedIndex = selectedCustomerIds.indexOf(customerId)
-        let newSelectedIds = []
+    // const handleCheckboxChange = (event, customerId) => {
+    //     const selectedIndex = selectedCustomerIds.indexOf(customerId)
+    //     let newSelectedIds = []
 
-        if (selectedIndex === -1) {
-            newSelectedIds = [...selectedCustomerIds, customerId]
-        } else {
-            newSelectedIds = [
-                ...selectedCustomerIds.slice(0, selectedIndex),
-                ...selectedCustomerIds.slice(selectedIndex + 1),
-            ]
-        }
+    //     if (selectedIndex === -1) {
+    //         newSelectedIds = [...selectedCustomerIds, customerId]
+    //     } else {
+    //         newSelectedIds = [
+    //             ...selectedCustomerIds.slice(0, selectedIndex),
+    //             ...selectedCustomerIds.slice(selectedIndex + 1),
+    //         ]
+    //     }
 
-        setSelectedCustomerIds(newSelectedIds)
-        setSelectAllCustomer(newSelectedIds.length === allCustomer.length)
-    }
+    //     setSelectedCustomerIds(newSelectedIds)
+    //     setSelectAllCustomer(newSelectedIds.length === allCustomer.length)
+    // }
 
 
     const formatCurrency = (money) => {
@@ -383,11 +379,11 @@ const CreateVoucher = () => {
         setErrorGiaTri('')
     }
 
-    const handlePageClick = (event) => {
-        const selectedPage = event.selected;
-        loadKhachHangSearch(searchKhachHang, selectedPage); // Gọi hàm tìm kiếm với trang mới
-        console.log(`User  requested page number ${selectedPage + 1}`);
-    };
+    // const handlePageClick = (event) => {
+    //     const selectedPage = event.selected;
+    //     loadKhachHangSearch(searchKhachHang, selectedPage); // Gọi hàm tìm kiếm với trang mới
+    //     console.log(`User  requested page number ${selectedPage + 1}`);
+    // };
 
     return (
         <div>
@@ -403,9 +399,8 @@ const CreateVoucher = () => {
 
 
             <div className="p-4 bg-white rounded-md shadow-lg">
-                <div className="flex">
-                    {/* Left Side - Form */}
-                    <div className="w-1/3 pr-4">
+                <div className="flex items-center justify-center">
+                    <div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-gray-600 mb-1">Mã phiếu giảm giá</label>
@@ -544,7 +539,7 @@ const CreateVoucher = () => {
                                 <span className='text-red-600 text-xs italic'>{errorDieuKienNhoNhat}</span>
                             </div>
 
-                            <div>
+                            <div className='mt-2'>
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DateTimePicker
                                         format={'DD-MM-YYYY HH:mm:ss'}
@@ -552,7 +547,7 @@ const CreateVoucher = () => {
                                         slotProps={{
                                             textField: {
                                                 size: 'small',
-                                                className: 'w-[200px]'
+                                                className: 'w-[300px]'
                                             },
                                             actionBar: {
                                                 actions: ['clear', 'today']
@@ -570,7 +565,7 @@ const CreateVoucher = () => {
                                 <span className='text-red-600 text-xs italic'>{errorNgayBatDau}</span>
                             </div>
 
-                            <div>
+                            <div className='mt-2'>
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DateTimePicker
                                         format={'DD-MM-YYYY HH:mm:ss'}
@@ -578,7 +573,7 @@ const CreateVoucher = () => {
                                         slotProps={{
                                             textField: {
                                                 size: 'small',
-                                                className: 'w-[200px]'
+                                                className: 'w-[300px]'
                                             },
                                             actionBar: {
                                                 actions: ['clear', 'today']
@@ -596,7 +591,7 @@ const CreateVoucher = () => {
                                 <span className='text-red-600 text-xs italic'>{errorNgayKetThuc}</span>
                             </div>
 
-                            <div className="col-span-2">
+                            {/* <div className="col-span-2">
                                 <label className="block text-gray-600 mb-1">Kiểu</label>
                                 <div className="flex space-x-4">
                                     <label className="flex items-center">
@@ -629,14 +624,13 @@ const CreateVoucher = () => {
                                         Cá nhân
                                     </label>
                                 </div>
-                            </div>
+                            </div> */}
 
                         </div>
                     </div>
 
                     {/* Right Side - Search and Table */}
-                    <div className="w-2/3 pl-4">
-                        {/* Search */}
+                    {/* <div className="w-2/3 pl-4">
                         <div className="mb-4">
                             <label className="block text-gray-600 mb-1">Tìm kiếm khách hàng</label>
                             <input
@@ -655,7 +649,36 @@ const CreateVoucher = () => {
                             />
                         </div>
 
-                        {/* Table */}
+                        <div className="mb-4">
+                            <label className="block text-gray-600 mb-1">Giới tính</label>
+                            <label className="mr-2">
+                                <input
+                                    checked
+                                    type="radio"
+                                    name="gioiTinh"
+                                    value=""
+                                    className="mr-1"
+                                />
+                                Tất cả
+                            </label>
+                            <label className="mr-2">
+                                <input
+                                    type="radio"
+                                    name="gioiTinh"
+                                    className="mr-1"
+                                />
+                                Nam
+                            </label>
+                            <label className="mr-2">
+                                <input
+                                    type="radio"
+                                    name="gioiTinh"
+                                    className="mr-1"
+                                />
+                                Nữ
+                            </label>
+                        </div>
+
                         <table className="min-w-full border border-gray-200">
                             <thead>
                                 <tr className="bg-gray-100 text-gray-700">
@@ -700,7 +723,7 @@ const CreateVoucher = () => {
                                 ))}
                             </tbody>
                         </table>
-                        {/* Pagination */}
+                        
                         <div className="flex justify-end mt-4">
                             <ReactPaginate
                                 previousLabel={"<"}
@@ -723,7 +746,7 @@ const CreateVoucher = () => {
                                 disabledClassName="disabled bg-gray-100 text-gray-400 cursor-not-allowed"
                             />
                         </div>
-                    </div>
+                    </div> */}
                 </div>
                 <div className="pt-4">
                     {confirmClicked && loading && (

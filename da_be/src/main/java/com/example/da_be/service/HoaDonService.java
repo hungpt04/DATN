@@ -176,6 +176,10 @@ public class HoaDonService {
         return hoaDonRepository.getAnhSanPhamByHoaDonId(id, idSPCT);
     }
 
+    public List<Map<String, Object>> getDoanhThuTheoNgay() {
+        return hoaDonRepository.getDoanhThuTheoNgay();
+    }
+
 //    public List<String> getAnhSanPhamByHoaDonId(Long id, List<Integer> idSPCT) {
 //        // Pass the updated parameter (List<Integer>) to the repository method
 //        return hoaDonRepository.getAnhSanPhamByHoaDonId(id, idSPCT);

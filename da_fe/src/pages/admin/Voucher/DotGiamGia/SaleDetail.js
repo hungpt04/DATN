@@ -248,7 +248,7 @@ const SaleDetail = () => {
     const handleCheckboxChange1 = (event, productId) => {
         const selectedIndex = selectedRowsProduct.indexOf(productId)
         let newSelected = []
-    
+
         if (selectedIndex === -1) {
             newSelected = [...selectedRowsProduct, productId]
         } else {
@@ -257,10 +257,10 @@ const SaleDetail = () => {
                 ...selectedRowsProduct.slice(selectedIndex + 1),
             ]
         }
-    
+
         setSelectedRowsProduct(newSelected)
         setSelectAllProduct(newSelected.length === getProduct.length)
-    
+
         const selectedProductIds = getProduct
             .filter((row) => newSelected.includes(row.id))
             .map((selectedProduct) => selectedProduct.id);
@@ -578,7 +578,7 @@ const SaleDetail = () => {
 
                         <div>
                             <label className="block text-gray-600 mb-1">
-                                Giá trị
+                                Giá trị (%)
                             </label>
                             <input
                                 type="number"
@@ -666,32 +666,32 @@ const SaleDetail = () => {
                     <div className="w-1/2 pr-4">
                         <table className="min-w-full border border-gray-200">
                             <thead>
-                            <tr className="bg-gray-100 text-gray-700">
-                                <th className="py-2 px-4 border-b text-center">
-                                    <input type="checkbox"
-                                           checked={selectAllProduct}
-                                           onChange={handleSelectAllChangeProduct}
-                                    />
-                                </th>
-                                <th className="py-2 px-4 border-b text-center">STT</th>
-                                <th className="py-2 px-4 border-b text-center">Tên sản phẩm</th>
-                            </tr>
+                                <tr className="bg-gray-100 text-gray-700">
+                                    <th className="py-2 px-4 border-b text-center">
+                                        <input type="checkbox"
+                                            checked={selectAllProduct}
+                                            onChange={handleSelectAllChangeProduct}
+                                        />
+                                    </th>
+                                    <th className="py-2 px-4 border-b text-center">STT</th>
+                                    <th className="py-2 px-4 border-b text-center">Tên sản phẩm</th>
+                                </tr>
                             </thead>
                             <tbody>
-                            {getProduct.map((sanPham, index) => (
-                                <tr key={sanPham.id} className="text-left border-b">
-                                    <td className="py-2 px-4 border-b text-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedRowsProduct.indexOf(sanPham.id) !== -1}
-                                            onChange={(event) => handleCheckboxChange1(event, sanPham.id)}
-                                            className="align-middle"
-                                        />
-                                    </td>
-                                    <td className="py-2 px-4 border-b text-center">{(currentPage * 5) + index + 1}</td>
-                                    <td className="py-2 px-4 border-b text-center">{sanPham.ten}</td>
-                                </tr>
-                            ))}
+                                {getProduct.map((sanPham, index) => (
+                                    <tr key={sanPham.id} className="text-left border-b">
+                                        <td className="py-2 px-4 border-b text-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedRowsProduct.indexOf(sanPham.id) !== -1}
+                                                onChange={(event) => handleCheckboxChange1(event, sanPham.id)}
+                                                className="align-middle"
+                                            />
+                                        </td>
+                                        <td className="py-2 px-4 border-b text-center">{(currentPage * 5) + index + 1}</td>
+                                        <td className="py-2 px-4 border-b text-center">{sanPham.ten}</td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                         {/* Pagination */}
@@ -908,42 +908,42 @@ const SaleDetail = () => {
 
                     <table className="min-w-full border border-gray-200">
                         <thead>
-                        <tr className="bg-gray-100 text-gray-700">
-                            <th className="py-2 px-4 border-b text-center">
-                                <input type="checkbox"
-                                       checked={selectAllProductDetail}
-                                       onChange={handleSelectAllChangeProductDetail}
-                                />
-                            </th>
-                            <th className="py-2 px-4 border-b text-center">STT</th>
-                            <th className="py-2 px-4 border-b text-center">Tên sản phẩm</th>
-                            <th className="py-2 px-4 border-b text-center">Thương hiệu</th>
-                            <th className="py-2 px-4 border-b text-center">Màu sắc</th>
-                            <th className="py-2 px-4 border-b text-center">Chất liệu</th>
-                            <th className="py-2 px-4 border-b text-center">Trọng lượng</th>
-                            <th className="py-2 px-4 border-b text-center">Điểm cân bằng</th>
-                            <th className="py-2 px-4 border-b text-center">Độ cứng</th>
-                        </tr>
+                            <tr className="bg-gray-100 text-gray-700">
+                                <th className="py-2 px-4 border-b text-center">
+                                    <input type="checkbox"
+                                        checked={selectAllProductDetail}
+                                        onChange={handleSelectAllChangeProductDetail}
+                                    />
+                                </th>
+                                <th className="py-2 px-4 border-b text-center">STT</th>
+                                <th className="py-2 px-4 border-b text-center">Tên sản phẩm</th>
+                                <th className="py-2 px-4 border-b text-center">Thương hiệu</th>
+                                <th className="py-2 px-4 border-b text-center">Màu sắc</th>
+                                <th className="py-2 px-4 border-b text-center">Chất liệu</th>
+                                <th className="py-2 px-4 border-b text-center">Trọng lượng</th>
+                                <th className="py-2 px-4 border-b text-center">Điểm cân bằng</th>
+                                <th className="py-2 px-4 border-b text-center">Độ cứng</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        {getProductDetailByProduct.map((spct, index) => (
-                            <tr key={spct.id} className="text-center border-b">
-                                <td className="py-2 px-4 border-b text-center">
-                                    <input type="checkbox"
-                                           checked={selectedRows.indexOf(spct.id) !== -1}
-                                           onChange={(event) => handleCheckboxChange2(event, spct.id)}
-                                    />
-                                </td>
-                                <td className="py-2 px-4 border-b text-center">{index + 1}</td>
-                                <td className="py-2 px-4 border-b text-center">{spct.tenSanPham}</td>
-                                <td className="py-2 px-4 border-b text-center">{spct.tenThuongHieu}</td>
-                                <td className="py-2 px-4 border-b text-center">{spct.tenMauSac}</td>
-                                <td className="py-2 px-4 border-b text-center">{spct.tenChatLieu}</td>
-                                <td className="py-2 px-4 border-b text-center">{spct.tenTrongLuong}</td>
-                                <td className="py-2 px-4 border-b text-center">{spct.tenDiemCanBang}</td>
-                                <td className="py-2 px-4 border-b text-center">{spct.tenDoCung}</td>
-                            </tr>
-                        ))}
+                            {getProductDetailByProduct.map((spct, index) => (
+                                <tr key={spct.id} className="text-center border-b">
+                                    <td className="py-2 px-4 border-b text-center">
+                                        <input type="checkbox"
+                                            checked={selectedRows.indexOf(spct.id) !== -1}
+                                            onChange={(event) => handleCheckboxChange2(event, spct.id)}
+                                        />
+                                    </td>
+                                    <td className="py-2 px-4 border-b text-center">{index + 1}</td>
+                                    <td className="py-2 px-4 border-b text-center">{spct.tenSanPham}</td>
+                                    <td className="py-2 px-4 border-b text-center">{spct.tenThuongHieu}</td>
+                                    <td className="py-2 px-4 border-b text-center">{spct.tenMauSac}</td>
+                                    <td className="py-2 px-4 border-b text-center">{spct.tenChatLieu}</td>
+                                    <td className="py-2 px-4 border-b text-center">{spct.tenTrongLuong}</td>
+                                    <td className="py-2 px-4 border-b text-center">{spct.tenDiemCanBang}</td>
+                                    <td className="py-2 px-4 border-b text-center">{spct.tenDoCung}</td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                     <div className="flex justify-end mt-4">

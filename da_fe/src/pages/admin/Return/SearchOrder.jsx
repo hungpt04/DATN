@@ -53,7 +53,7 @@ function SearchOrder() {
                 {/* Phần tìm kiếm */}
                 <div className="flex items-center mb-6">
                     <CheckCircle className="text-[#2f19ae] text-xl mr-2" />
-                    <label className="text-lg mr-4">Mã hóa đơn:</label>
+                    <label className="text-lg mr-4">ID hóa đơn:</label>
                     <div className="flex items-center border border-[#2f19ae] rounded-lg overflow-hidden">
                         <Search className="text-[#2f19ae] p-2" />
                         <input

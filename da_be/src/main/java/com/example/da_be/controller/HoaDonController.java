@@ -107,6 +107,11 @@ public class HoaDonController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/doanh-thu/ngay")
+    public List<Map<String, Object>> getDoanhThuTheoNgay() {
+        return hoaDonService.getDoanhThuTheoNgay();
+    }
+
 //    @GetMapping("/anh-san-pham/{hoaDonId}")
 //    public ResponseEntity<List<String>> getAnhSanPhamChinhByHoaDonId(
 //            @PathVariable Long hoaDonId,

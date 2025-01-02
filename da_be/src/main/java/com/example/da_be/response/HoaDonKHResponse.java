@@ -1,7 +1,11 @@
 package com.example.da_be.response;
 
+import jakarta.persistence.ColumnResult;
+import jakarta.persistence.ConstructorResult;
+import jakarta.persistence.SqlResultSetMapping;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
@@ -10,14 +14,16 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@AllArgsConstructor
+@NoArgsConstructor
 public class HoaDonKHResponse {
-    private String id; // ID hóa đơn
-    private String khachHang; // ID khách hàng
-    private String tenSanPham; // Tên sản phẩm
-    private String ma; // Mã hóa đơn
-    private Integer trangThai; // Trạng thái
-    private LocalDate ngayTao; // Ngày tạo
-    private BigDecimal tienShip; // Tiền ship
-    private BigDecimal tongTien; // Tổng tiền
+    private Integer hoaDonId;
+    private String tenNguoiNhan;
+    private String sdtNguoiNhan;
+    private String diaChiNguoiNhan;
+    private BigDecimal tongTien;
+    private BigDecimal phiShip;
+    private String sanPhamTen;
+    private BigDecimal giaBan;
+    private Integer soLuongMua;
+    private String hinhAnhLink;
 }

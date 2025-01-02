@@ -496,7 +496,7 @@ const CreateSale = () => {
 
                         <div>
                             <label className="block text-gray-600 mb-1">
-                                Giá trị
+                                Giá trị (%)
                             </label>
                             <input
                                 type="number"

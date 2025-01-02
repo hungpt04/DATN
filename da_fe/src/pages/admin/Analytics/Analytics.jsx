@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { FaMoneyBill, FaShoppingCart, FaChartLine, FaBox, FaCheckCircle, FaTimesCircle, FaUndo } from 'react-icons/fa';
 import StatCard from './ThongKe/StatCard';
 import SalesChart from './ThongKe/SalesChart.js';
 import SalesTable from './ThongKe/SalesTable.js';
@@ -12,31 +11,34 @@ function Analytic() {
     const [successfulOrders, setSuccessfulOrders] = useState([]);
     const [timeRange, setTimeRange] = useState('month');
 
-    // Thêm state mới cho thống kê
     const [statistics, setStatistics] = useState({
         today: {
+            tongdoanhthu: 0,
             products: 0,
-            successOrders: 0,
-            cancelOrders: 0,
-            returnOrders: 0,
+            successorders: 0,
+            cancelorders: 0,
+            returnorders: 0,
         },
         thisWeek: {
+            tongdoanhthu: 0,
             products: 0,
-            successOrders: 0,
-            cancelOrders: 0,
-            returnOrders: 0,
+            successorders: 0,
+            cancelorders: 0,
+            returnorders: 0,
         },
         thisMonth: {
+            tongdoanhthu: 0,
             products: 0,
-            successOrders: 0,
-            cancelOrders: 0,
-            returnOrders: 0,
+            successorders: 0,
+            cancelorders: 0,
+            returnorders: 0,
         },
         thisYear: {
+            tongdoanhthu: 0,
             products: 0,
-            successOrders: 0,
-            cancelOrders: 0,
-            returnOrders: 0,
+            successorders: 0,
+            cancelorders: 0,
+            returnorders: 0,
         },
     });
 
@@ -75,8 +77,6 @@ function Analytic() {
                 const monthResponse = await axios.get('http://localhost:8080/api/statistics/month');
                 const yearResponse = await axios.get('http://localhost:8080/api/statistics/year');
 
-                console.log('dataaaa: ', todayResponse);
-
                 setStatistics({
                     today: todayResponse.data,
                     thisWeek: weekResponse.data,
@@ -85,34 +85,6 @@ function Analytic() {
                 });
             } catch (error) {
                 console.error('Error fetching statistics:', error);
-
-                // Sử dụng mock data nếu gặp lỗi
-                setStatistics({
-                    today: {
-                        products: 50,
-                        successOrders: 20,
-                        cancelOrders: 5,
-                        returnOrders: 2,
-                    },
-                    thisWeek: {
-                        products: 350,
-                        successOrders: 150,
-                        cancelOrders: 30,
-                        returnOrders: 15,
-                    },
-                    thisMonth: {
-                        products: 1500,
-                        successOrders: 700,
-                        cancelOrders: 120,
-                        returnOrders: 50,
-                    },
-                    thisYear: {
-                        products: 18000,
-                        successOrders: 8500,
-                        cancelOrders: 1500,
-                        returnOrders: 600,
-                    },
-                });
             }
         };
 
@@ -121,44 +93,41 @@ function Analytic() {
         fetchStatistics();
     }, []);
 
-    // Tính tỷ lệ tăng trưởng
-    const calculateGrowthRate = () => {
-        if (salesData.length < 2) return '0%';
-        const currentMonth = salesData[salesData.length - 1].revenue;
-        const previousMonth = salesData[salesData.length - 2].revenue;
-        const growthRate = ((currentMonth - previousMonth) / previousMonth) * 100;
-        return `${growthRate.toFixed(1)}%`;
-    };
-
     // Render phần thống kê chi tiết
     const renderStatisticsSection = (title, data) => {
+
+        // Định dạng doanh thu
+        const formattedRevenue = new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+        }).format(data.tongdoanhthu);
+
         return (
-            <div className="bg-white rounded-lg shadow-md p-4 flex flex-col justify-between h-full">
-                <h3 className="text-lg font-semibold mb-4 text-gray-700">{title}</h3>
-                <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-lg shadow-md flex flex-col justify-between">
+                <h3 className="text-xl text-center mb-4 text-white">{title}</h3>
+                <div className='text-center text-sm text-white'>
+                    {formattedRevenue}
+                </div>
+                <div className="flex justify-center items-center space-x-4">
                     <StatCard
                         title="Sản phẩm"
                         value={data.products}
-                        icon={<FaBox className="text-blue-500" />}
-                        className="flex-grow"
+                        className="flex-1 min-w-[120px] p-2 text-sm"
                     />
                     <StatCard
                         title="Đơn thành công"
                         value={data.successorders}
-                        icon={<FaCheckCircle className="text-green-500" />}
-                        className="flex-grow"
+                        className="flex-1 min-w-[120px] p-2 text-sm"
                     />
                     <StatCard
                         title="Đơn hủy"
                         value={data.cancelorders}
-                        icon={<FaTimesCircle className="text-red-500" />}
-                        className="flex-grow"
+                        className="flex-1 min-w-[120px] p-2 text-sm"
                     />
                     <StatCard
                         title="Đơn trả"
                         value={data.returnorders}
-                        icon={<FaUndo className="text-yellow-500" />}
-                        className="flex-grow"
+                        className="flex-1 min-w-[120px] p-2 text-sm"
                     />
                 </div>
             </div>
@@ -166,27 +135,16 @@ function Analytic() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 p-10">
-            <h1 className="text-3xl font-bold text-gray-800 mb-8">Thống Kê Doanh Số</h1>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <StatCard
-                    title="Tổng Doanh Thu"
-                    value={`${(totalRevenue / 1000000).toFixed(2)} triệu VND`}
-                    icon={<FaMoneyBill />}
-                />
-                <StatCard title="Tổng Đơn Hàng" value={totalOrders} icon={<FaShoppingCart />} />
-                <StatCard title="Tăng Trưởng" value={calculateGrowthRate()} icon={<FaChartLine />} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-6 mb-8">
+        <div>
+            <h1 className="text-xs font-bold text-gray-800 mb-2">Thống kê</h1>
+            <div className="grid grid-cols-2 gap-6 mb-4">
                 <div className="grid grid-rows-2 gap-6">
-                    <div>{renderStatisticsSection('Hôm nay', statistics.today)}</div>
-                    <div>{renderStatisticsSection('Tuần này', statistics.thisWeek)}</div>
+                    <div className='bg-cyan-700 rounded-md'>{renderStatisticsSection('Hôm nay', statistics.today)}</div>
+                    <div className='bg-blue-600 rounded-md'>{renderStatisticsSection('Tháng này', statistics.thisMonth)}</div>
                 </div>
                 <div className="grid grid-rows-2 gap-6">
-                    <div>{renderStatisticsSection('Tháng này', statistics.thisMonth)}</div>
-                    <div>{renderStatisticsSection('Năm nay', statistics.thisYear)}</div>
+                    <div className='bg-orange-500 rounded-md'>{renderStatisticsSection('Tuần này', statistics.thisWeek)}</div>
+                    <div className='bg-green-700 rounded-md'>{renderStatisticsSection('Năm nay', statistics.thisYear)}</div>
                 </div>
             </div>
 

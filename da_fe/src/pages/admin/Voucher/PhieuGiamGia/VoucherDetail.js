@@ -283,8 +283,6 @@ const VoucherDetail = () => {
 
         if (voucherDetail.dieuKienNhoNhat === null) {
             errors.dieuKienNhoNhat = 'Điều kiện không được để trống'
-        }else if (Number.parseInt(voucherDetail.dieuKienNhoNhat) < Number.parseInt(voucherDetail.giaTriMax)) {
-            errors.dieuKienNhoNhat = 'Điều kiện tối thiểu phải lớn hơn hoặc bằng giá trị tối đa'
         } else if (!Number.isInteger(parseInt(voucherDetail.dieuKienNhoNhat))) {
             errors.dieuKienNhoNhat = 'Điều kiện chỉ được nhập số nguyên'
         } else if (voucherDetail.dieuKienNhoNhat < 1) {
@@ -442,9 +440,8 @@ const VoucherDetail = () => {
             </div>
 
             <div className="p-4 bg-white rounded-md shadow-lg">
-                <div className="flex">
-                    {/* Left Side - Form */}
-                    <div className="w-1/3 pr-4">
+                <div className="flex items-center justify-center">
+                    <div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-gray-600 mb-1">Mã phiếu giảm giá</label>
@@ -598,7 +595,7 @@ const VoucherDetail = () => {
                                 <span className='text-red-600 text-xs italic'>{errorDieuKienNhoNhat}</span>
                             </div>
 
-                            <div>
+                            <div className='mt-2'>
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DateTimePicker
                                         format={'DD-MM-YYYY HH:mm:ss'}
@@ -606,7 +603,7 @@ const VoucherDetail = () => {
                                         slotProps={{
                                             textField: {
                                                 size: 'small',
-                                                className: 'w-[200px]'
+                                                className: 'w-[300px]'
                                             },
                                             actionBar: {
                                                 actions: ['clear', 'today']
@@ -625,7 +622,7 @@ const VoucherDetail = () => {
                                 <span className='text-red-600 text-xs italic'>{errorNgayBatDau}</span>
                             </div>
 
-                            <div>
+                            <div className='mt-2'>
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DateTimePicker
                                         format={'DD-MM-YYYY HH:mm:ss'}
@@ -633,7 +630,7 @@ const VoucherDetail = () => {
                                         slotProps={{
                                             textField: {
                                                 size: 'small',
-                                                className: 'w-[200px]'
+                                                className: 'w-[300px]'
                                             },
                                             actionBar: {
                                                 actions: ['clear', 'today']
@@ -652,7 +649,7 @@ const VoucherDetail = () => {
                                 <span className='text-red-600 text-xs italic'>{errorNgayKetThuc}</span>
                             </div>
 
-                            <div className="col-span-2">
+                            {/* <div className="col-span-2">
                                 <label className="block text-gray-600 mb-1">Kiểu</label>
                                 <div className="flex space-x-4">
                                     <label className="flex items-center">
@@ -687,14 +684,14 @@ const VoucherDetail = () => {
                                         Cá nhân
                                     </label>
                                 </div>
-                            </div>
+                            </div> */}
 
                         </div>
                     </div>
 
                     {/* Right Side - Search and Table */}
-                    <div className="w-2/3 pl-4">
-                        {/* Search */}
+                    {/* <div className="w-2/3 pl-4">
+               
                         <div className="mb-4">
                             <label className="block text-gray-600 mb-1">Tìm kiếm khách hàng</label>
                             <input
@@ -713,7 +710,7 @@ const VoucherDetail = () => {
                             />
                         </div>
 
-                        {/* Table */}
+            
                         <table className="min-w-full border border-gray-200">
                             <thead>
                                 <tr className="bg-gray-100 text-gray-700">
@@ -757,7 +754,7 @@ const VoucherDetail = () => {
                                 ))}
                             </tbody>
                         </table>
-                        {/* Pagination */}
+        
                         <div className="flex justify-end mt-4">
                             <ReactPaginate
                                 previousLabel={"<"}
@@ -780,7 +777,7 @@ const VoucherDetail = () => {
                                 disabledClassName="disabled bg-gray-100 text-gray-400 cursor-not-allowed"
                             />
                         </div>
-                    </div>
+                    </div> */}
                 </div>
                 <div className="pt-4">
                     {confirmClicked && loading && (

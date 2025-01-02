@@ -301,7 +301,7 @@ const DiscountVoucher = () => {
                         </div>
                     </LocalizationProvider>
 
-                    <div className="flex items-center space-x-2">
+                    {/* <div className="flex items-center space-x-2">
                         <label className="text-gray-700 font-semibold">Kiểu:</label>
                         <div className="relative">
                             <select
@@ -360,7 +360,7 @@ const DiscountVoucher = () => {
                                 </svg>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
 
                     <div className="flex items-center space-x-2">
                         <label className="text-gray-700 font-semibold">Loại:</label>
@@ -502,7 +502,7 @@ const DiscountVoucher = () => {
                             <th className="py-2 px-4 text-center border-b">STT</th>
                             <th className="py-2 px-4 text-center border-b">Mã</th>
                             <th className="py-2 px-4 text-center border-b">Tên</th>
-                            <th className="py-2 px-4 text-center border-b">Kiểu</th>
+                            {/* <th className="py-2 px-4 text-center border-b">Kiểu</th> */}
                             <th className="py-2 px-4 text-center border-b">Loại</th>
                             <th className="py-2 px-4 text-center border-b">Số lượng</th>
                             <th className="py-2 px-4 text-center border-b">Ngày bắt đầu</th>
@@ -520,7 +520,7 @@ const DiscountVoucher = () => {
                                         <td className="py-2 px-4 border-b">{stt}</td>
                                         <td className="py-2 px-4 border-b">{item.ma}</td>
                                         <td className="py-2 px-4 border-b">{item.ten}</td>
-                                        <td className="py-2 px-4 border-b">
+                                        {/* <td className="py-2 px-4 border-b">
                                             <span
                                                 className={`py-1 px-3 rounded-full text-xs whitespace-nowrap ${item.kieu === 0
                                                     ? 'bg-purple-200 text-purple-600 border border-purple-700'
@@ -530,7 +530,7 @@ const DiscountVoucher = () => {
                                                     }`}>
                                                 {item.kieu === 0 ? "Công khai" : item.kieu === 1 ? "Cá nhân" : "Chưa xác định"}
                                             </span>
-                                        </td>
+                                        </td> */}
                                         <td className="py-2 px-4 border-b">
                                             {item.kieuGiaTri === 0 ? item.giaTri + "%" : formatCurrency(item.giaTri)}
                                         </td>

@@ -498,7 +498,11 @@ function ReturnOrder() {
                     <div className="mb-2 font-bold">
                         <i className="fas fa-user mr-2"></i>
                         <span>Khách hàng:</span>
-                        <span className="ml-2">{bills.taiKhoan.hoTen}</span>
+                        <span className="ml-2">
+                            {bills.taiKhoan && bills.taiKhoan.hoTen
+                                ? bills.taiKhoan.hoTen
+                                : "Khách lẻ"}
+                        </span>
                     </div>
                     <div className="mb-2 font-bold">
                         <i className="fas fa-user mr-2"></i>
