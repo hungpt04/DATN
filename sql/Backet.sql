@@ -300,31 +300,14 @@ INSERT INTO DoCung (Ten, TrangThai) VALUES
 
 	INSERT INTO HinhAnh (IdSanPhamCT, Link, TrangThai) VALUES
 	(1, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-nanoflare-700-pro-chinh-hang_1727042472.webp', 1),
-	(1, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-nanoflare-700-pro-chinh-hang-1_1724277329.webp', 1),
-	(1, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-nanoflare-700-pro-chinh-hang-2_1724277548.webp', 1),
-	(1, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-nanoflare-700-pro-chinh-hang-3_1724277555.webp', 1),
 	(2, 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-yonex-astrox-99-pro-do-chinh-hang-1.webp', 1),
-	(2, 'https://pksport.vn/wp-content/uploads/2023/06/Vot-cau-long-Yonex-Astrox-99-Play-do.jpg', 1),
 	(3, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-88s-pro-ch-noi-dia-trung-limited-5.webp', 1),
-	(3, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-88s-pro-ch-noi-dia-trung-limited-4.webp', 1),
-	(3, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-88s-pro-ch-noi-dia-trung-limited-3.webp', 1),
-	(3, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-88s-pro-ch-noi-dia-trung-limited-2.webp', 1),
 	(4, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-ryuga-metallic-china-open-2024-noi-dia-trung_1726449913.webp', 0),
-	(4, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-tk-ryuga-metallic-chinh-hang-9_1702259888.webp', 1),
-	(4, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-tk-ryuga-metallic-chinh-hang-8_1702259894.webp', 1),
-	(4, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-tk-ryuga-metallic-chinh-hang-7_1702259903.webp', 1),
 	(5, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-nanoflare-wex-noi-dia-trung_1719176769.webp', 1),
-	(5, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-nanoflare-wex-noi-dia-trung-1_1719176775.webp', 1),
 	(6, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-ryuga-d-taiwan_1712201755.webp', 1),
-	(6, 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-victor-thruster-ryuga-d-chinh-hang-4.webp', 1),
-	(6, 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-victor-thruster-ryuga-d-chinh-hang-3.webp', 1),
-	(6, 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-victor-thruster-ryuga-d-chinh-hang-2.webp', 1),
 	(7, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-mjolnir-metallic-limited-2024-ma-taiwan_1716431807.webp', 1),
-	(7, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-mjolnir-metallic-limited-2024-ma-taiwan-1_1716431827.webp', 1),
-	(7, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-mjolnir-metallic-limited-2024-ma-taiwan-2_1716431839.webp', 1),
 	(7, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-victor-mjolnir-metallic-limited-2024-ma-taiwan-3_1716431847.webp', 1),
-	(8, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-bkex-noi-dia-trung_1719176463.webp', 1),
-	(8, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-bkex-noi-dia-trung-1_1719176469.webp', 1);
+	(8, 'https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-astrox-bkex-noi-dia-trung_1719176463.webp', 1);
 
 
 	

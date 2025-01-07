@@ -8,6 +8,7 @@ import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import Swal from 'sweetalert2';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import numeral from 'numeral';
+import { Button } from '@mui/material';
 
 function OfflineSale() {
     const [bills, setBills] = useState([]);
@@ -42,21 +43,63 @@ function OfflineSale() {
     const [priceFilter, setPriceFilter] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('');
 
-    const [bestVoucher, setBestVoucher] = useState(null);
-
     const [productPrices, setProductPrices] = useState({});
     const [productPromotions, setProductPromotions] = useState({});
 
+    const [vouchers, setVouchers] = useState([]);
+    const [selectedVoucher, setSelectedVoucher] = useState(null);
+    const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
+
+    const [billVouchers, setBillVouchers] = useState({});
+
+    const selectVoucherForBill = (voucher) => {
+        setBillVouchers((prev) => ({
+            ...prev,
+            [selectedBill.id]: voucher,
+        }));
+        console.log('Selected Voucher:', voucher); // Kiểm tra giá trị voucher
+        setIsVoucherModalOpen(false);
+    };
+
+    const clearSelectedVoucherForBill = () => {
+        setBillVouchers((prev) => {
+            const newVouchers = { ...prev };
+            delete newVouchers[selectedBill.id];
+            return newVouchers;
+        });
+    };
+
+    const getCurrentBillVoucher = () => {
+        return selectedBill ? billVouchers[selectedBill.id] || null : null;
+    };
+
+    const fetchVouchers = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/api/voucher/hien-thi');
+            setVouchers(response.data);
+        } catch (error) {
+            console.error('Failed to fetch vouchers', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchVouchers();
+    }, []);
+
+    useEffect(() => {
+        console.log('selectedVoucherrrrr', vouchers);
+    }, []);
+
     const formatCurrency = (money) => {
-        return numeral(money).format('0,0') + ' ₫'
-    }
+        return numeral(money).format('0,0') + ' ₫';
+    };
 
     const handleMoneyChange = (e) => {
-        const value = e.target.value.replace(/,/g, "").replace(/\D/g, ""); // Remove commas and non-numeric characters
+        const value = e.target.value.replace(/,/g, '').replace(/\D/g, ''); // Remove commas and non-numeric characters
         setCustomerPayment(value ? parseInt(value, 10) : 0);
     };
 
-    const findBestVoucher = (vouchers, totalPrice) => {
+    const findselectedVoucher = (vouchers, totalPrice) => {
         if (!vouchers || vouchers.length === 0) return null;
 
         // Lọc ra các voucher còn hiệu lực và đáp ứng điều kiện tổng tiền
@@ -80,46 +123,6 @@ function OfflineSale() {
             return best;
         }, null);
     };
-
-    // Trong useEffect để load vouchers
-    useEffect(() => {
-        const fetchVouchers = async () => {
-            try {
-                const response = await axios.get('http://localhost:8080/api/voucher/hien-thi');
-                const vouchers = response.data;
-
-                // Tính toán tổng tiền từ các chi tiết hóa đơn
-                const uniqueProductIds = new Set();
-                const uniqueDetails = billDetails
-                    .filter((detail) => detail.hoaDonCT && detail.hoaDonCT.hoaDon.id === selectedBill.id)
-                    .filter((detail) => {
-                        const isUnique = !uniqueProductIds.has(detail.hoaDonCT.id);
-                        if (isUnique) {
-                            uniqueProductIds.add(detail.hoaDonCT.id);
-                        }
-                        return isUnique;
-                    });
-
-                const totalItems = uniqueDetails.reduce((acc, detail) => {
-                    const priceInfo = productPrices[detail.hoaDonCT.id] || {
-                        originalPrice: detail.hoaDonCT.giaBan,
-                        discountedPrice: detail.hoaDonCT.giaBan,
-                    };
-                    return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice; // Sử dụng giá đã giảm
-                }, 0);
-
-                // Tìm voucher tốt nhất với tổng tiền
-                const bestVoucher = findBestVoucher(vouchers, totalItems);
-                setBestVoucher(bestVoucher);
-            } catch (error) {
-                console.error('Failed to fetch vouchers', error);
-            }
-        };
-        // Chỉ gọi fetchVouchers khi có hóa đơn được chọn và có chi tiết hóa đơn
-        if (selectedBill && billDetails.length > 0) {
-            fetchVouchers();
-        }
-    }, [selectedBill, billDetails]);
 
     const calculateTotalAmount = () => {
         const uniqueProductIds = new Set();
@@ -427,6 +430,11 @@ function OfflineSale() {
 
             swal('Thành công!', 'Hóa đơn đã được thêm!', 'success');
             loadBills(); // Tải lại danh sách hóa đơn
+            // Khi tạo hóa đơn mới, reset voucher
+            setBillVouchers((prev) => ({
+                ...prev,
+                [createdBill.id]: null,
+            }));
         } catch (error) {
             console.error('Có lỗi xảy ra khi thêm hóa đơn!', error);
             swal('Thất bại!', 'Có lỗi xảy ra khi thêm hóa đơn!', 'error');
@@ -492,6 +500,10 @@ function OfflineSale() {
         }
     };
 
+    const clearSelectedVoucher = () => {
+        setSelectedVoucher(null); // Xóa voucher đã chọn
+    };
+
     const confirmPurchase = async (hoaDonId) => {
         // Tính toán uniqueDetails
         const uniqueProductIds = new Set();
@@ -515,14 +527,16 @@ function OfflineSale() {
         }, 0);
 
         // Tính giảm giá từ voucher
-        const voucherDiscount = bestVoucher
+        const voucherDiscount = getCurrentBillVoucher()
             ? (() => {
-                const discountPercentage = bestVoucher.giaTri / 100;
-                const discountAmount = totalItems * discountPercentage;
+                  const discountPercentage = getCurrentBillVoucher().giaTri / 100;
+                  const discountAmount = totalItems * discountPercentage;
 
-                // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                return discountAmount > bestVoucher.giaTriMax ? bestVoucher.giaTriMax : discountAmount;
-            })()
+                  // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                  return discountAmount > getCurrentBillVoucher().giaTriMax
+                      ? getCurrentBillVoucher().giaTriMax
+                      : discountAmount;
+              })()
             : 0;
 
         // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
@@ -543,10 +557,10 @@ function OfflineSale() {
             return;
         }
 
-        if (bestVoucher) {
+        if (getCurrentBillVoucher()) {
             try {
                 await axios.put(
-                    `http://localhost:8080/api/voucher/giam-so-luong/${bestVoucher.id}`,
+                    `http://localhost:8080/api/voucher/giam-so-luong/${getCurrentBillVoucher().id}`,
                     {},
                     {
                         headers: {
@@ -614,7 +628,7 @@ function OfflineSale() {
                 // Cập nhật thông tin hóa đơn
                 const updatedBill = {
                     id: hoaDonId,
-                    idVoucher: bestVoucher ? bestVoucher.id : null,
+                    idVoucher: getCurrentBillVoucher() ? getCurrentBillVoucher().id : null,
                     soLuong: totalQuantity,
                     tongTien: totalAmount,
                     ma: existingBill.ma, // Giữ nguyên mã hóa đơn cũ
@@ -711,66 +725,6 @@ function OfflineSale() {
 
         return matchesSearchTerm && matchesBrand && matchesColor && matchesWeight && matchesPrice;
     });
-
-    // useEffect(() => {
-    //     const fetchProductPrices = async () => {
-    //         if (!selectedBill || !billDetails.length) return;
-
-    //         const uniqueProductIds = new Set();
-    //         const uniqueDetails = billDetails
-    //             .filter(
-    //                 (detail) =>
-    //                     detail.hoaDonCT &&
-    //                     detail.hoaDonCT.hoaDon.id === selectedBill.id &&
-    //                     detail.hoaDonCT.trangThai === 1,
-    //             )
-    //             .filter((detail) => {
-    //                 const isUnique = !uniqueProductIds.has(detail.hoaDonCT.id);
-    //                 if (isUnique) {
-    //                     uniqueProductIds.add(detail.hoaDonCT.id);
-    //                 }
-    //                 return isUnique;
-    //             });
-
-    //         const pricePromises = uniqueDetails.map(async (detail) => {
-    //             try {
-    //                 const response = await axios.get(
-    //                     `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${detail.hoaDonCT.sanPhamCT.id}`,
-    //                 );
-
-    //                 return {
-    //                     [detail.hoaDonCT.id]:
-    //                         response.data.length > 0
-    //                             ? {
-    //                                 originalPrice: detail.hoaDonCT.giaBan,
-    //                                 discountedPrice: response.data[0].giaKhuyenMai,
-    //                                 promotion: response.data[0],
-    //                             }
-    //                             : {
-    //                                 originalPrice: detail.hoaDonCT.giaBan,
-    //                                 discountedPrice: detail.hoaDonCT.giaBan,
-    //                                 promotion: null,
-    //                             },
-    //                 };
-    //             } catch (error) {
-    //                 console.error('Error fetching product promotion:', error);
-    //                 return {
-    //                     [detail.hoaDonCT.id]: {
-    //                         originalPrice: detail.hoaDonCT.giaBan,
-    //                         discountedPrice: detail.hoaDonCT.giaBan,
-    //                         promotion: null,
-    //                     },
-    //                 };
-    //             }
-    //         });
-
-    //         const priceResults = await Promise.all(pricePromises);
-    //         const priceMap = priceResults.reduce((acc, curr) => ({ ...acc, ...curr }), {});
-    //         setProductPrices(priceMap);
-    //     };
-
-    //     fetchProductPrices();
-    // }, [billDetails]);
 
     useEffect(() => {
         const fetchProductPrices = async () => {
@@ -879,41 +833,6 @@ function OfflineSale() {
         }
     }, [transactions]);
 
-    // useEffect(() => {
-    //     const fetchPromotions = async () => {
-    //         try {
-    //             if (!filteredProducts?.length) return;
-
-    //             const promotionPromises = filteredProducts.map(async (product) => {
-    //                 const response = await axios.get(
-    //                     `http://localhost:8080/api/san-pham-khuyen-mai/san-pham-ct/${product.id}`,
-    //                 );
-    //                 return {
-    //                     productId: product.id,
-    //                     promotion: response.data.length > 0 ? response.data[0] : null,
-    //                 };
-    //             });
-
-    //             const promotionResults = await Promise.all(promotionPromises);
-
-    //             const promotionMap = promotionResults.reduce((acc, result) => {
-    //                 acc[result.productId] = result.promotion;
-    //                 return acc;
-    //             }, {});
-
-    //             setProductPromotions(promotionMap);
-    //         } catch (error) {
-    //             console.error('Error fetching promotions:', error);
-    //         }
-    //     };
-
-    //     const timeoutId = setTimeout(() => {
-    //         fetchPromotions();
-    //     }, 500);
-
-    //     return () => clearTimeout(timeoutId);
-    // }, [JSON.stringify(filteredProducts)]);
-
     useEffect(() => {
         const fetchPromotions = async () => {
             try {
@@ -961,6 +880,70 @@ function OfflineSale() {
         return () => clearTimeout(timeoutId);
     }, [JSON.stringify(filteredProducts)]);
 
+    const VoucherModal = () => {
+        if (!isVoucherModalOpen) return null;
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="relative bg-white rounded-lg w-[600px] p-6">
+                    <button
+                        onClick={() => setIsVoucherModalOpen(false)}
+                        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
+                        </svg>
+                    </button>
+
+                    <h2 className="text-xl font-bold mb-4">Chọn Phiếu Giảm Giá</h2>
+                    <div className="space-y-4">
+                        {vouchers.map((voucher) => {
+                            // Kiểm tra điều kiện voucher trước khi hiển thị
+                            const totalItems = calculateTotalAmount(); // Hàm tính tổng tiền hàng
+                            const isEligible = totalItems >= voucher.dieuKienNhoNhat;
+
+                            return (
+                                <div
+                                    key={voucher.id}
+                                    className={`border p-4 rounded cursor-pointer ${
+                                        isEligible ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'
+                                    }`}
+                                    onClick={() => {
+                                        if (isEligible) {
+                                            selectVoucherForBill(voucher);
+                                        }
+                                    }}
+                                >
+                                    <div className="flex justify-between">
+                                        <span className="font-bold">{voucher.ma}</span>
+                                        <span className="text-green-600">
+                                            {voucher.kieuGiaTri === 0
+                                                ? voucher.giaTri + '%'
+                                                : formatCurrency(voucher.giaTri)}
+                                        </span>
+                                    </div>
+                                    <div className="text-sm text-gray-600">
+                                        Hiệu lực: {new Date(voucher.ngayBatDau).toLocaleDateString()} -
+                                        {new Date(voucher.ngayKetThuc).toLocaleDateString()}
+                                    </div>
+                                    {!isEligible && (
+                                        <div className="text-xs text-red-500 mt-2">
+                                            Áp dụng cho đơn hàng từ {voucher.dieuKienNhoNhat.toLocaleString()} ₫
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div className="h-[500px] flex justify-between items-start p-4">
@@ -989,10 +972,11 @@ function OfflineSale() {
                                 ) => (
                                     <div
                                         key={bill.id}
-                                        className={`flex items-center mr-4 cursor-pointer ${selectedBill?.id === bill.id
-                                            ? 'border-b-2 border-blue-800 pb-2 text-blue-500'
-                                            : ''
-                                            }`}
+                                        className={`flex items-center mr-4 cursor-pointer ${
+                                            selectedBill?.id === bill.id
+                                                ? 'border-b-2 border-blue-800 pb-2 text-blue-500'
+                                                : ''
+                                        }`}
                                         onClick={() => handleBillClick(bill)}
                                     >
                                         <span className="text-sm text-gray-700">
@@ -1059,7 +1043,6 @@ function OfflineSale() {
 
                                     return uniqueDetails.length > 0 ? (
                                         <>
-
                                             {uniqueDetails.map((detail) => {
                                                 const priceInfo = productPrices[detail.hoaDonCT.id] || {
                                                     originalPrice: detail.hoaDonCT.giaBan,
@@ -1101,7 +1084,7 @@ function OfflineSale() {
                                                                                     ((priceInfo.originalPrice -
                                                                                         priceInfo.discountedPrice) /
                                                                                         priceInfo.originalPrice) *
-                                                                                    100,
+                                                                                        100,
                                                                                 )}
                                                                                 % off
                                                                             </div>
@@ -1202,13 +1185,41 @@ function OfflineSale() {
                                                     <div className="flex-1">
                                                         <label className="block text-gray-700">Tên khách hàng</label>
                                                     </div>
-                                                    <div className="flex justify-center flex-1">
+                                                    {/* <div className="flex justify-center flex-1">
                                                         <span className="bg-gray-200 px-4 py-2 rounded">Khách lẻ</span>
-                                                    </div>
+                                                    </div> */}
                                                     {/* <div className="flex items-center flex-1 justify-end">
                                                         <label className="block text-gray-700 mr-2">Giao hàng</label>
                                                         <input type="checkbox" className="toggle-checkbox" />
                                                     </div> */}
+                                                    <div className="flex items-center ">
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Nhập mã giảm giá"
+                                                            value={
+                                                                getCurrentBillVoucher()
+                                                                    ? getCurrentBillVoucher().ma
+                                                                    : ''
+                                                            }
+                                                            readOnly
+                                                            className="flex-1 border p-[6px] rounded w-[300px]"
+                                                        />
+                                                        <Button
+                                                            variant="contained"
+                                                            onClick={() => setIsVoucherModalOpen(true)}
+                                                            sx={{ backgroundColor: '#2f19ae' }}
+                                                        >
+                                                            Chọn
+                                                        </Button>
+                                                        {getCurrentBillVoucher() && (
+                                                            <button
+                                                                onClick={clearSelectedVoucherForBill}
+                                                                className="ml-2 text-red-500 hover:text-red-700"
+                                                            >
+                                                                <CloseIcon />
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 <div className="flex justify-end mb-6">
                                                     <div className="w-[202px] pr-2">
@@ -1216,7 +1227,11 @@ function OfflineSale() {
                                                             type="text"
                                                             className="border border-gray-300 rounded px-2 py-1 bg-gray-100 cursor-not-allowed w-full"
                                                             placeholder="Phiếu giảm giá"
-                                                            value={bestVoucher ? bestVoucher.ma : ''}
+                                                            value={
+                                                                getCurrentBillVoucher()
+                                                                    ? getCurrentBillVoucher().ma
+                                                                    : ''
+                                                            }
                                                             readOnly
                                                         />
                                                     </div>
@@ -1225,7 +1240,11 @@ function OfflineSale() {
                                                             type="text"
                                                             className="border border-gray-300 rounded px-2 py-1 bg-gray-100 cursor-not-allowed w-full"
                                                             placeholder="Phần trăm giảm"
-                                                            value={bestVoucher ? `${bestVoucher.giaTri}%` : ''} 
+                                                            value={
+                                                                getCurrentBillVoucher()
+                                                                    ? `${getCurrentBillVoucher().giaTri}%`
+                                                                    : ''
+                                                            }
                                                             readOnly
                                                         />
                                                     </div>
@@ -1243,7 +1262,7 @@ function OfflineSale() {
                                                                         (detail) =>
                                                                             detail.hoaDonCT &&
                                                                             detail.hoaDonCT.hoaDon.id ===
-                                                                            selectedBill.id &&
+                                                                                selectedBill.id &&
                                                                             detail.hoaDonCT.trangThai === 1,
                                                                     )
                                                                     .filter((detail) => {
@@ -1268,7 +1287,7 @@ function OfflineSale() {
                                                                         return (
                                                                             acc +
                                                                             detail.hoaDonCT.soLuong *
-                                                                            priceInfo.discountedPrice
+                                                                                priceInfo.discountedPrice
                                                                         );
                                                                     },
                                                                     0,
@@ -1301,7 +1320,6 @@ function OfflineSale() {
                                                                 type="number"
                                                                 value={(() => {
                                                                     const total = uniqueDetails.reduce(
-
                                                                         (acc, detail) => {
                                                                             const priceInfo = productPrices[
                                                                                 detail.hoaDonCT.id
@@ -1312,21 +1330,23 @@ function OfflineSale() {
                                                                             return (
                                                                                 acc +
                                                                                 detail.hoaDonCT.soLuong *
-                                                                                priceInfo.discountedPrice
+                                                                                    priceInfo.discountedPrice
                                                                             );
                                                                         },
                                                                         0,
                                                                     );
 
-                                                                    if (!bestVoucher) return 0;
+                                                                    if (!getCurrentBillVoucher()) return 0;
 
                                                                     // Tính toán giảm giá theo phần trăm
-                                                                    const discountPercentage = bestVoucher.giaTri / 100;
+                                                                    const discountPercentage =
+                                                                        getCurrentBillVoucher().giaTri / 100;
                                                                     const discountAmount = total * discountPercentage;
 
                                                                     // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                                                                    return discountAmount > bestVoucher.giaTriMax
-                                                                        ? bestVoucher.giaTriMax
+                                                                    return discountAmount >
+                                                                        getCurrentBillVoucher().giaTriMax
+                                                                        ? getCurrentBillVoucher().giaTriMax
                                                                         : discountAmount;
                                                                 })()}
                                                                 className="ml-4 px-2 py-1 rounded bg-gray-100 cursor-not-allowed"
@@ -1335,35 +1355,6 @@ function OfflineSale() {
                                                             <span className="ml-2">VNĐ</span>
                                                         </div>
                                                     </div>
-
-                                                    {/* Giảm giá */}
-                                                    {/* <div className="flex justify-between w-full max-w-[400px] mb-2">
-                                                        <span className="text-gray-700">Giảm giá:</span>
-                                                        <div className="flex items-center">
-                                                            <span className="ml-4 px-2 py-1 rounded bg-gray-100">
-                                                                {(() => {
-                                                                    const total = uniqueDetails.reduce(
-                                                                        (acc, detail) =>
-                                                                            acc + detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan,
-                                                                        0
-                                                                    );
-
-                                                                    if (!bestVoucher) return 0;
-
-                                                                    // Tính toán giảm giá theo phần trăm
-                                                                    const discountPercentage = bestVoucher.giaTri / 100;
-                                                                    const discountAmount = total * discountPercentage;
-
-                                                                    // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                                                                    const amount = discountAmount > bestVoucher.giaTriMax ? bestVoucher.giaTriMax : discountAmount;
-
-                                                                    // Định dạng số với VNĐ
-                                                                    return amount.toLocaleString('vi-VN') + ' VNĐ';
-                                                                })()}
-                                                            </span>
-                                                        </div>
-                                                    </div> */}
-
 
                                                     {/* Tổng số tiền */}
                                                     <div className="flex justify-between w-full max-w-[400px] mb-2">
@@ -1376,7 +1367,7 @@ function OfflineSale() {
                                                                         (detail) =>
                                                                             detail.hoaDonCT &&
                                                                             detail.hoaDonCT.hoaDon.id ===
-                                                                            selectedBill.id &&
+                                                                                selectedBill.id &&
                                                                             detail.hoaDonCT.trangThai === 1,
                                                                     )
                                                                     .filter((detail) => {
@@ -1391,7 +1382,6 @@ function OfflineSale() {
 
                                                                 // Tính toán tổng tiền hàng với giá đã giảm
                                                                 const totalItems = uniqueDetails.reduce(
-
                                                                     (acc, detail) => {
                                                                         const priceInfo = productPrices[
                                                                             detail.hoaDonCT.id
@@ -1402,25 +1392,26 @@ function OfflineSale() {
                                                                         return (
                                                                             acc +
                                                                             detail.hoaDonCT.soLuong *
-                                                                            priceInfo.discountedPrice
+                                                                                priceInfo.discountedPrice
                                                                         );
                                                                     },
                                                                     0,
                                                                 );
 
                                                                 // Tính toán giảm giá từ voucher (nếu có)
-                                                                const voucherDiscount = bestVoucher
+                                                                const voucherDiscount = getCurrentBillVoucher()
                                                                     ? (() => {
-                                                                        const discountPercentage =
-                                                                            bestVoucher.giaTri / 100;
-                                                                        const discountAmount =
-                                                                            totalItems * discountPercentage;
+                                                                          const discountPercentage =
+                                                                              getCurrentBillVoucher().giaTri / 100;
+                                                                          const discountAmount =
+                                                                              totalItems * discountPercentage;
 
-                                                                        // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                                                                        return discountAmount > bestVoucher.giaTriMax
-                                                                            ? bestVoucher.giaTriMax
-                                                                            : discountAmount;
-                                                                    })()
+                                                                          // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                                                          return discountAmount >
+                                                                              getCurrentBillVoucher().giaTriMax
+                                                                              ? getCurrentBillVoucher().giaTriMax
+                                                                              : discountAmount;
+                                                                      })()
                                                                     : 0;
 
                                                                 // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
@@ -1518,16 +1509,16 @@ function OfflineSale() {
                                     }, 0);
 
                                     // Tính giảm giá từ voucher
-                                    const voucherDiscount = bestVoucher
+                                    const voucherDiscount = getCurrentBillVoucher()
                                         ? (() => {
-                                            const discountPercentage = bestVoucher.giaTri / 100;
-                                            const discountAmount = totalItems * discountPercentage;
+                                              const discountPercentage = getCurrentBillVoucher().giaTri / 100;
+                                              const discountAmount = totalItems * discountPercentage;
 
-                                            // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                                            return discountAmount > bestVoucher.giaTriMax
-                                                ? bestVoucher.giaTriMax
-                                                : discountAmount;
-                                        })()
+                                              // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                              return discountAmount > getCurrentBillVoucher().giaTriMax
+                                                  ? getCurrentBillVoucher().giaTriMax
+                                                  : discountAmount;
+                                          })()
                                         : 0;
 
                                     // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
@@ -1541,15 +1532,17 @@ function OfflineSale() {
 
                         <div className="flex justify-center space-x-3 mb-5">
                             <button
-                                className={`py-2 px-4 rounded-full text-sm ${paymentMethod === 'transfer' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600'
-                                    }`}
+                                className={`py-2 px-4 rounded-full text-sm ${
+                                    paymentMethod === 'transfer' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600'
+                                }`}
                                 onClick={() => setPaymentMethod('transfer')}
                             >
                                 CHUYỂN KHOẢN
                             </button>
                             <button
-                                className={`py-2 px-4 rounded-full text-sm ${paymentMethod === 'cash' ? 'bg-pink-200 text-pink-600' : 'bg-gray-100 text-gray-600'
-                                    }`}
+                                className={`py-2 px-4 rounded-full text-sm ${
+                                    paymentMethod === 'cash' ? 'bg-pink-200 text-pink-600' : 'bg-gray-100 text-gray-600'
+                                }`}
                                 onClick={() => setPaymentMethod('cash')}
                             >
                                 TIỀN MẶT
@@ -1634,8 +1627,8 @@ function OfflineSale() {
                                                             );
 
                                                             // Tính giảm giá từ voucher
-                                                            const voucherDiscount = bestVoucher
-                                                                ? (totalItems * bestVoucher.giaTri) / 100
+                                                            const voucherDiscount = getCurrentBillVoucher()
+                                                                ? (totalItems * getCurrentBillVoucher().giaTri) / 100
                                                                 : 0;
 
                                                             // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
@@ -1691,16 +1684,16 @@ function OfflineSale() {
                                     }, 0);
 
                                     // Tính giảm giá từ voucher
-                                    const voucherDiscount = bestVoucher
+                                    const voucherDiscount = getCurrentBillVoucher()
                                         ? (() => {
-                                            const discountPercentage = bestVoucher.giaTri / 100;
-                                            const discountAmount = totalItems * discountPercentage;
+                                              const discountPercentage = getCurrentBillVoucher().giaTri / 100;
+                                              const discountAmount = totalItems * discountPercentage;
 
-                                            // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                                            return discountAmount > bestVoucher.giaTriMax
-                                                ? bestVoucher.giaTriMax
-                                                : discountAmount;
-                                        })()
+                                              // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                              return discountAmount > getCurrentBillVoucher().giaTriMax
+                                                  ? getCurrentBillVoucher().giaTriMax
+                                                  : discountAmount;
+                                          })()
                                         : 0;
 
                                     const total = totalItems - voucherDiscount + shippingFee;
@@ -1741,7 +1734,9 @@ function OfflineSale() {
                                         return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
                                     }, 0);
 
-                                    const voucherDiscount = bestVoucher ? (totalItems * bestVoucher.giaTri) / 100 : 0;
+                                    const voucherDiscount = getCurrentBillVoucher()
+                                        ? (totalItems * getCurrentBillVoucher().giaTri) / 100
+                                        : 0;
                                     const totalAmount = totalItems - voucherDiscount + shippingFee;
 
                                     // Kiểm tra điều kiện thanh toán
@@ -1890,6 +1885,8 @@ function OfflineSale() {
                 </div>
             )}
 
+            <VoucherModal />
+
             {/* Custom Modal for Quantity */}
             {showQuantityModal && selectedProduct && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -1902,8 +1899,10 @@ function OfflineSale() {
                                 {productPromotions[selectedProduct.id] ? (
                                     <p className="text-red-500 font-bold mr-2">
                                         {(
-                                            selectedProduct.donGia * (1 - productPromotions[selectedProduct.id].khuyenMai.giaTri / 100)
-                                        ).toLocaleString()} VND
+                                            selectedProduct.donGia *
+                                            (1 - productPromotions[selectedProduct.id].khuyenMai.giaTri / 100)
+                                        ).toLocaleString()}{' '}
+                                        VND
                                     </p>
                                 ) : (
                                     <p className="text-red-500 font-bold mr-2">
