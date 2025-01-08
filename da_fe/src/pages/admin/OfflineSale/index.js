@@ -52,6 +52,9 @@ function OfflineSale() {
 
     const [billVouchers, setBillVouchers] = useState({});
 
+    const [selectedCustomerId, setSelectedCustomerId] = useState(null); // State để lưu ID khách hàng đã chọn
+    const [selectedCustomer, setSelectedCustomer] = useState(null); // State để lưu thông tin khách hàng đã chọn
+
     const selectVoucherForBill = (voucher) => {
         setBillVouchers((prev) => ({
             ...prev,
@@ -194,7 +197,7 @@ function OfflineSale() {
             tongTien: customerPaymentAmount, // Sử dụng số tiền khách đưa
             phuongThucThanhToan: paymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản',
             trangThai: 1, // Trạng thái là 1
-            taiKhoan: null, // Tài khoản để null
+            taiKhoan: selectedCustomerId ? { id: selectedCustomerId } : null, // Sử dụng ID khách hàng đã chọn
             ngayTao: new Date(),
             hoaDon: {
                 id: selectedBill.id, // ID của hóa đơn đang được chọn
@@ -202,7 +205,8 @@ function OfflineSale() {
         };
 
         const lichSuDonHang = {
-            taiKhoan: { id: 1 }, // Thay đổi ID này nếu cần
+            taiKhoan: selectedCustomerId ? { id: selectedCustomerId } : null, // Sử dụng ID khách hàng đã chọn
+            // Thay đổi ID này nếu cần
             hoaDon: { id: selectedBill.id },
             moTa: 'Đơn hàng đã được thanh toán',
             ngayTao: new Date(),
@@ -310,10 +314,9 @@ function OfflineSale() {
         loadBills();
         loadProducts();
         loadCustomers();
-        console.log(transactions);
     }, []);
 
-    const filteredCustomers = customers.filter((customer) => customer.vaiTro === 'Customer');
+    const filteredCustomers = customers.filter((customer) => customer.vaiTro === 'CUSTOMER');
 
     const handleAddBillDetail = async (values) => {
         // Check for duplicate product in billDetails
@@ -365,9 +368,9 @@ function OfflineSale() {
         setQuantity(1);
     };
 
-    // const handleCustomerModal = () => {
-    //     setShowCustomerModal(true);
-    // };
+    const handleCustomerModal = () => {
+        setShowCustomerModal(true);
+    };
     const openDeleteModal = (detail) => {
         setDeleteDetail(detail); // Gán hóa đơn chi tiết vào state
         setIsModalOpen(true); // Mở modal
@@ -413,7 +416,8 @@ function OfflineSale() {
             const billCode = `HD${createdBill.id}`; // Tạo mã hóa đơn với định dạng "HD" + id
 
             const lichSuDonHang = {
-                taiKhoan: { id: 1 }, // Thay đổi ID này nếu cần
+                taiKhoan: selectedCustomerId ? { id: selectedCustomerId } : null, // Sử dụng ID khách hàng đã chọn
+
                 hoaDon: { id: createdBill.id },
                 moTa: 'Đơn hàng đã được tạo',
                 ngayTao: new Date(),
@@ -579,7 +583,8 @@ function OfflineSale() {
         }
 
         const lichSuDonHang = {
-            taiKhoan: { id: 1 },
+            taiKhoan: selectedCustomerId ? { id: selectedCustomerId } : null, // Sử dụng ID khách hàng đã chọn
+
             hoaDon: { id: selectedBill.id },
             moTa: 'Đơn hàng đã được thanh toán',
             ngayTao: new Date(),
@@ -628,6 +633,10 @@ function OfflineSale() {
                 // Cập nhật thông tin hóa đơn
                 const updatedBill = {
                     id: hoaDonId,
+                    taiKhoan: selectedCustomerId ? { id: selectedCustomerId } : null, // Sử dụng ID khách hàng đã chọn
+                    tenNguoiNhan: selectedCustomer ? selectedCustomer.hoTen : '', // Sử dụng tên khách hàng đã chọn
+                    sdtNguoiNhan: selectedCustomer ? selectedCustomer.sdt : '', // Sử dụng số điện thoại khách hàng đã chọn
+                    emailNguoiNhan: selectedCustomer ? selectedCustomer.email : '', // Sử dụng email khách hàng đã chọn
                     idVoucher: getCurrentBillVoucher() ? getCurrentBillVoucher().id : null,
                     soLuong: totalQuantity,
                     tongTien: totalAmount,
@@ -1173,12 +1182,12 @@ function OfflineSale() {
                                             <div className="max-w-full p-4 bg-white mt-20">
                                                 <div className="flex justify-between items-center mb-4">
                                                     <h1 className="text-2xl font-bold text-blue-700">Khách hàng</h1>
-                                                    {/* <button
+                                                    <button
                                                         className="bg-[#2f19ae] text-white px-4 py-2 rounded flex items-center"
                                                         onClick={handleCustomerModal}
                                                     >
                                                         <i className="fas fa-user mr-2"></i> CHỌN KHÁCH HÀNG
-                                                    </button> */}
+                                                    </button>
                                                 </div>
                                                 <hr className="border-gray-300 my-2" />
                                                 <div className="flex justify-between items-center mb-4">
@@ -1464,6 +1473,113 @@ function OfflineSale() {
                     </>
                 )}
             </div>
+
+            {showCustomerModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    {/* Background overlay */}
+                    <div
+                        className="fixed inset-0 bg-gray-800 bg-opacity-50"
+                        onClick={() => setShowCustomerModal(false)} // Đóng modal khi nhấn vào overlay
+                    ></div>
+
+                    {/* Modal content */}
+                    <div className="relative bg-white p-8 rounded-lg shadow-lg z-50 max-w-[1500px] mx-auto w-[1200px]">
+                        {/* Nút thoát modal */}
+                        <button
+                            className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
+                            onClick={() => setShowCustomerModal(false)} // Đóng modal khi nhấn vào nút này
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </button>
+
+                        <h4 className="text-center text-5xl font-bold text-gray-800 mb-7">Danh sách khách hàng</h4>
+                        <table className="w-full table-auto bg-white rounded-lg shadow-md">
+                            <thead>
+                                <tr className="bg-gray-200 text-gray-700 text-[11px]">
+                                    <th className="py-4 px-6 text-left">STT</th>
+                                    <th className="py-4 px-6 text-left">Ảnh</th>
+                                    <th className="py-4 px-6 text-left">Họ tên</th>
+                                    <th className="py-4 px-6 text-left">Email</th>
+                                    <th className="py-4 px-6 text-left">SDT</th>
+                                    <th className="py-4 px-6 text-left whitespace-nowrap overflow-hidden text-ellipsis">
+                                        Ngày sinh
+                                    </th>
+                                    <th className="py-4 px-6 text-left whitespace-nowrap overflow-hidden text-ellipsis">
+                                        Giới tính
+                                    </th>
+                                    <th className="py-4 px-6 text-left">Trạng thái</th>
+                                    <th className="py-4 px-6 text-left">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredCustomers.map((customer, index) => (
+                                    <tr
+                                        key={customer.id}
+                                        className="border-t border-gray-200 hover:bg-gray-100 text-[10px]"
+                                    >
+                                        <td className="py-4 px-6">{index + 1}</td>
+                                        <td className="py-4 px-4">
+                                            <img
+                                                src={customer.avatar}
+                                                alt="Avatar"
+                                                className="h-10 w-10 rounded-full"
+                                            />
+                                        </td>
+                                        <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
+                                            {customer.hoTen}
+                                        </td>
+                                        <td className="py-4 px-6">{customer.email}</td>
+                                        <td className="py-4 px-6">{customer.sdt}</td>
+                                        <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
+                                            {customer.ngaySinh}
+                                        </td>
+                                        <td className="py-4 px-6">{customer.gioiTinh === 0 ? 'Nam' : 'Nữ'}</td>
+                                        <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
+                                            <span
+                                                className={`px-2 py-1 rounded-full text-xs font-semibold
+                        ${
+                            customer.trangThai
+                                ? 'text-green-600 bg-green-100 border border-green-600'
+                                : 'text-red-600 bg-red-100 border border-red-600'
+                        }`}
+                                            >
+                                                {customer.trangThai ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
+                                        <td className="py-4 px-6">
+                                            <div className="flex">
+                                                <button
+                                                    className="hover:bg-gray-400 font-medium py-2 px-4 rounded"
+                                                    onClick={() => {
+                                                        setSelectedCustomer(customer); // Cập nhật thông tin khách hàng đã chọn
+                                                        setSelectedCustomerId(customer.id); // Cập nhật ID khách hàng đã chọn
+                                                        setShowCustomerModal(false); // Đóng modal
+                                                    }}
+                                                >
+                                                    CHỌN
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
 
             {isModalOpenn && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
