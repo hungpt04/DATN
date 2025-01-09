@@ -639,44 +639,45 @@ const OrderSummary = () => {
 
                     <h2 className="text-xl font-bold mb-4">Chọn Phiếu Giảm Giá</h2>
                     <div className="space-y-4">
-                        {vouchers.map((voucher) => {
-                            // Kiểm tra điều kiện voucher trước khi hiển thị
-                            const isEligible = totalPrice >= voucher.dieuKienNhoNhat;
+                        {vouchers
+                            .filter((voucher) => voucher.trangThai === 1) // Lọc các voucher có trangThai == 1
+                            .map((voucher) => {
+                                // Kiểm tra điều kiện voucher trước khi hiển thị
+                                const isEligible = totalPrice >= voucher.dieuKienNhoNhat;
 
-                            return (
-                                <div
-                                    key={voucher.id}
-                                    className={`border p-4 rounded cursor-pointer ${
-                                        isEligible ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'
-                                    }`}
-                                    onClick={() => {
-                                        if (isEligible) {
-                                            setSelectedVoucher(voucher);
-                                            setIsVoucherModalOpen(false);
-                                        }
-                                    }}
-                                >
-                                    <div className="flex justify-between">
-                                        <span className="font-bold">{voucher.ma}</span>
-                                        {/* <span className="text-green-600">Giảm {voucher.giaTri}%</span> */}
-                                        <span className="text-green-600">
-                                            {voucher.kieuGiaTri === 0
-                                                ? voucher.giaTri + '%'
-                                                : formatCurrency(voucher.giaTri)}
-                                        </span>
-                                    </div>
-                                    <div className="text-sm text-gray-600">
-                                        Hiệu lực: {new Date(voucher.ngayBatDau).toLocaleDateString()} -
-                                        {new Date(voucher.ngayKetThuc).toLocaleDateString()}
-                                    </div>
-                                    {!isEligible && (
-                                        <div className="text-xs text-red-500 mt-2">
-                                            Áp dụng cho đơn hàng từ {voucher.dieuKienNhoNhat.toLocaleString()} ₫
+                                return (
+                                    <div
+                                        key={voucher.id}
+                                        className={`border p-4 rounded cursor-pointer ${
+                                            isEligible ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'
+                                        }`}
+                                        onClick={() => {
+                                            if (isEligible) {
+                                                setSelectedVoucher(voucher);
+                                                setIsVoucherModalOpen(false);
+                                            }
+                                        }}
+                                    >
+                                        <div className="flex justify-between">
+                                            <span className="font-bold">{voucher.ma}</span>
+                                            <span className="text-green-600">
+                                                {voucher.kieuGiaTri === 0
+                                                    ? voucher.giaTri + '%'
+                                                    : formatCurrency(voucher.giaTri)}
+                                            </span>
                                         </div>
-                                    )}
-                                </div>
-                            );
-                        })}
+                                        <div className="text-sm text-gray-600">
+                                            Hiệu lực: {new Date(voucher.ngayBatDau).toLocaleDateString()} -
+                                            {new Date(voucher.ngayKetThuc).toLocaleDateString()}
+                                        </div>
+                                        {!isEligible && (
+                                            <div className="text-xs text-red-500 mt-2">
+                                                Áp dụng cho đơn hàng từ {voucher.dieuKienNhoNhat.toLocaleString()} ₫
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
                     </div>
                 </div>
             </div>
