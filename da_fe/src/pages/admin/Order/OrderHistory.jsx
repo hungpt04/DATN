@@ -630,7 +630,7 @@ const OrderHistory = () => {
                 await addOrderHistory('Chờ giao hàng', 2);
                 setEvents((prevEvents) => [
                     ...prevEvents,
-                    { title: 'Chờ giao hàng', subtitle: new Date().toLocaleString(), color: '#ebd534' },
+                    { title: 'Chờ giao hàng', subtitle: new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }), color: '#ebd534' },
                 ]);
                 swal('Thành công!', 'Chờ giao hàng!', 'success');
             }
@@ -972,7 +972,6 @@ const OrderHistory = () => {
 
                                     return (
                                         <div key={detail.hoaDonCT.id} className="flex items-center border-b py-4">
-                                            <input className="mr-4" type="checkbox" />
                                             <div className="flex items-center">
                                                 <div className="relative">
                                                     <img
@@ -1073,27 +1072,6 @@ const OrderHistory = () => {
                                                 ).toLocaleString()}{' '}
                                                 VND
                                             </div>
-                                            <button
-                                                className={`ml-4 text-red-500 ${
-                                                    currentOrder.trangThai === 3 ||
-                                                    currentOrder.trangThai === 4 ||
-                                                    currentOrder.trangThai === 5 ||
-                                                    currentOrder.trangThai === 6 ||
-                                                    currentOrder.trangThai === 7
-                                                        ? 'text-gray-400 cursor-not-allowed'
-                                                        : ''
-                                                }`}
-                                                onClick={() => handleDeleteDetail(detail.hoaDonCT.id)}
-                                                disabled={
-                                                    currentOrder.trangThai === 3 ||
-                                                    currentOrder.trangThai === 4 ||
-                                                    currentOrder.trangThai === 5 ||
-                                                    currentOrder.trangThai === 6 ||
-                                                    currentOrder.trangThai === 7
-                                                }
-                                            >
-                                                <TrashIcon className="w-5" />
-                                            </button>
                                         </div>
                                     );
                                 })}

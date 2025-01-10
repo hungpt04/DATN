@@ -1,16 +1,10 @@
 package com.example.da_be.response;
 
-import jakarta.persistence.ColumnResult;
-import jakarta.persistence.ConstructorResult;
-import jakarta.persistence.SqlResultSetMapping;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -24,6 +18,10 @@ public class HoaDonKHResponse {
     private BigDecimal phiShip;
     private String sanPhamTen;
     private BigDecimal giaBan;
+    private Integer giaKhuyenMai;
     private Integer soLuongMua;
     private String hinhAnhLink;
+    private Integer giaTriVoucher;
+    private Integer kieuGiaTriVoucher;
+    private Integer trangThai;
 }

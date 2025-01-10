@@ -16,10 +16,6 @@ public class HoaDonKHService {
     @Autowired
     private HoaDonKHRepository hoaDonKHRepository;
 
-//    public List<HoaDonKHResponse> getHoaDonKHByIdHoaDon(Long idHoaDon) {
-//        return hoaDonKHRepository.getHoaDonKHByIdHoaDon(idHoaDon);
-//    }
-
     public List<HoaDonKHResponse> getHoaDonKHByIdHoaDon(Long idHoaDon) {
         List<Object[]> results = hoaDonKHRepository.getHoaDonKHByIdHoaDon(idHoaDon);
         List<HoaDonKHResponse> responses = new ArrayList<>();
@@ -34,8 +30,12 @@ public class HoaDonKHService {
             response.setPhiShip((BigDecimal) result[5]);
             response.setSanPhamTen((String) result[6]);
             response.setGiaBan((BigDecimal) result[7]);
-            response.setSoLuongMua((Integer) result[8]);
-            response.setHinhAnhLink((String) result[9]);
+            response.setGiaKhuyenMai((Integer) result[8]);
+            response.setSoLuongMua((Integer) result[9]);
+            response.setHinhAnhLink((String) result[10]);
+            response.setGiaTriVoucher((Integer) result[11]);
+            response.setKieuGiaTriVoucher((Integer) result[12]);
+            response.setTrangThai((Integer) result[13]);
             responses.add(response);
         }
 

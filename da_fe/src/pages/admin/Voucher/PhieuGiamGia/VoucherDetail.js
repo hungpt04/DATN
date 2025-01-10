@@ -285,8 +285,8 @@ const VoucherDetail = () => {
             errors.dieuKienNhoNhat = 'Điều kiện không được để trống'
         } else if (!Number.isInteger(parseInt(voucherDetail.dieuKienNhoNhat))) {
             errors.dieuKienNhoNhat = 'Điều kiện chỉ được nhập số nguyên'
-        } else if (voucherDetail.dieuKienNhoNhat < 1) {
-            errors.dieuKienNhoNhat = 'Điều kiện tối thiểu 1 ₫'
+        } else if (voucherDetail.dieuKienNhoNhat < 0) {
+            errors.dieuKienNhoNhat = 'Điều kiện tối thiểu 0 ₫'
         } else if (voucherDetail.dieuKienNhoNhat > 50000000) {
             errors.dieuKienNhoNhat = 'Điều kiện tối thiểu tối đa 50,000,000 ₫'
         }
