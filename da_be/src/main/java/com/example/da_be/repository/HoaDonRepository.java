@@ -22,7 +22,7 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
 
     @Query(
             """
-        SELECT hd FROM HoaDon hd WHERE hd.taiKhoan.id = :idKH
+        SELECT hd FROM HoaDon hd WHERE hd.taiKhoan.id = :idKH ORDER BY hd.ngayTao DESC
 """
     )
     List<HoaDon> getHoaDonByIdKhachHang(Integer idKH);

@@ -30,7 +30,7 @@ public class HoaDonKHService {
             response.setPhiShip((BigDecimal) result[5]);
             response.setSanPhamTen((String) result[6]);
             response.setGiaBan((BigDecimal) result[7]);
-            response.setGiaKhuyenMai((Integer) result[8]);
+            response.setGiaKhuyenMai((BigDecimal) result[8]);
             response.setSoLuongMua((Integer) result[9]);
             response.setHinhAnhLink((String) result[10]);
             response.setGiaTriVoucher((Integer) result[11]);

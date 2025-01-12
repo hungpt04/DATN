@@ -277,6 +277,137 @@ const OrderSummary = () => {
         fetchVouchers();
     }, [customerId]);
 
+    // const handleVNPayPayment = async () => {
+    //     try {
+    //         // Tạo hóa đơn
+    //         const hoaDonResponse = await axios.post('http://localhost:8080/api/hoa-don', {
+    //             // taiKhoan: { id: 1 }, //lấy tài khoản đang đăng nhập qua token Chi sửa lại nhe
+    //             taiKhoan: { id: customerId },
+    //             soLuong: totalQuantity,
+    //             idVoucher: selectedVoucher ? selectedVoucher.id : null,
+    //             loaiHoaDon: 'Trực tuyến',
+    //             phuongThucThanhToan: 'Thanh toán VNPay',
+    //             tenNguoiNhan: selectedAddress?.ten,
+    //             sdtNguoiNhan: selectedAddress?.sdt,
+    //             emailNguoiNhan: selectedAddress?.taiKhoan.email,
+    //             phiShip: shippingFee,
+    //             tongTien: totalAmount,
+    //             diaChiNguoiNhan: `${selectedAddress?.diaChiCuThe}, ${selectedAddress?.idXa}, ${selectedAddress?.idHuyen}, ${selectedAddress?.idTinh}`,
+    //             ngayTao: new Date(),
+    //             trangThai: 1, // Trạng thái chờ thanh toán
+    //             maGiamGia: selectedVoucher ? selectedVoucher.ma : null,
+    //         });
+
+    //         const createdBill = hoaDonResponse.data;
+
+    //         // Tạo mã hóa đơn
+    //         const billCode = `HD${createdBill.id}`;
+    //         await axios.put(`http://localhost:8080/api/hoa-don/${createdBill.id}`, {
+    //             ...createdBill,
+    //             ma: billCode,
+    //         });
+
+    //         // Tạo hóa đơn chi tiết
+    //         const groupedCarts = carts.reduce((acc, cart) => {
+    //             const sanPhamCTId = cart.gioHang.sanPhamCT.id;
+    //             if (!acc[sanPhamCTId]) {
+    //                 acc[sanPhamCTId] = {
+    //                     sanPhamCT: cart.gioHang.sanPhamCT,
+    //                     soLuong: cart.gioHang.soLuong,
+    //                     giaBan: cart.gioHang.sanPhamCT.donGia,
+    //                 };
+    //             } else {
+    //                 acc[sanPhamCTId].soLuong = cart.gioHang.soLuong; // Cộng dồn số lượng
+    //             }
+    //             return acc;
+    //         }, {});
+
+    //         // Giảm số lượng voucher CHỈ khi có voucher được chọn
+    //         if (selectedVoucher) {
+    //             // Kiểm tra điều kiện số tiền tối thiểu
+    //             if (totalPrice < selectedVoucher.dieuKienNhoNhat) {
+    //                 swal(
+    //                     'Lưu ý!',
+    //                     `Voucher chỉ áp dụng cho đơn hàng từ ${selectedVoucher.dieuKienNhoNhat.toLocaleString()} ₫`,
+    //                     'warning',
+    //                 );
+    //                 return;
+    //             }
+
+    //             try {
+    //                 await axios.put(
+    //                     `http://localhost:8080/api/voucher/giam-so-luong/${selectedVoucher.id}`,
+    //                     {},
+    //                     {
+    //                         headers: {
+    //                             'Content-Type': 'application/json',
+    //                         },
+    //                     },
+    //                 );
+    //             } catch (voucherError) {
+    //                 // Nếu giảm voucher thất bại, hủy hóa đơn
+    //                 await axios.delete(`http://localhost:8080/api/hoa-don/${createdBill.id}`);
+
+    //                 console.error('Lỗi giảm voucher:', voucherError);
+    //                 swal('Lỗi!', 'Không thể sử dụng mã giảm giá', 'error');
+    //                 return;
+    //             }
+    //         }
+
+    //         // Tạo hóa đơn chi tiết cho mỗi sản phẩm
+    //         const hoaDonChiTietPromises = Object.values(groupedCarts).map(async (groupedCart) => {
+    //             await axios.post('http://localhost:8080/api/hoa-don-ct', {
+    //                 hoaDon: { id: createdBill.id },
+    //                 sanPhamCT: groupedCart.sanPhamCT,
+    //                 soLuong: groupedCart.soLuong,
+    //                 giaBan: groupedCart.giaBan,
+    //                 trangThai: 1, // Trạng thái chờ thanh toán
+    //             });
+    //         });
+
+    //         await Promise.all(hoaDonChiTietPromises);
+
+    //         // Gọi API VNPay để lấy URL thanh toán
+    //         const paymentResponse = await axios.get('http://localhost:8080/api/v1/payment/vn-pay', {
+    //             params: {
+    //                 amount: totalAmount,
+    //                 orderInfo: `Thanh toan don hang ${billCode}`,
+    //                 orderType: 'other',
+    //             },
+    //         });
+
+    //         console.log('paymentResponse', createdBill.id);
+
+    //         //Thêm thanh toán
+    //         await axios.post('http://localhost:8080/api/thanh-toan', {
+    //             // taiKhoan: { id: 1 },
+    //             taiKhoan: { id: customerId },
+    //             hoaDon: { id: createdBill.id },
+    //             ma: null,
+    //             tongTien: totalAmount,
+    //             phuongThucThanhToan: 'Thanh toán ngay',
+    //             ngayTao: new Date(),
+    //             trangThai: 1,
+    //         });
+
+    //         // Thêm lịch sử đơn hàng
+    //         await axios.post('http://localhost:8080/api/lich-su-don-hang', {
+    //             // taiKhoan: { id: 1 },
+    //             taiKhoan: { id: customerId },
+    //             hoaDon: { id: createdBill.id },
+    //             moTa: 'Đơn hàng đã được tạo',
+    //             ngayTao: new Date(),
+    //             trangThai: 1, // Trạng thái chờ thanh toán
+    //         });
+
+    //         // Chuyển hướng đến URL thanh toán của VNPay
+    //         window.location.href = paymentResponse.data.data.paymentUrl;
+    //     } catch (error) {
+    //         console.error('VNPay Payment error', error);
+    //         swal('Lỗi!', 'Thanh toán VNPay thất bại', 'error');
+    //     }
+    // };
+
     const handleVNPayPayment = async () => {
         try {
             // Tạo hóa đơn
@@ -355,17 +486,32 @@ const OrderSummary = () => {
             }
 
             // Tạo hóa đơn chi tiết cho mỗi sản phẩm
-            const hoaDonChiTietPromises = Object.values(groupedCarts).map(async (groupedCart) => {
-                await axios.post('http://localhost:8080/api/hoa-don-ct', {
-                    hoaDon: { id: createdBill.id },
-                    sanPhamCT: groupedCart.sanPhamCT,
-                    soLuong: groupedCart.soLuong,
-                    giaBan: groupedCart.giaBan,
-                    trangThai: 1, // Trạng thái chờ thanh toán
-                });
-            });
+            await Promise.all(
+                Object.values(groupedCarts).map(async (groupedCart) => {
+                    // Lấy thông tin khuyến mãi cho sản phẩm
+                    const response = await axios.get(
+                        `http://localhost:8080/api/san-pham-khuyen-mai/san-pham/${groupedCart.sanPhamCT.id}`,
+                    );
 
-            await Promise.all(hoaDonChiTietPromises);
+                    let finalPrice = groupedCart.giaBan; // Giá gốc
+                    if (response.data.length > 0) {
+                        const promotion = response.data[0];
+                        // Kiểm tra trạng thái khuyến mãi
+                        if (promotion.khuyenMai.trangThai === 1) {
+                            // Nếu có khuyến mãi hợp lệ, tính giá đã giảm
+                            finalPrice = groupedCart.giaBan * (1 - promotion.khuyenMai.giaTri / 100);
+                        }
+                    }
+
+                    await axios.post('http://localhost:8080/api/hoa-don-ct', {
+                        hoaDon: { id: createdBill.id },
+                        sanPhamCT: groupedCart.sanPhamCT,
+                        soLuong: groupedCart.soLuong,
+                        giaBan: finalPrice, // Sử dụng giá đã giảm nếu có
+                        trangThai: 1, // Trạng thái chờ thanh toán
+                    });
+                }),
+            );
 
             // Gọi API VNPay để lấy URL thanh toán
             const paymentResponse = await axios.get('http://localhost:8080/api/v1/payment/vn-pay', {
@@ -409,6 +555,131 @@ const OrderSummary = () => {
     };
 
     // Xử lý thanh toán
+    // const handleCODPayment = async () => {
+    //     try {
+    //         console.log(customerId);
+    //         // Tạo hóa đơn
+    //         const hoaDonResponse = await axios.post('http://localhost:8080/api/hoa-don', {
+    //             // taiKhoan: { id: 1 },
+    //             // taiKhoan: customerId,
+    //             taiKhoan: { id: customerId },
+    //             // idVoucher: selectedVoucher.id,
+    //             soLuong: totalQuantity,
+    //             loaiHoaDon: 'Trực tuyến',
+    //             phuongThucThanhToan: 'Thanh toán khi nhận hàng',
+    //             tenNguoiNhan: selectedAddress?.ten,
+    //             sdtNguoiNhan: selectedAddress?.sdt,
+    //             emailNguoiNhan: selectedAddress?.taiKhoan.email,
+    //             phiShip: shippingFee,
+    //             tongTien: totalAmount,
+    //             diaChiNguoiNhan: `${selectedAddress?.diaChiCuThe}, ${selectedAddress?.idXa}, ${selectedAddress?.idHuyen}, ${selectedAddress?.idTinh}`,
+    //             ngayTao: new Date(),
+    //             trangThai: 1,
+    //             maGiamGia: selectedVoucher ? selectedVoucher.ma : null,
+    //             idVoucher: selectedVoucher ? selectedVoucher.id : null,
+    //         });
+
+    //         const createdBill = hoaDonResponse.data;
+
+    //         // Tạo mã hóa đơn
+    //         const billCode = `HD${createdBill.id}`;
+    //         await axios.put(`http://localhost:8080/api/hoa-don/${createdBill.id}`, {
+    //             ...createdBill,
+    //             ma: billCode,
+    //         });
+
+    //         // Giảm số lượng voucher CHỈ khi có voucher được chọn
+    //         if (selectedVoucher) {
+    //             // Kiểm tra điều kiện số tiền tối thiểu
+    //             if (totalPrice < selectedVoucher.dieuKienNhoNhat) {
+    //                 swal(
+    //                     'Lưu ý!',
+    //                     `Voucher chỉ áp dụng cho đơn hàng từ ${selectedVoucher.dieuKienNhoNhat.toLocaleString()} ₫`,
+    //                     'warning',
+    //                 );
+    //                 return;
+    //             }
+
+    //             try {
+    //                 await axios.put(
+    //                     `http://localhost:8080/api/voucher/giam-so-luong/${selectedVoucher.id}`,
+    //                     {},
+    //                     {
+    //                         headers: {
+    //                             'Content-Type': 'application/json',
+    //                         },
+    //                     },
+    //                 );
+    //             } catch (voucherError) {
+    //                 // Nếu giảm voucher thất bại, hủy hóa đơn
+    //                 await axios.delete(`http://localhost:8080/api/hoa-don/${createdBill.id}`);
+
+    //                 console.error('Lỗi giảm voucher:', voucherError);
+    //                 swal('Lỗi!', 'Không thể sử dụng mã giảm giá', 'error');
+    //                 return;
+    //             }
+    //         }
+
+    //         // Tạo hóa đơn chi tiết
+    //         const groupedCarts = carts.reduce((acc, cart) => {
+    //             const sanPhamCTId = cart.gioHang.sanPhamCT.id;
+    //             if (!acc[sanPhamCTId]) {
+    //                 acc[sanPhamCTId] = {
+    //                     sanPhamCT: cart.gioHang.sanPhamCT,
+    //                     soLuong: cart.gioHang.soLuong,
+    //                     giaBan: cart.gioHang.sanPhamCT.donGia,
+    //                 };
+    //             } else {
+    //                 acc[sanPhamCTId].soLuong = cart.gioHang.soLuong; // Cộng dồn số lượng
+    //             }
+    //             return acc;
+    //         }, {});
+
+    //         // Tạo hóa đơn chi tiết cho mỗi sản phẩm
+    //         await Promise.all(
+    //             Object.values(groupedCarts).map(async (groupedCart) => {
+    //                 await axios.post('http://localhost:8080/api/hoa-don-ct', {
+    //                     hoaDon: { id: createdBill.id },
+    //                     sanPhamCT: groupedCart.sanPhamCT,
+    //                     soLuong: groupedCart.soLuong,
+    //                     giaBan: groupedCart.giaBan,
+    //                     trangThai: 1,
+    //                 });
+
+    //                 // Cập nhật số lượng sản phẩm
+    //                 // const newQuantity = groupedCart.sanPhamCT.soLuong - groupedCart.soLuong;
+    //                 // await axios.put(`http://localhost:8080/api/san-pham-ct/${groupedCart.sanPhamCT.id}`, {
+    //                 //     ...groupedCart.sanPhamCT,
+    //                 //     soLuong: newQuantity,
+    //                 // });
+    //             }),
+    //         );
+
+    //         // Xóa giỏ hàng của người dùng
+    //         await axios.delete(`http://localhost:8080/api/gio-hang/tai-khoan/${customerId}`);
+
+    //         // Thêm lịch sử đơn hàng
+    //         const lichSuDonHang = {
+    //             // taiKhoan: { id: 1 }, // Thay đổi ID này nếu cần
+    //             // taiKhoan: customerId,
+    //             taiKhoan: { id: customerId },
+    //             hoaDon: { id: createdBill.id },
+    //             moTa: 'Đơn hàng đã được tạo',
+    //             ngayTao: new Date(),
+    //             trangThai: 1, // Trạng thái hóa đơn là 1
+    //         };
+
+    //         await axios.post('http://localhost:8080/api/lich-su-don-hang', lichSuDonHang);
+
+    //         swal('Thành công!', 'Thanh toán thành công', 'success');
+    //         setCartItemCount(0);
+    //         navigate('/');
+    //     } catch (error) {
+    //         console.error('Thanh toán thất bại', error);
+    //         swal('Lỗi!', 'Thanh toán thất bại', 'error');
+    //     }
+    // };
+
     const handleCODPayment = async () => {
         try {
             console.log(customerId);
@@ -492,20 +763,28 @@ const OrderSummary = () => {
             // Tạo hóa đơn chi tiết cho mỗi sản phẩm
             await Promise.all(
                 Object.values(groupedCarts).map(async (groupedCart) => {
+                    // Lấy thông tin khuyến mãi cho sản phẩm
+                    const response = await axios.get(
+                        `http://localhost:8080/api/san-pham-khuyen-mai/san-pham/${groupedCart.sanPhamCT.id}`,
+                    );
+
+                    let finalPrice = groupedCart.giaBan; // Giá gốc
+                    if (response.data.length > 0) {
+                        const promotion = response.data[0];
+                        // Kiểm tra trạng thái khuyến mãi
+                        if (promotion.khuyenMai.trangThai === 1) {
+                            // Nếu có khuyến mãi hợp lệ, tính giá đã giảm
+                            finalPrice = groupedCart.giaBan * (1 - promotion.khuyenMai.giaTri / 100);
+                        }
+                    }
+
                     await axios.post('http://localhost:8080/api/hoa-don-ct', {
                         hoaDon: { id: createdBill.id },
                         sanPhamCT: groupedCart.sanPhamCT,
                         soLuong: groupedCart.soLuong,
-                        giaBan: groupedCart.giaBan,
-                        trangThai: 1,
+                        giaBan: finalPrice, // Sử dụng giá đã giảm nếu có
+                        trangThai: 1, // Trạng thái chờ thanh toán
                     });
-
-                    // Cập nhật số lượng sản phẩm
-                    // const newQuantity = groupedCart.sanPhamCT.soLuong - groupedCart.soLuong;
-                    // await axios.put(`http://localhost:8080/api/san-pham-ct/${groupedCart.sanPhamCT.id}`, {
-                    //     ...groupedCart.sanPhamCT,
-                    //     soLuong: newQuantity,
-                    // });
                 }),
             );
 
@@ -648,9 +927,8 @@ const OrderSummary = () => {
                                 return (
                                     <div
                                         key={voucher.id}
-                                        className={`border p-4 rounded cursor-pointer ${
-                                            isEligible ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'
-                                        }`}
+                                        className={`border p-4 rounded cursor-pointer ${isEligible ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'
+                                            }`}
                                         onClick={() => {
                                             if (isEligible) {
                                                 setSelectedVoucher(voucher);

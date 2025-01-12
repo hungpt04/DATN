@@ -149,7 +149,7 @@ function OfflineSale() {
                 originalPrice: detail.hoaDonCT.giaBan,
                 discountedPrice: detail.hoaDonCT.giaBan,
             };
-            return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
+            return acc + detail.hoaDonCT.soLuong * priceInfo.originalPrice;
         }, 0);
 
         // Tính toán tổng số tiền
@@ -318,6 +318,41 @@ function OfflineSale() {
 
     const filteredCustomers = customers.filter((customer) => customer.vaiTro === 'CUSTOMER');
 
+    // const handleAddBillDetail = async (values) => {
+    //     // Check for duplicate product in billDetails
+    //     const exists = billDetails.some((detail) => detail.hoaDonCT.sanPhamCT.id === values.sanPhamCTId);
+
+    //     if (exists) {
+    //         swal('Thất bại!', 'Sản phẩm đã tồn tại trong hóa đơn! Vui lòng chọn sản phẩm khác.', 'warning');
+    //         return; // Exit the function if the product already exists
+    //     }
+
+    //     const newBillDetail = {
+    //         sanPhamCT: {
+    //             id: values.sanPhamCTId,
+    //         },
+    //         hoaDon: {
+    //             id: values.hoaDonId,
+    //         },
+    //         soLuong: values.soLuong,
+    //         giaBan: values.giaBan,
+    //         trangThai: values.trangThai === '1' ? 1 : 0,
+    //     };
+
+    //     try {
+    //         await axios.post('http://localhost:8080/api/hoa-don-ct', newBillDetail);
+    //         swal('Thành công!', 'Chi tiết hóa đơn đã được thêm!', 'success');
+    //         setQuantity(0);
+    //         setShowQuantityModal(false);
+
+    //         // Update bill details for the current bill
+    //         await loadBillDetailsWithImages(values.hoaDonId);
+    //     } catch (error) {
+    //         console.error('Có lỗi xảy ra khi thêm chi tiết hóa đơn!', error);
+    //         swal('Thất bại!', 'Có lỗi xảy ra khi thêm chi tiết hóa đơn!', 'error');
+    //     }
+    // };
+
     const handleAddBillDetail = async (values) => {
         // Check for duplicate product in billDetails
         const exists = billDetails.some((detail) => detail.hoaDonCT.sanPhamCT.id === values.sanPhamCTId);
@@ -327,6 +362,12 @@ function OfflineSale() {
             return; // Exit the function if the product already exists
         }
 
+        // Lấy giá bán đã giảm nếu có khuyến mãi
+        const priceInfo = productPromotions[values.sanPhamCTId];
+        const discountedPrice = priceInfo
+            ? values.giaBan * (1 - priceInfo.khuyenMai.giaTri / 100) // Tính giá đã giảm
+            : values.giaBan; // Nếu không có khuyến mãi, sử dụng giá gốc
+
         const newBillDetail = {
             sanPhamCT: {
                 id: values.sanPhamCTId,
@@ -335,7 +376,7 @@ function OfflineSale() {
                 id: values.hoaDonId,
             },
             soLuong: values.soLuong,
-            giaBan: values.giaBan,
+            giaBan: discountedPrice, // Sử dụng giá đã giảm
             trangThai: values.trangThai === '1' ? 1 : 0,
         };
 
@@ -542,7 +583,7 @@ function OfflineSale() {
                 originalPrice: detail.hoaDonCT.giaBan,
                 discountedPrice: detail.hoaDonCT.giaBan,
             };
-            return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
+            return acc + detail.hoaDonCT.soLuong * priceInfo.originalPrice;
         }, 0);
 
         // Tính giảm giá từ voucher
@@ -1059,7 +1100,7 @@ function OfflineSale() {
                                                         key={detail.hoaDonCT.id}
                                                         className="flex items-center border-b py-4"
                                                     >
-                                                        <input className="mr-4" type="checkbox" />
+                                                        
                                                         <div className="flex items-center">
                                                             <div className="relative">
                                                                 <img
@@ -1076,11 +1117,11 @@ function OfflineSale() {
                                                                     {priceInfo.promotion ? (
                                                                         <>
                                                                             <div className="text-red-500">
-                                                                                {priceInfo.discountedPrice.toLocaleString()}{' '}
+                                                                                {priceInfo.originalPrice.toLocaleString()}{' '}
                                                                                 VND
                                                                             </div>
                                                                             <div className="text-gray-400 line-through">
-                                                                                {priceInfo.originalPrice.toLocaleString()}{' '}
+                                                                                {detail.hoaDonCT.sanPhamCT.donGia.toLocaleString()}{' '}
                                                                                 VND
                                                                             </div>
                                                                             <div className="text-green-500 font-bold">
@@ -1136,7 +1177,7 @@ function OfflineSale() {
                                                         <div className="text-red-500 font-bold ml-8">
                                                             {(
                                                                 detail.hoaDonCT.soLuong *
-                                                                (priceInfo.discountedPrice || detail.hoaDonCT.giaBan)
+                                                                (priceInfo.originalPrice || detail.hoaDonCT.giaBan)
                                                             ).toLocaleString()}{' '}
                                                             VND
                                                         </div>
@@ -1186,8 +1227,18 @@ function OfflineSale() {
                                                 </div>
                                                 <hr className="border-gray-300 my-2" />
                                                 <div className="flex justify-between items-center mb-4">
-                                                    <div className="flex-1">
+                                                    {/* <div className="flex-1">
                                                         <label className="block text-gray-700">Tên khách hàng</label>
+                                                    </div> */}
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center">
+                                                            <label className="block text-gray-700 mr-2">
+                                                                Tên khách hàng:
+                                                            </label>
+                                                            <span className="font-semibold">
+                                                                {selectedCustomer ? selectedCustomer.hoTen : 'Khách lẻ'}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                     {/* <div className="flex justify-center flex-1">
                                                         <span className="bg-gray-200 px-4 py-2 rounded">Khách lẻ</span>
@@ -1356,7 +1407,7 @@ function OfflineSale() {
                                                                         return (
                                                                             acc +
                                                                             detail.hoaDonCT.soLuong *
-                                                                                priceInfo.discountedPrice
+                                                                                priceInfo.originalPrice
                                                                         );
                                                                     },
                                                                     0,
@@ -1576,7 +1627,7 @@ function OfflineSale() {
                                             originalPrice: detail.hoaDonCT.giaBan,
                                             discountedPrice: detail.hoaDonCT.giaBan,
                                         };
-                                        return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
+                                        return acc + detail.hoaDonCT.soLuong * priceInfo.originalPrice;
                                     }, 0);
 
                                     // Tính giảm giá từ voucher
@@ -1751,7 +1802,7 @@ function OfflineSale() {
                                             originalPrice: detail.hoaDonCT.giaBan,
                                             discountedPrice: detail.hoaDonCT.giaBan,
                                         };
-                                        return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
+                                        return acc + detail.hoaDonCT.soLuong * priceInfo.originalPrice;
                                     }, 0);
 
                                     // Tính giảm giá từ voucher

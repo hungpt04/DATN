@@ -73,7 +73,7 @@ export default function OrderDetail() {
     // Hàm tính tổng tiền hàng gốc
     const calculateTotalPrice = () => {
         return billDetail.reduce((total, item) => {
-            return total + (item.giaKhuyenMai ? item.giaKhuyenMai : item.giaBan) * item.soLuongMua;
+            return total + item.giaKhuyenMai * item.soLuongMua;
         }, 0);
     }
 
@@ -117,17 +117,23 @@ export default function OrderDetail() {
                             />
                             <div className="ml-4">
                                 <h4 className="font-bold">{bill.sanPhamTen}</h4>
+                                {/* <p>
+                                    Giá:  
+                                    <span className="text-sm line-through">{formatCurrency(bill.giaBan)}</span>
+                                    <span className="text-red-500"> {formatCurrency(bill.giaKhuyenMai)}</span>
+                                </p> */}
                                 <p>
                                     Giá:
-                                    {bill.giaKhuyenMai > 0 ? (
-                                        <span>
-                                            <span className="line-through">{formatCurrency(bill.giaBan)}</span>
-                                            <span className="text-red-500"> {formatCurrency(bill.giaKhuyenMai)}</span>
-                                        </span>
+                                    {bill.giaBan === bill.giaKhuyenMai ? (
+                                        <span>{formatCurrency(bill.giaBan)}</span>
                                     ) : (
-                                        formatCurrency(bill.giaBan)
+                                        <>
+                                            <span className="text-sm line-through">{formatCurrency(bill.giaBan)}</span>
+                                            <span className="text-red-500"> {formatCurrency(bill.giaKhuyenMai)}</span>
+                                        </>
                                     )}
                                 </p>
+
                                 <p>Số lượng: {bill.soLuongMua}</p>
                             </div>
                         </div>

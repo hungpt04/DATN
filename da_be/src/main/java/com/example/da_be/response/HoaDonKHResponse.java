@@ -18,7 +18,7 @@ public class HoaDonKHResponse {
     private BigDecimal phiShip;
     private String sanPhamTen;
     private BigDecimal giaBan;
-    private Integer giaKhuyenMai;
+    private BigDecimal giaKhuyenMai;
     private Integer soLuongMua;
     private String hinhAnhLink;
     private Integer giaTriVoucher;

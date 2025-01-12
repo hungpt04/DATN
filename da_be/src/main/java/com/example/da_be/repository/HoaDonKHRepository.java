@@ -29,7 +29,7 @@ public interface HoaDonKHRepository extends JpaRepository<HoaDon, Long> {
                     "        COALESCE(tl.Ten, '')" +
                     "    ) AS sanPhamTen, " +
                     "    spct.DonGia, " +
-                    "    spkm.GiaKhuyenMai, " +
+                    "    hdct.GiaBan, " +
                     "    hdct.SoLuong, " +
                     "    ha.Link, " +
                     "    v.GiaTri AS giaTriVoucher, " +
@@ -58,11 +58,9 @@ public interface HoaDonKHRepository extends JpaRepository<HoaDon, Long> {
                     "LEFT JOIN " +
                     "    [BACKET].[dbo].[TrongLuong] tl ON spct.IdTrongLuong = tl.Id " +
                     "LEFT JOIN " +
-                    "    [BACKET].[dbo].[SanPham_KhuyenMai] spkm ON spct.Id = spkm.IdSanPhamCT " +
-                    "LEFT JOIN " +
                     "    [BACKET].[dbo].[Voucher] v ON h.IdVoucher = v.Id " +
             "WHERE " +
-            "    h.Id = :idHoaDon",
+                    "    h.Id = :idHoaDon ",
             nativeQuery = true
     )
     List<Object[]> getHoaDonKHByIdHoaDon(@Param("idHoaDon") Long idHoaDon);
