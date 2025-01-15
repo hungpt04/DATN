@@ -27,6 +27,7 @@ const OrderHistory = () => {
     const [usedVoucher, setUsedVoucher] = useState(null);
 
     const [productPrices, setProductPrices] = useState({});
+    const [tongTien, setTongTien] = useState(0)
 
     const formatCurrency = (money) => {
         return numeral(money).format('0,0') + ' ₫';
@@ -270,7 +271,36 @@ const OrderHistory = () => {
     };
 
     // Sửa đổi useEffect tính tổng tiền
-    useEffect(() => {
+    // useEffect(() => {
+    //     const calculateTotal = async () => {
+    //         const uniqueProductIds = new Set();
+    //         const uniqueDetails = billDetails.filter((detail) => {
+    //             if (detail.hoaDonCT && detail.hoaDonCT.hoaDon.id === currentOrder.id) {
+    //                 const isUnique = !uniqueProductIds.has(detail.hoaDonCT.sanPhamCT.id);
+    //                 if (isUnique) {
+    //                     uniqueProductIds.add(detail.hoaDonCT.sanPhamCT.id);
+    //                     return true;
+    //                 }
+    //             }
+    //             return false;
+    //         });
+
+    //         // Tính tổng tiền với giá khuyến mãi
+    //         const totalPromises = uniqueDetails.map(async (detail) => {
+    //             const priceInfo = await getProductPrice(detail.hoaDonCT.sanPhamCT);
+    //             return detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
+    //         });
+
+    //         const totals = await Promise.all(totalPromises);
+    //         const totalItems = totals.reduce((sum, current) => sum + current, 0);
+
+    //         setTotalAmount(totalItems);
+    //     };
+
+    //     calculateTotal();
+    // }, [billDetails, currentOrder]);
+
+        useEffect(() => {
         const calculateTotal = async () => {
             const uniqueProductIds = new Set();
             const uniqueDetails = billDetails.filter((detail) => {
@@ -286,8 +316,7 @@ const OrderHistory = () => {
 
             // Tính tổng tiền với giá khuyến mãi
             const totalPromises = uniqueDetails.map(async (detail) => {
-                const priceInfo = await getProductPrice(detail.hoaDonCT.sanPhamCT);
-                return detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
+                return detail.hoaDonCT.soLuong * detail.hoaDonCT.giaBan;
             });
 
             const totals = await Promise.all(totalPromises);
@@ -304,7 +333,12 @@ const OrderHistory = () => {
             const loadBillDetailsWithImages = async (hoaDonId) => {
                 try {
                     const response = await axios.get(`http://localhost:8080/api/hoa-don-ct/with-images/${hoaDonId}`);
+                    console.log("bvill:", response.data);
+                    const tongTiens = response.data.map(item => item.hoaDonCT.hoaDon.tongTien);
+                    const tongTien = tongTiens[0]
+                    
                     setBillDetails(response.data);
+                    setTongTien(tongTien)
                 } catch (error) {
                     console.error('Failed to fetch BillDetails with images', error);
                 }
@@ -984,7 +1018,7 @@ const OrderHistory = () => {
                                                     <div className="text-gray-800 font-semibold">
                                                         {detail.hoaDonCT.sanPhamCT.sanPham.ten}
                                                     </div>
-                                                    <div className="flex items-center space-x-2">
+                                                    {/* <div className="flex items-center space-x-2">
                                                         {priceInfo.promotion ? (
                                                             <>
                                                                 <div className="text-red-500">
@@ -1007,6 +1041,22 @@ const OrderHistory = () => {
                                                             <div className="text-gray-400">
                                                                 {priceInfo.originalPrice.toLocaleString()} VND
                                                             </div>
+                                                        )}
+                                                    </div> */}
+                                                    <div className="flex items-center space-x-2">
+                                                        {detail.hoaDonCT.giaBan === detail.hoaDonCT.sanPhamCT.donGia ? (
+                                                            <div className="text-red-500">
+                                                                {detail.hoaDonCT.giaBan.toLocaleString()} VND
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <div className="text-red-500">
+                                                                    {detail.hoaDonCT.giaBan.toLocaleString()} VND
+                                                                </div>
+                                                                <div className="text-gray-400 line-through">
+                                                                    {detail.hoaDonCT.sanPhamCT.donGia.toLocaleString()} VND
+                                                                </div>
+                                                            </>
                                                         )}
                                                     </div>
                                                     <div className="text-gray-600">
@@ -1128,28 +1178,19 @@ const OrderHistory = () => {
                                                         {detail.hoaDonCT.sanPhamCT.sanPham.ten}
                                                     </div>
                                                     <div className="flex items-center space-x-2">
-                                                        {priceInfo.promotion ? (
+                                                    {detail.hoaDonCT.giaBan === detail.hoaDonCT.sanPhamCT.donGia ? (
+                                                            <div className="text-red-500">
+                                                                {detail.hoaDonCT.giaBan.toLocaleString()} VND
+                                                            </div>
+                                                        ) : (
                                                             <>
                                                                 <div className="text-red-500">
-                                                                    {priceInfo.originalPrice.toLocaleString()} VND
+                                                                    {detail.hoaDonCT.giaBan.toLocaleString()} VND
                                                                 </div>
                                                                 <div className="text-gray-400 line-through">
                                                                     {detail.hoaDonCT.sanPhamCT.donGia.toLocaleString()} VND
                                                                 </div>
-                                                                <div className="text-green-500 font-bold">
-                                                                    {Math.round(
-                                                                        ((priceInfo.originalPrice -
-                                                                            priceInfo.discountedPrice) /
-                                                                            priceInfo.originalPrice) *
-                                                                        100,
-                                                                    )}
-                                                                    % off
-                                                                </div>
                                                             </>
-                                                        ) : (
-                                                            <div className="text-gray-400">
-                                                                {priceInfo.originalPrice.toLocaleString()} VND
-                                                            </div>
                                                         )}
                                                     </div>
                                                     <div className="text-gray-600">
@@ -1171,7 +1212,7 @@ const OrderHistory = () => {
                                                 ).toLocaleString()}{' '}
                                                 VND
                                             </div>
-                                            
+
                                         </div>
                                     );
                                 })}
@@ -1212,10 +1253,13 @@ const OrderHistory = () => {
                                 readOnly
                             />
                         </div>
+
                         <p className="text-gray-700 font-medium mt-2">
                             Tổng tiền:{' '}
-                            <span className="font-bold text-red-500">{currentOrder.tongTien.toLocaleString()} VND</span>
+                            {/* <span className="font-bold text-red-500">{currentOrder.tongTien.toLocaleString()} VND</span> */}
+                            <span className="font-bold text-red-500">{tongTien.toLocaleString()} VND</span>
                         </p>
+
                     </div>
                 </div>
             </div>

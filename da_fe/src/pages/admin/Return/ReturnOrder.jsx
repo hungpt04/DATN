@@ -321,21 +321,42 @@ function ReturnOrder() {
     };
 
     // Sửa đổi các hàm tính toán để sử dụng giá khuyến mãi
+    // const calculateTotalReturnPrice = () => {
+    //     return returnItems.reduce((total, item) => {
+    //         const priceInfo = productPrices[item.hoaDonCT.sanPhamCT.id] || {
+    //             discountedPrice: item.hoaDonCT.giaBan,
+    //         };
+    //         return total + item.hoaDonCT.soLuong * priceInfo.discountedPrice;
+    //     }, 0);
+    // };
+
     const calculateTotalReturnPrice = () => {
         return returnItems.reduce((total, item) => {
             const priceInfo = productPrices[item.hoaDonCT.sanPhamCT.id] || {
                 discountedPrice: item.hoaDonCT.giaBan,
             };
-            return total + item.hoaDonCT.soLuong * priceInfo.discountedPrice;
+            return total + item.hoaDonCT.soLuong * item.hoaDonCT.giaBan;
         }, 0);
     };
+
+    // const calculateRefundAmount = () => {
+    //     const totalReturnPrice = returnItems.reduce((total, item) => {
+    //         const priceInfo = productPrices[item.hoaDonCT.sanPhamCT.id] || {
+    //             discountedPrice: item.hoaDonCT.giaBan,
+    //         };
+    //         return total + item.hoaDonCT.soLuong * priceInfo.discountedPrice;
+    //     }, 0);
+
+    //     const discountAmount = calculateDiscountAmount(totalReturnPrice);
+    //     return totalReturnPrice - discountAmount;
+    // };
 
     const calculateRefundAmount = () => {
         const totalReturnPrice = returnItems.reduce((total, item) => {
             const priceInfo = productPrices[item.hoaDonCT.sanPhamCT.id] || {
                 discountedPrice: item.hoaDonCT.giaBan,
             };
-            return total + item.hoaDonCT.soLuong * priceInfo.discountedPrice;
+            return total + item.hoaDonCT.soLuong * item.hoaDonCT.giaBan;
         }, 0);
 
         const discountAmount = calculateDiscountAmount(totalReturnPrice);
@@ -386,7 +407,7 @@ function ReturnOrder() {
                                             </div>
                                         </td>
                                         <td className="text-right">
-                                            {priceInfo.promotion ? (
+                                            {/* {priceInfo.promotion ? (
                                                 <>
                                                     <span className="text-red-500 mr-2">
                                                         {priceInfo.discountedPrice.toLocaleString()} đ
@@ -397,6 +418,20 @@ function ReturnOrder() {
                                                 </>
                                             ) : (
                                                 <span>{priceInfo.originalPrice.toLocaleString()} đ</span>
+                                            )} */}
+                                            {item.hoaDonCT.giaBan === item.hoaDonCT.sanPhamCT.donGia ? (
+                                                <div className="text-red-500">
+                                                    {item.hoaDonCT.giaBan.toLocaleString()} VND
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="text-red-500">
+                                                        {item.hoaDonCT.giaBan.toLocaleString()} VND
+                                                    </div>
+                                                    <div className="text-gray-400 line-through">
+                                                        {item.hoaDonCT.sanPhamCT.donGia.toLocaleString()} VND
+                                                    </div>
+                                                </>
                                             )}
                                         </td>
                                     </tr>
@@ -453,7 +488,7 @@ function ReturnOrder() {
                                             </td>
                                             <td className="whitespace-nowrap text-center">{item.hoaDonCT.soLuong}</td>
                                             <td className="whitespace-nowrap">
-                                                {priceInfo.promotion ? (
+                                                {/* {priceInfo.promotion ? (
                                                     <div>
                                                         <span className="text-red-500 mr-2">
                                                             {(
@@ -475,7 +510,21 @@ function ReturnOrder() {
                                                         ).toLocaleString()}{' '}
                                                         đ
                                                     </span>
-                                                )}
+                                                )} */}
+                                                {item.hoaDonCT.giaBan === item.hoaDonCT.sanPhamCT.donGia ? (
+                                                <div className="text-red-500">
+                                                    {item.hoaDonCT.giaBan.toLocaleString()} VND
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="text-red-500">
+                                                        {item.hoaDonCT.giaBan.toLocaleString()} VND
+                                                    </div>
+                                                    <div className="text-gray-400 line-through">
+                                                        {item.hoaDonCT.sanPhamCT.donGia.toLocaleString()} VND
+                                                    </div>
+                                                </>
+                                            )}
                                             </td>
                                             <td>
                                                 <input
