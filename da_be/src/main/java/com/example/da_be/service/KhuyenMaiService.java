@@ -11,6 +11,7 @@ import com.example.da_be.response.SanPhamResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface KhuyenMaiService {
@@ -30,4 +31,5 @@ public interface KhuyenMaiService {
     Page<SanPhamCTResponse> phanTrangSanPhamCT(Pageable pageable);
     List<SanPhamCTResponse> fillterSanPhamCT(SanPhamCTSearch sanPhamCTSearch);
     List<String> getAllTenKhuyenMai();
+    Boolean checkPromotionOverlap(List<Integer> idSanPhamCT, LocalDateTime newTgBatDau, LocalDateTime newTgKetThuc);
 }

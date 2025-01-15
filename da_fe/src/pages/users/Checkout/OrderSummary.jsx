@@ -410,6 +410,25 @@ const OrderSummary = () => {
 
     const handleVNPayPayment = async () => {
         try {
+            // Kiểm tra số lượng sản phẩm trước khi thanh toán
+            const outOfStockProducts = carts.filter((cart) => cart.gioHang.sanPhamCT.soLuong === 0);
+
+            if (outOfStockProducts.length > 0) {
+                // Tạo thông báo chi tiết các sản phẩm hết hàng
+                const outOfStockMessage = outOfStockProducts
+                    .map((cart) => `- ${cart.gioHang.sanPhamCT.sanPham.sanPhamTen}`)
+                    .join('\n');
+
+                // Hiển thị thông báo chi tiết
+                await swal({
+                    title: 'Sản phẩm hết hàng!',
+                    text: `Vui lòng loại bỏ sản phẩm hết hàng khỏi giỏ hàng.`,
+                    icon: 'warning',
+                    button: 'Đóng',
+                });
+
+                return; // Dừng quá trình thanh toán
+            }
             // Tạo hóa đơn
             const hoaDonResponse = await axios.post('http://localhost:8080/api/hoa-don', {
                 // taiKhoan: { id: 1 }, //lấy tài khoản đang đăng nhập qua token Chi sửa lại nhe
@@ -682,6 +701,25 @@ const OrderSummary = () => {
 
     const handleCODPayment = async () => {
         try {
+            // Kiểm tra số lượng sản phẩm trước khi thanh toán
+            const outOfStockProducts = carts.filter((cart) => cart.gioHang.sanPhamCT.soLuong === 0);
+
+            if (outOfStockProducts.length > 0) {
+                // Tạo thông báo chi tiết các sản phẩm hết hàng
+                const outOfStockMessage = outOfStockProducts
+                    .map((cart) => `- ${cart.gioHang.sanPhamCT.sanPham.sanPhamTen}`)
+                    .join('\n');
+
+                // Hiển thị thông báo chi tiết
+                await swal({
+                    title: 'Sản phẩm hết hàng!',
+                    text: `Vui lòng loại bỏ sản phẩm hết hàng khỏi giỏ hàng.`,
+                    icon: 'warning',
+                    button: 'Đóng',
+                });
+
+                return; // Dừng quá trình thanh toán
+            }
             console.log(customerId);
             // Tạo hóa đơn
             const hoaDonResponse = await axios.post('http://localhost:8080/api/hoa-don', {

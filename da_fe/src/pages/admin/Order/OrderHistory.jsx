@@ -988,17 +988,17 @@ const OrderHistory = () => {
                                                         {priceInfo.promotion ? (
                                                             <>
                                                                 <div className="text-red-500">
-                                                                    {priceInfo.discountedPrice.toLocaleString()} VND
+                                                                    {priceInfo.originalPrice.toLocaleString()} VND
                                                                 </div>
                                                                 <div className="text-gray-400 line-through">
-                                                                    {priceInfo.originalPrice.toLocaleString()} VND
+                                                                    {detail.hoaDonCT.sanPhamCT.donGia.toLocaleString()} VND
                                                                 </div>
                                                                 <div className="text-green-500 font-bold">
                                                                     {Math.round(
                                                                         ((priceInfo.originalPrice -
                                                                             priceInfo.discountedPrice) /
                                                                             priceInfo.originalPrice) *
-                                                                            100,
+                                                                        100,
                                                                     )}
                                                                     % off
                                                                 </div>
@@ -1015,7 +1015,7 @@ const OrderHistory = () => {
                                                 </div>
                                             </div>
                                             {/* Phần còn lại của render giữ nguyên */}
-                                            <div className="flex items-center ml-auto">
+                                            {/* <div className="flex items-center ml-auto">
                                                 <button
                                                     className={`border border-gray-300 px-2 py-1 ${
                                                         currentOrder.trangThai === 3 ||
@@ -1036,9 +1036,12 @@ const OrderHistory = () => {
                                                     }
                                                 >
                                                     {' - '}
-                                                </button>
-                                                <span className="mx-2">{detail.hoaDonCT.soLuong}</span>
-                                                <button
+                                                </button> */}
+                                            <div className='item-center ml-auto'>
+                                                <span className="mx-2">Số lượng: {detail.hoaDonCT.soLuong}</span>
+                                            </div>
+
+                                            {/* <button
                                                     className={`border border-gray-300 px-2 py-1 ${
                                                         currentOrder.trangThai === 3 ||
                                                         currentOrder.trangThai === 4 ||
@@ -1061,14 +1064,14 @@ const OrderHistory = () => {
                                                 >
                                                     {' + '}
                                                 </button>
-                                            </div>
+                                            </div> */}
                                             <div className="text-gray-500 text-sm ml-2">
                                                 Còn {detail.hoaDonCT.sanPhamCT.soLuong} sản phẩm trong kho
                                             </div>
                                             <div className="text-red-500 font-bold ml-8">
                                                 {(
                                                     detail.hoaDonCT.soLuong *
-                                                    (priceInfo.discountedPrice || detail.hoaDonCT.giaBan)
+                                                    (priceInfo.originalPrice || detail.hoaDonCT.giaBan)
                                                 ).toLocaleString()}{' '}
                                                 VND
                                             </div>
@@ -1111,7 +1114,7 @@ const OrderHistory = () => {
 
                                     return (
                                         <div key={detail.hoaDonCT.id} className="flex items-center border-b py-4">
-                                            <input className="mr-4" type="checkbox" />
+
                                             <div className="flex items-center">
                                                 <div className="relative">
                                                     <img
@@ -1128,17 +1131,17 @@ const OrderHistory = () => {
                                                         {priceInfo.promotion ? (
                                                             <>
                                                                 <div className="text-red-500">
-                                                                    {priceInfo.discountedPrice.toLocaleString()} VND
+                                                                    {priceInfo.originalPrice.toLocaleString()} VND
                                                                 </div>
                                                                 <div className="text-gray-400 line-through">
-                                                                    {priceInfo.originalPrice.toLocaleString()} VND
+                                                                    {detail.hoaDonCT.sanPhamCT.donGia.toLocaleString()} VND
                                                                 </div>
                                                                 <div className="text-green-500 font-bold">
                                                                     {Math.round(
                                                                         ((priceInfo.originalPrice -
                                                                             priceInfo.discountedPrice) /
                                                                             priceInfo.originalPrice) *
-                                                                            100,
+                                                                        100,
                                                                     )}
                                                                     % off
                                                                 </div>
@@ -1156,51 +1159,7 @@ const OrderHistory = () => {
                                             </div>
                                             {/* Phần còn lại của render giữ nguyên */}
                                             <div className="flex items-center ml-auto">
-                                                <button
-                                                    className={`border border-gray-300 px-2 py-1 ${
-                                                        currentOrder.trangThai === 3 ||
-                                                        currentOrder.trangThai === 4 ||
-                                                        currentOrder.trangThai === 5 ||
-                                                        currentOrder.trangThai === 6 ||
-                                                        currentOrder.trangThai === 7
-                                                            ? 'text-gray-400 cursor-not-allowed'
-                                                            : ''
-                                                    }`}
-                                                    onClick={() => decreaseQuantity(detail)}
-                                                    disabled={
-                                                        currentOrder.trangThai === 3 ||
-                                                        currentOrder.trangThai === 4 ||
-                                                        currentOrder.trangThai === 5 ||
-                                                        currentOrder.trangThai === 6 ||
-                                                        currentOrder.trangThai === 7
-                                                    }
-                                                >
-                                                    {' - '}
-                                                </button>
-                                                <span className="mx-2">{detail.hoaDonCT.soLuong}</span>
-                                                <button
-                                                    className={`border border-gray-300 px-2 py-1 ${
-                                                        currentOrder.trangThai === 3 ||
-                                                        currentOrder.trangThai === 4 ||
-                                                        currentOrder.trangThai === 5 ||
-                                                        currentOrder.trangThai === 6 ||
-                                                        currentOrder.trangThai === 7 ||
-                                                        detail.hoaDonCT.soLuong >= detail.hoaDonCT.sanPhamCT.soLuong
-                                                            ? 'text-gray-400 cursor-not-allowed'
-                                                            : ''
-                                                    }`}
-                                                    onClick={() => increaseQuantity(detail)}
-                                                    disabled={
-                                                        currentOrder.trangThai === 3 ||
-                                                        currentOrder.trangThai === 4 ||
-                                                        currentOrder.trangThai === 5 ||
-                                                        currentOrder.trangThai === 6 ||
-                                                        currentOrder.trangThai === 7 ||
-                                                        detail.hoaDonCT.soLuong >= detail.hoaDonCT.sanPhamCT.soLuong
-                                                    }
-                                                >
-                                                    {' + '}
-                                                </button>
+                                                <span className="mx-2">Số lượng: {detail.hoaDonCT.soLuong}</span>
                                             </div>
                                             <div className="text-gray-500 text-sm ml-2">
                                                 Còn {detail.hoaDonCT.sanPhamCT.soLuong} sản phẩm trong kho
@@ -1208,31 +1167,11 @@ const OrderHistory = () => {
                                             <div className="text-red-500 font-bold ml-8">
                                                 {(
                                                     detail.hoaDonCT.soLuong *
-                                                    (priceInfo.discountedPrice || detail.hoaDonCT.giaBan)
+                                                    (priceInfo.originalPrice || detail.hoaDonCT.giaBan)
                                                 ).toLocaleString()}{' '}
                                                 VND
                                             </div>
-                                            <button
-                                                className={`ml-4 text-red-500 ${
-                                                    currentOrder.trangThai === 3 ||
-                                                    currentOrder.trangThai === 4 ||
-                                                    currentOrder.trangThai === 5 ||
-                                                    currentOrder.trangThai === 6 ||
-                                                    currentOrder.trangThai === 7
-                                                        ? 'text-gray-400 cursor-not-allowed'
-                                                        : ''
-                                                }`}
-                                                onClick={() => handleDeleteDetail(detail.hoaDonCT.id)}
-                                                disabled={
-                                                    currentOrder.trangThai === 3 ||
-                                                    currentOrder.trangThai === 4 ||
-                                                    currentOrder.trangThai === 5 ||
-                                                    currentOrder.trangThai === 6 ||
-                                                    currentOrder.trangThai === 7
-                                                }
-                                            >
-                                                <TrashIcon className="w-5" />
-                                            </button>
+                                            
                                         </div>
                                     );
                                 })}
@@ -1359,9 +1298,8 @@ const OrderHistory = () => {
                                 Đóng
                             </button>
                             <button
-                                className={`bg-orange-500 text-white px-4 py-2 rounded ${
-                                    customerMoney < currentOrder.tongTien ? 'opacity-50 cursor-not-allowed' : ''
-                                }`}
+                                className={`bg-orange-500 text-white px-4 py-2 rounded ${customerMoney < currentOrder.tongTien ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
                                 onClick={() => {
                                     if (parseFloat(customerMoney) < currentOrder.tongTien) {
                                         swal(

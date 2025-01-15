@@ -15,7 +15,7 @@ const SalesTable = ({ salesData }) => {
                     <tr key={index} className="border-b">
                         <td className="py-2 px-4 text-center">{item.month}</td>
                         <td className="py-2 px-4 text-center">{item.orders}</td>
-                        <td className="py-2 px-4 text-center">{item.revenue}</td>
+                        <td className="py-2 px-4 text-center">{item.revenue.toLocaleString('vi-VN')}</td>
                     </tr>
                 ))}
             </tbody>

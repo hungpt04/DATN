@@ -8,7 +8,7 @@ import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import Swal from 'sweetalert2';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import numeral from 'numeral';
-import { Button } from '@mui/material';
+import { Avatar, Button } from '@mui/material';
 
 function OfflineSale() {
     const [bills, setBills] = useState([]);
@@ -54,7 +54,9 @@ function OfflineSale() {
 
     const [selectedCustomerId, setSelectedCustomerId] = useState(null); // State để lưu ID khách hàng đã chọn
     const [selectedCustomer, setSelectedCustomer] = useState(null); // State để lưu thông tin khách hàng đã chọn
-
+    const [isPaymentCompleted, setIsPaymentCompleted] = useState(false);
+    const [isHovered, setHovered] = useState(false);
+    
     const selectVoucherForBill = (voucher) => {
         setBillVouchers((prev) => ({
             ...prev,
@@ -316,7 +318,7 @@ function OfflineSale() {
         loadCustomers();
     }, []);
 
-    const filteredCustomers = customers.filter((customer) => customer.vaiTro === 'CUSTOMER');
+    const filteredCustomers = customers.filter((customer) => customer.vaiTro === 'Customer');
 
     // const handleAddBillDetail = async (values) => {
     //     // Check for duplicate product in billDetails
@@ -336,6 +338,47 @@ function OfflineSale() {
     //         },
     //         soLuong: values.soLuong,
     //         giaBan: values.giaBan,
+    //         trangThai: values.trangThai === '1' ? 1 : 0,
+    //     };
+
+    //     try {
+    //         await axios.post('http://localhost:8080/api/hoa-don-ct', newBillDetail);
+    //         swal('Thành công!', 'Chi tiết hóa đơn đã được thêm!', 'success');
+    //         setQuantity(0);
+    //         setShowQuantityModal(false);
+
+    //         // Update bill details for the current bill
+    //         await loadBillDetailsWithImages(values.hoaDonId);
+    //     } catch (error) {
+    //         console.error('Có lỗi xảy ra khi thêm chi tiết hóa đơn!', error);
+    //         swal('Thất bại!', 'Có lỗi xảy ra khi thêm chi tiết hóa đơn!', 'error');
+    //     }
+    // };
+
+    // const handleAddBillDetail = async (values) => {
+    //     // Check for duplicate product in billDetails
+    //     const exists = billDetails.some((detail) => detail.hoaDonCT.sanPhamCT.id === values.sanPhamCTId);
+
+    //     if (exists) {
+    //         swal('Thất bại!', 'Sản phẩm đã tồn tại trong hóa đơn! Vui lòng chọn sản phẩm khác.', 'warning');
+    //         return; // Exit the function if the product already exists
+    //     }
+
+    //     // Lấy giá bán đã giảm nếu có khuyến mãi
+    //     const priceInfo = productPromotions[values.sanPhamCTId];
+    //     const discountedPrice = priceInfo
+    //         ? values.giaBan * (1 - priceInfo.khuyenMai.giaTri / 100) // Tính giá đã giảm
+    //         : values.giaBan; // Nếu không có khuyến mãi, sử dụng giá gốc
+
+    //     const newBillDetail = {
+    //         sanPhamCT: {
+    //             id: values.sanPhamCTId,
+    //         },
+    //         hoaDon: {
+    //             id: values.hoaDonId,
+    //         },
+    //         soLuong: values.soLuong,
+    //         giaBan: discountedPrice, // Sử dụng giá đã giảm
     //         trangThai: values.trangThai === '1' ? 1 : 0,
     //     };
 
@@ -381,10 +424,24 @@ function OfflineSale() {
         };
 
         try {
+            // Gửi yêu cầu thêm chi tiết hóa đơn
             await axios.post('http://localhost:8080/api/hoa-don-ct', newBillDetail);
             swal('Thành công!', 'Chi tiết hóa đơn đã được thêm!', 'success');
             setQuantity(0);
             setShowQuantityModal(false);
+
+            // Cập nhật số lượng sản phẩm
+            const updatedQuantity = selectedProduct.soLuong - values.soLuong; // Tính số lượng mới
+            await axios.put(`http://localhost:8080/api/san-pham-ct/update-quantity/${selectedProduct.id}`, {
+                soLuong: updatedQuantity,
+            });
+
+            // Cập nhật danh sách sản phẩm trong state
+            setProducts((prevProducts) =>
+                prevProducts.map((product) =>
+                    product.id === selectedProduct.id ? { ...product, soLuong: updatedQuantity } : product,
+                ),
+            );
 
             // Update bill details for the current bill
             await loadBillDetailsWithImages(values.hoaDonId);
@@ -490,6 +547,15 @@ function OfflineSale() {
         try {
             await axios.delete(`http://localhost:8080/api/hoa-don-ct/${detail.id}`);
 
+            // Cập nhật state của sản phẩm và chi tiết hóa đơn
+            setProducts((prevProducts) =>
+                prevProducts.map((product) =>
+                    product.id === detail.sanPhamCT.id
+                        ? { ...product, soLuong: product.soLuong + detail.soLuong }
+                        : product
+                )
+            );
+
             // Update the state after the deletion
             setBillDetails((prevDetails) => prevDetails.filter((d) => d.hoaDonCT.id !== detail.id));
 
@@ -515,6 +581,15 @@ function OfflineSale() {
 
         try {
             await axios.put(`http://localhost:8080/api/hoa-don-ct/${detail.hoaDonCT.id}`, updatedDetail);
+
+            // Cập nhật danh sách sản phẩm trong state
+            setProducts((prevProducts) =>
+                prevProducts.map((product) =>
+                    product.id === detail.hoaDonCT.sanPhamCT.id
+                        ? { ...product, soLuong: product.soLuong + 1 } // Giảm số lượng trong kho
+                        : product,
+                ),
+            );
 
             // Update the bill details after the API call
             setBillDetails((prevDetails) =>
@@ -549,6 +624,15 @@ function OfflineSale() {
 
         try {
             await axios.put(`http://localhost:8080/api/hoa-don-ct/${detail.hoaDonCT.id}`, updatedDetail);
+
+            // Cập nhật danh sách sản phẩm trong state
+            setProducts((prevProducts) =>
+                prevProducts.map((product) =>
+                    product.id === detail.hoaDonCT.sanPhamCT.id
+                        ? { ...product, soLuong: product.soLuong - 1 } // Giảm số lượng trong kho
+                        : product,
+                ),
+            );
 
             // Update the bill details after the API call
             setBillDetails((prevDetails) =>
@@ -589,14 +673,14 @@ function OfflineSale() {
         // Tính giảm giá từ voucher
         const voucherDiscount = getCurrentBillVoucher()
             ? (() => {
-                  const discountPercentage = getCurrentBillVoucher().giaTri / 100;
-                  const discountAmount = totalItems * discountPercentage;
+                const discountPercentage = getCurrentBillVoucher().giaTri / 100;
+                const discountAmount = totalItems * discountPercentage;
 
-                  // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                  return discountAmount > getCurrentBillVoucher().giaTriMax
-                      ? getCurrentBillVoucher().giaTriMax
-                      : discountAmount;
-              })()
+                // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                return discountAmount > getCurrentBillVoucher().giaTriMax
+                    ? getCurrentBillVoucher().giaTriMax
+                    : discountAmount;
+            })()
             : 0;
 
         // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
@@ -955,9 +1039,8 @@ function OfflineSale() {
                                 return (
                                     <div
                                         key={voucher.id}
-                                        className={`border p-4 rounded cursor-pointer ${
-                                            isEligible ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'
-                                        }`}
+                                        className={`border p-4 rounded cursor-pointer ${isEligible ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'
+                                            }`}
                                         onClick={() => {
                                             if (isEligible) {
                                                 selectVoucherForBill(voucher);
@@ -1017,11 +1100,10 @@ function OfflineSale() {
                                 ) => (
                                     <div
                                         key={bill.id}
-                                        className={`flex items-center mr-4 cursor-pointer ${
-                                            selectedBill?.id === bill.id
-                                                ? 'border-b-2 border-blue-800 pb-2 text-blue-500'
-                                                : ''
-                                        }`}
+                                        className={`flex items-center mr-4 cursor-pointer ${selectedBill?.id === bill.id
+                                            ? 'border-b-2 border-blue-800 pb-2 text-blue-500'
+                                            : ''
+                                            }`}
                                         onClick={() => handleBillClick(bill)}
                                     >
                                         <span className="text-sm text-gray-700">
@@ -1100,7 +1182,7 @@ function OfflineSale() {
                                                         key={detail.hoaDonCT.id}
                                                         className="flex items-center border-b py-4"
                                                     >
-                                                        
+
                                                         <div className="flex items-center">
                                                             <div className="relative">
                                                                 <img
@@ -1129,7 +1211,7 @@ function OfflineSale() {
                                                                                     ((priceInfo.originalPrice -
                                                                                         priceInfo.discountedPrice) /
                                                                                         priceInfo.originalPrice) *
-                                                                                        100,
+                                                                                    100,
                                                                                 )}
                                                                                 % off
                                                                             </div>
@@ -1248,7 +1330,7 @@ function OfflineSale() {
                                                         <input type="checkbox" className="toggle-checkbox" />
                                                     </div> */}
                                                     <div className="flex items-center ">
-                                                        <input
+                                                        {/* <input
                                                             type="text"
                                                             placeholder="Nhập mã giảm giá"
                                                             value={
@@ -1257,8 +1339,9 @@ function OfflineSale() {
                                                                     : ''
                                                             }
                                                             readOnly
-                                                            className="flex-1 border p-[6px] rounded w-[300px]"
-                                                        />
+                                                            className="flex-1 mr-6 border p-[6px] rounded w-[300px]"
+                                                        /> */}
+                                                        <span className='mr-52'>Phiếu giảm giá</span>
                                                         <Button
                                                             variant="contained"
                                                             onClick={() => setIsVoucherModalOpen(true)}
@@ -1281,7 +1364,7 @@ function OfflineSale() {
                                                         <input
                                                             type="text"
                                                             className="border border-gray-300 rounded px-2 py-1 bg-gray-100 cursor-not-allowed w-full"
-                                                            placeholder="Phiếu giảm giá"
+                                                            placeholder="Mã giảm giá"
                                                             value={
                                                                 getCurrentBillVoucher()
                                                                     ? getCurrentBillVoucher().ma
@@ -1290,7 +1373,7 @@ function OfflineSale() {
                                                             readOnly
                                                         />
                                                     </div>
-                                                    <div className="w-[202px] pl-2">
+                                                    {/* <div className="w-[202px] pl-2">
                                                         <input
                                                             type="text"
                                                             className="border border-gray-300 rounded px-2 py-1 bg-gray-100 cursor-not-allowed w-full"
@@ -1302,7 +1385,21 @@ function OfflineSale() {
                                                             }
                                                             readOnly
                                                         />
+                                                    </div> */}
+                                                    <div className="w-[202px] pl-2">
+                                                        <input
+                                                            type="text"
+                                                            className="border border-gray-300 rounded px-2 py-1 bg-gray-100 cursor-not-allowed w-full"
+                                                            placeholder="Giá trị"
+                                                            value={getCurrentBillVoucher()
+                                                                ? getCurrentBillVoucher().kieuGiaTri === 0
+                                                                    ? `${getCurrentBillVoucher().giaTri}%`  // Hiển thị phần trăm nếu kieuGiaTri là 0
+                                                                    : `${getCurrentBillVoucher().giaTri.toLocaleString()} đ`  // Hiển thị giá trị cố định nếu kieuGiaTri là 1
+                                                                : ''}
+                                                            readOnly
+                                                        />
                                                     </div>
+
                                                 </div>
                                                 {/* Phí vận chuyển, Giảm giá và Tổng số tiền */}
                                                 <div className="mb-4 flex flex-col items-end space-y-4">
@@ -1328,7 +1425,7 @@ function OfflineSale() {
                                                     </div> */}
 
                                                     {/* Giảm giá */}
-                                                    <div className="flex justify-between w-full max-w-[400px] mb-2">
+                                                    {/* <div className="flex justify-between w-full max-w-[400px] mb-2">
                                                         <span className="text-gray-700">Giảm giá:</span>
                                                         <div className="flex items-center">
                                                             <input
@@ -1345,7 +1442,7 @@ function OfflineSale() {
                                                                             return (
                                                                                 acc +
                                                                                 detail.hoaDonCT.soLuong *
-                                                                                    priceInfo.discountedPrice
+                                                                                priceInfo.originalPrice
                                                                             );
                                                                         },
                                                                         0,
@@ -1367,12 +1464,49 @@ function OfflineSale() {
                                                                 className="ml-4 px-2 py-1 rounded bg-gray-100 cursor-not-allowed"
                                                                 readOnly
                                                             />
-                                                            <span className="ml-2">VNĐ</span>
+                                                            <span className="ml-2">VND</span>
+                                                        </div>
+                                                    </div> */}
+
+                                                    <div className="flex justify-between w-full max-w-[400px] mb-2">
+                                                        <span className="text-gray-700">Giảm giá:</span>
+                                                        <div className="flex items-center">
+                                                            <span className="ml-4 px-2 py-1">
+                                                                {(() => {
+                                                                    const total = uniqueDetails.reduce(
+                                                                        (acc, detail) => {
+                                                                            const priceInfo = productPrices[detail.hoaDonCT.id] || {
+                                                                                originalPrice: detail.hoaDonCT.giaBan,
+                                                                                discountedPrice: detail.hoaDonCT.giaBan,
+                                                                            };
+                                                                            return acc + detail.hoaDonCT.soLuong * priceInfo.originalPrice;
+                                                                        },
+                                                                        0,
+                                                                    );
+
+                                                                    if (!getCurrentBillVoucher()) return 0;
+
+                                                                    // Tính toán giảm giá theo phần trăm
+                                                                    const discountPercentage = getCurrentBillVoucher().giaTri / 100;
+                                                                    const discountAmount = total * discountPercentage;
+
+                                                                    // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                                                    const finalDiscount = discountAmount > getCurrentBillVoucher().giaTriMax
+                                                                        ? getCurrentBillVoucher().giaTriMax
+                                                                        : discountAmount;
+
+                                                                    // Áp dụng toLocaleString để định dạng số tiền
+                                                                    return finalDiscount.toLocaleString();
+                                                                })()}
+                                                            </span>
+                                                            <span className="ml-2">VND</span>
                                                         </div>
                                                     </div>
 
+
+
                                                     {/* Tổng số tiền */}
-                                                    <div className="flex justify-between w-full max-w-[400px] mb-2">
+                                                    {/* <div className="flex justify-between w-full max-w-[400px] mb-2">
                                                         <span className="text-gray-700 font-bold">Tổng số tiền:</span>
                                                         <span className="ml-4 text-red-500 font-bold">
                                                             {(() => {
@@ -1382,7 +1516,7 @@ function OfflineSale() {
                                                                         (detail) =>
                                                                             detail.hoaDonCT &&
                                                                             detail.hoaDonCT.hoaDon.id ===
-                                                                                selectedBill.id &&
+                                                                            selectedBill.id &&
                                                                             detail.hoaDonCT.trangThai === 1,
                                                                     )
                                                                     .filter((detail) => {
@@ -1407,7 +1541,7 @@ function OfflineSale() {
                                                                         return (
                                                                             acc +
                                                                             detail.hoaDonCT.soLuong *
-                                                                                priceInfo.originalPrice
+                                                                            priceInfo.originalPrice
                                                                         );
                                                                     },
                                                                     0,
@@ -1416,17 +1550,17 @@ function OfflineSale() {
                                                                 // Tính toán giảm giá từ voucher (nếu có)
                                                                 const voucherDiscount = getCurrentBillVoucher()
                                                                     ? (() => {
-                                                                          const discountPercentage =
-                                                                              getCurrentBillVoucher().giaTri / 100;
-                                                                          const discountAmount =
-                                                                              totalItems * discountPercentage;
+                                                                        const discountPercentage =
+                                                                            getCurrentBillVoucher().giaTri / 100;
+                                                                        const discountAmount =
+                                                                            totalItems * discountPercentage;
 
-                                                                          // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                                                                          return discountAmount >
-                                                                              getCurrentBillVoucher().giaTriMax
-                                                                              ? getCurrentBillVoucher().giaTriMax
-                                                                              : discountAmount;
-                                                                      })()
+                                                                        // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                                                        return discountAmount >
+                                                                            getCurrentBillVoucher().giaTriMax
+                                                                            ? getCurrentBillVoucher().giaTriMax
+                                                                            : discountAmount;
+                                                                    })()
                                                                     : 0;
 
                                                                 // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
@@ -1435,9 +1569,67 @@ function OfflineSale() {
 
                                                                 return total.toLocaleString();
                                                             })()}{' '}
-                                                            VNĐ
+                                                            VND
+                                                        </span>
+                                                    </div> */}
+
+                                                    <div className="flex justify-between w-full max-w-[400px] mb-2">
+                                                        <span className="text-gray-700 font-bold">Tổng số tiền:</span>
+                                                        <span className="ml-4 text-red-500 font-bold">
+                                                            {(() => {
+                                                                const uniqueProductIds = new Set();
+                                                                const uniqueDetails = billDetails
+                                                                    .filter(
+                                                                        (detail) =>
+                                                                            detail.hoaDonCT &&
+                                                                            detail.hoaDonCT.hoaDon.id === selectedBill.id &&
+                                                                            detail.hoaDonCT.trangThai === 1,
+                                                                    )
+                                                                    .filter((detail) => {
+                                                                        const isUnique = !uniqueProductIds.has(detail.hoaDonCT.id);
+                                                                        if (isUnique) {
+                                                                            uniqueProductIds.add(detail.hoaDonCT.id);
+                                                                        }
+                                                                        return isUnique;
+                                                                    });
+
+                                                                // Tính toán tổng tiền hàng với giá đã giảm
+                                                                const totalItems = uniqueDetails.reduce(
+                                                                    (acc, detail) => {
+                                                                        const priceInfo = productPrices[detail.hoaDonCT.id] || {
+                                                                            originalPrice: detail.hoaDonCT.giaBan,
+                                                                            discountedPrice: detail.hoaDonCT.giaBan,
+                                                                        };
+                                                                        return acc + detail.hoaDonCT.soLuong * priceInfo.originalPrice;
+                                                                    },
+                                                                    0,
+                                                                );
+
+                                                                // Tính toán giảm giá từ voucher (nếu có)
+                                                                const voucherDiscount = getCurrentBillVoucher()
+                                                                    ? (() => {
+                                                                        const discountPercentage = getCurrentBillVoucher().giaTri / 100;
+                                                                        const discountAmount = totalItems * discountPercentage;
+
+                                                                        // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                                                        return discountAmount > getCurrentBillVoucher().giaTriMax
+                                                                            ? getCurrentBillVoucher().giaTriMax
+                                                                            : discountAmount;
+                                                                    })()
+                                                                    : 0;
+
+                                                                // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
+                                                                const total = totalItems - voucherDiscount + shippingFee;
+
+                                                                // Kiểm tra và trả về giá trị không âm
+                                                                const finalTotal = Math.max(0, total);
+
+                                                                return finalTotal.toLocaleString();
+                                                            })()}{' '}
+                                                            VND
                                                         </span>
                                                     </div>
+
 
                                                     {/* Khách thanh toán */}
                                                     <div className="flex justify-between w-full max-w-[400px] mb-2">
@@ -1449,12 +1641,13 @@ function OfflineSale() {
                                                             >
                                                                 <AccountBalanceWalletIcon className="h-5 w-5" />
                                                             </button>
-                                                            <span className="text-red-500 text-md font-bold">
-                                                                {calculateTotalFromTransactions().toLocaleString()}
-                                                                {' VNĐ'}
-                                                                {/* Chuyển đổi sang số và gọi toLocaleString */}
-                                                            </span>
+
                                                         </div>
+                                                        <span className="text-red-500 text-md mt-2 font-bold">
+                                                            {calculateTotalFromTransactions().toLocaleString()}
+                                                            {' VND'}
+                                                            {/* Chuyển đổi sang số và gọi toLocaleString */}
+                                                        </span>
                                                     </div>
                                                 </div>
 
@@ -1511,61 +1704,131 @@ function OfflineSale() {
                             </svg>
                         </button>
 
-                        <h4 className="text-center text-5xl font-bold text-gray-800 mb-7">Danh sách khách hàng</h4>
-                        <table className="w-full table-auto bg-white rounded-lg shadow-md">
+                        <h4 className="text-center text-2xl font-bold text-gray-800 mb-7">Danh sách khách hàng</h4>
+                        <input
+                            type="text"
+                            placeholder="Tìm phiếu theo tên hoặc sđt hoặc email"
+                            className="border border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 rounded-md px-4 py-2 text-gray-700 w-full"
+                        // value={searchKhachHang.tenSearch}
+                        // onChange={(e) => {
+                        //     const newValue = e.target.value;
+                        //     setSeachKhachHang({
+                        //         ...searchKhachHang,
+                        //         tenSearch: newValue
+                        //     });
+                        //     loadKhachHangSearch({
+                        //         ...searchKhachHang,
+                        //         tenSearch: newValue
+                        //     }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
+                        // }}
+                        />
+                        <div className="flex space-x-4 pt-4 pb-4">
+                            <div className="flex items-center space-x-2">
+                                <label className="text-gray-700 font-semibold">Giới tính:</label>
+                                <select
+                                    // value={searchKhachHang.gioiTinhSearch}
+                                    // onChange={(e) => {
+                                    //     const newGioiTinhSearch = e.target.value;
+                                    //     setSeachKhachHang({
+                                    //         ...searchKhachHang,
+                                    //         gioiTinhSearch: newGioiTinhSearch
+                                    //     });
+                                    //     loadKhachHangSearch({
+                                    //         ...searchKhachHang,
+                                    //         gioiTinhSearch: newGioiTinhSearch
+                                    //     }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
+                                    // }}
+                                    className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                                >
+                                    <option value="">
+                                        Tất cả
+                                    </option>
+                                    <option value={0}>Nam</option>
+                                    <option value={1}>Nữ</option>
+                                </select>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                                <label className="text-gray-700 font-semibold">Trạng thái:</label>
+                                <select
+                                    // value={searchKhachHang.trangThaiSearch}
+                                    // onChange={(e) => {
+                                    //     const newTrangThaiSearch = e.target.value;
+                                    //     setSeachKhachHang({
+                                    //         ...searchKhachHang,
+                                    //         trangThaiSearch: newTrangThaiSearch
+                                    //     });
+                                    //     loadKhachHangSearch({
+                                    //         ...searchKhachHang,
+                                    //         trangThaiSearch: newTrangThaiSearch
+                                    //     }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
+                                    // }}
+                                    className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                                >
+                                    <option value="">
+                                        Tất cả
+                                    </option>
+                                    <option value={1}>Hoạt động</option>
+                                    <option value={0}>Không hoạt động</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table className="min-w-full text-center table-auto border-collapse border border-gray-200">
                             <thead>
-                                <tr className="bg-gray-200 text-gray-700 text-[11px]">
-                                    <th className="py-4 px-6 text-left">STT</th>
-                                    <th className="py-4 px-6 text-left">Ảnh</th>
-                                    <th className="py-4 px-6 text-left">Họ tên</th>
-                                    <th className="py-4 px-6 text-left">Email</th>
-                                    <th className="py-4 px-6 text-left">SDT</th>
-                                    <th className="py-4 px-6 text-left whitespace-nowrap overflow-hidden text-ellipsis">
-                                        Ngày sinh
-                                    </th>
-                                    <th className="py-4 px-6 text-left whitespace-nowrap overflow-hidden text-ellipsis">
-                                        Giới tính
-                                    </th>
-                                    <th className="py-4 px-6 text-left">Trạng thái</th>
-                                    <th className="py-4 px-6 text-left">Hành động</th>
+                                <tr className="bg-gray-100 text-gray-700">
+                                    <th className="py-2 px-4 text-center border-b">STT</th>
+                                    <th className="py-2 px-4 text-center border-b">Ảnh</th>
+                                    <th className="py-2 px-4 text-center border-b">Họ tên</th>
+                                    <th className="py-2 px-4 text-center border-b">Email</th>
+                                    <th className="py-2 px-4 text-center border-b">SĐT</th>
+                                    <th className="py-2 px-4 text-center border-b">Ngày sinh</th>
+                                    <th className="py-2 px-4 text-center border-b">Giới tính</th>
+                                    <th className="py-2 px-4 text-center border-b">Trạng thái</th>
+                                    <th className="py-2 px-4 text-center border-b">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredCustomers.map((customer, index) => (
                                     <tr
                                         key={customer.id}
-                                        className="border-t border-gray-200 hover:bg-gray-100 text-[10px]"
+                                        className="hover:bg-gray-100"
                                     >
-                                        <td className="py-4 px-6">{index + 1}</td>
-                                        <td className="py-4 px-4">
-                                            <img
-                                                src={customer.avatar}
-                                                alt="Avatar"
-                                                className="h-10 w-10 rounded-full"
-                                            />
+                                        <td className="py-2 px-4 border-b">{index + 1}</td>
+                                        <td className="py-2 px-4 border-b">
+                                            {customer.avatar != null ? (
+                                                <img className="w-10 h-10 rounded-full" src={customer.avatar} alt="avatar" />
+                                            ) : (
+                                                <Avatar />
+                                            )}
                                         </td>
-                                        <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
+                                        <td className="py-2 px-4 border-b">
                                             {customer.hoTen}
                                         </td>
-                                        <td className="py-4 px-6">{customer.email}</td>
-                                        <td className="py-4 px-6">{customer.sdt}</td>
-                                        <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
-                                            {customer.ngaySinh}
+                                        <td className="py-2 px-4 border-b">{customer.email}</td>
+                                        <td className="py-2 px-4 border-b">{customer.sdt || ""}</td>
+                                        <td className="py-2 px-4 border-b">
+                                            {customer.ngaySinh ? new Date(customer.ngaySinh).toLocaleDateString('vi-VN', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric',
+                                            }) : ''}
                                         </td>
-                                        <td className="py-4 px-6">{customer.gioiTinh === 0 ? 'Nam' : 'Nữ'}</td>
-                                        <td className="py-4 px-6 whitespace-nowrap overflow-hidden text-ellipsis">
+                                        <td className="py-2 px-4 border-b">
+                                            {customer.gioiTinh === 0 ? 'Nam' : customer.gioiTinh === 1 ? 'Nữ' : ''}
+                                        </td>
+                                        <td className="py-2 px-4 border-b">
                                             <span
-                                                className={`px-2 py-1 rounded-full text-xs font-semibold
-                        ${
-                            customer.trangThai
-                                ? 'text-green-600 bg-green-100 border border-green-600'
-                                : 'text-red-600 bg-red-100 border border-red-600'
-                        }`}
+                                                className={`py-1 px-3 rounded-full text-xs whitespace-nowrap ${customer.trangThai === 0
+                                                    ? 'bg-red-200 text-red-700 border border-red-800'
+                                                    : customer.trangThai === 1
+                                                        ? 'bg-green-200 text-green-700 border border-green-800'
+                                                        : 'bg-gray-200 text-gray-700 border border-gray-800'
+                                                    }`}
                                             >
-                                                {customer.trangThai ? 'Active' : 'Inactive'}
+                                                {customer.trangThai === 1 ? 'Hoạt động' : 'Không hoạt động'}
                                             </span>
                                         </td>
-                                        <td className="py-4 px-6">
+                                        {/* <td className="py-2 px-4 border-b">
                                             <div className="flex">
                                                 <button
                                                     className="hover:bg-gray-400 font-medium py-2 px-4 rounded"
@@ -1578,7 +1841,57 @@ function OfflineSale() {
                                                     CHỌN
                                                 </button>
                                             </div>
+                                        </td> */}
+                                        {/* <td className="py-2 px-4 border-b">
+                                            <div className="flex">
+                                                <button
+                                                    className={`font-medium py-2 px-4 rounded ${selectedCustomerId === customer.id ? 'bg-gray-300' : 'hover:bg-gray-400'}`} // Thêm kiểu cho nút khi đã chọn
+                                                    onClick={() => {
+                                                        if (selectedCustomerId !== customer.id) {  // Kiểm tra nếu khách hàng chưa được chọn
+                                                            setSelectedCustomer(customer); // Cập nhật thông tin khách hàng đã chọn
+                                                            setSelectedCustomerId(customer.id); // Cập nhật ID khách hàng đã chọn
+                                                            setShowCustomerModal(false); // Đóng modal
+                                                        }
+                                                    }}
+                                                >
+                                                    {selectedCustomerId === customer.id ? 'ĐÃ CHỌN' : 'CHỌN'}
+                                                </button>
+                                            </div>
+                                        </td> */}
+                                        <td className="py-2 px-4 border-b">
+                                            <div className="flex">
+                                                <button
+                                                    className={`font-medium py-2 px-4 rounded ${selectedCustomerId === customer.id ? 'bg-gray-300' : 'hover:bg-gray-400'}`}
+                                                    onClick={() => {
+                                                        if (selectedCustomerId !== customer.id) {
+                                                            setSelectedCustomer(customer);
+                                                            setSelectedCustomerId(customer.id);
+                                                            setShowCustomerModal(false);
+                                                        } else {
+                                                            setSelectedCustomer(null); // Hủy chọn khách hàng
+                                                            setSelectedCustomerId(null);
+                                                        }
+                                                    }}
+                                                    onMouseEnter={() => {
+                                                        if (selectedCustomerId === customer.id) {
+                                                            setHovered(true); // Đặt trạng thái di chuột
+                                                        }
+                                                    }}
+                                                    onMouseLeave={() => {
+                                                        if (selectedCustomerId === customer.id) {
+                                                            setHovered(false); // Tắt trạng thái di chuột
+                                                        }
+                                                    }}
+                                                >
+                                                    {selectedCustomerId === customer.id
+                                                        ? isHovered
+                                                            ? 'HỦY CHỌN'
+                                                            : 'ĐÃ CHỌN'
+                                                        : 'CHỌN'}
+                                                </button>
+                                            </div>
                                         </td>
+
                                     </tr>
                                 ))}
                             </tbody>
@@ -1633,14 +1946,14 @@ function OfflineSale() {
                                     // Tính giảm giá từ voucher
                                     const voucherDiscount = getCurrentBillVoucher()
                                         ? (() => {
-                                              const discountPercentage = getCurrentBillVoucher().giaTri / 100;
-                                              const discountAmount = totalItems * discountPercentage;
+                                            const discountPercentage = getCurrentBillVoucher().giaTri / 100;
+                                            const discountAmount = totalItems * discountPercentage;
 
-                                              // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                                              return discountAmount > getCurrentBillVoucher().giaTriMax
-                                                  ? getCurrentBillVoucher().giaTriMax
-                                                  : discountAmount;
-                                          })()
+                                            // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                            return discountAmount > getCurrentBillVoucher().giaTriMax
+                                                ? getCurrentBillVoucher().giaTriMax
+                                                : discountAmount;
+                                        })()
                                         : 0;
 
                                     // Tổng số tiền = Tiền hàng - Giảm giá + Phí vận chuyển
@@ -1654,17 +1967,15 @@ function OfflineSale() {
 
                         <div className="flex justify-center space-x-3 mb-5">
                             <button
-                                className={`py-2 px-4 rounded-full text-sm ${
-                                    paymentMethod === 'transfer' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600'
-                                }`}
+                                className={`py-2 px-4 rounded-full text-sm ${paymentMethod === 'transfer' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600'
+                                    }`}
                                 onClick={() => setPaymentMethod('transfer')}
                             >
                                 CHUYỂN KHOẢN
                             </button>
                             <button
-                                className={`py-2 px-4 rounded-full text-sm ${
-                                    paymentMethod === 'cash' ? 'bg-pink-200 text-pink-600' : 'bg-gray-100 text-gray-600'
-                                }`}
+                                className={`py-2 px-4 rounded-full text-sm ${paymentMethod === 'cash' ? 'bg-pink-200 text-pink-600' : 'bg-gray-100 text-gray-600'
+                                    }`}
                                 onClick={() => setPaymentMethod('cash')}
                             >
                                 TIỀN MẶT
@@ -1808,14 +2119,14 @@ function OfflineSale() {
                                     // Tính giảm giá từ voucher
                                     const voucherDiscount = getCurrentBillVoucher()
                                         ? (() => {
-                                              const discountPercentage = getCurrentBillVoucher().giaTri / 100;
-                                              const discountAmount = totalItems * discountPercentage;
+                                            const discountPercentage = getCurrentBillVoucher().giaTri / 100;
+                                            const discountAmount = totalItems * discountPercentage;
 
-                                              // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
-                                              return discountAmount > getCurrentBillVoucher().giaTriMax
-                                                  ? getCurrentBillVoucher().giaTriMax
-                                                  : discountAmount;
-                                          })()
+                                            // Kiểm tra và trả về giá trị giảm giá không vượt quá giá trị max
+                                            return discountAmount > getCurrentBillVoucher().giaTriMax
+                                                ? getCurrentBillVoucher().giaTriMax
+                                                : discountAmount;
+                                        })()
                                         : 0;
 
                                     const total = totalItems - voucherDiscount + shippingFee;
@@ -1830,7 +2141,7 @@ function OfflineSale() {
                         </div>
 
                         <div className="flex justify-center">
-                            <button
+                            {/* <button
                                 className={`bg-green-600 text-white py-2 px-6 rounded-full text-md shadow-md hover:bg-green-500 transition duration-200`}
                                 onClick={() => {
                                     // Tính toán tổng tiền
@@ -1875,7 +2186,57 @@ function OfflineSale() {
                                 }}
                             >
                                 XÁC NHẬN
+                            </button> */}
+                            <button
+                                className={`bg-green-600 text-white py-2 px-6 rounded-full text-md shadow-md hover:bg-green-500 transition duration-200 ${isPaymentCompleted ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
+                                onClick={() => {
+                                    if (!isPaymentCompleted) {
+                                        // Tính toán tổng tiền
+                                        const uniqueProductIds = new Set();
+                                        const uniqueDetails = billDetails
+                                            .filter((detail) => detail.hoaDonCT && detail.hoaDonCT.hoaDon.id === selectedBill.id)
+                                            .filter((detail) => {
+                                                const isUnique = !uniqueProductIds.has(detail.hoaDonCT.id);
+                                                if (isUnique) {
+                                                    uniqueProductIds.add(detail.hoaDonCT.id);
+                                                }
+                                                return isUnique;
+                                            });
+
+                                        const totalItems = uniqueDetails.reduce((acc, detail) => {
+                                            const priceInfo = productPrices[detail.hoaDonCT.id] || {
+                                                originalPrice: detail.hoaDonCT.giaBan,
+                                                discountedPrice: detail.hoaDonCT.giaBan,
+                                            };
+                                            return acc + detail.hoaDonCT.soLuong * priceInfo.discountedPrice;
+                                        }, 0);
+
+                                        const voucherDiscount = getCurrentBillVoucher()
+                                            ? (totalItems * getCurrentBillVoucher().giaTri) / 100
+                                            : 0;
+                                        const totalAmount = totalItems - voucherDiscount + shippingFee;
+
+                                        // Kiểm tra điều kiện thanh toán
+                                        const payment = parseFloat(customerPayment) || 0;
+                                        if (payment < totalAmount) {
+                                            swal(
+                                                'Thất bại!',
+                                                'Số tiền khách đưa phải lớn hơn hoặc bằng tổng tiền hàng!',
+                                                'warning',
+                                            );
+                                        } else {
+                                            handleAddTransaction(); // Gọi hàm thêm giao dịch nếu hợp lệ
+                                            setIsPaymentCompleted(true); // Đánh dấu thanh toán hoàn tất
+                                            setIsModalOpenn(false); // Đóng modal
+                                        }
+                                    }
+                                }}
+                                disabled={isPaymentCompleted}
+                            >
+                                XÁC NHẬN
                             </button>
+
                         </div>
                     </div>
                 </div>
@@ -1957,51 +2318,53 @@ function OfflineSale() {
 
                         {/* Products List */}
                         <div className="grid grid-cols-4 gap-4">
-                            {filteredProducts.map((product) => {
-                                const promotion = productPromotions[product.id];
-                                return (
-                                    <div key={product.id} className="border rounded p-2 relative">
-                                        {promotion && (
-                                            <div className="absolute text-white px-2 py-1 rounded-full text-xs z-10">
-                                                <p className="text-green-600 font-semibold">
-                                                    -{promotion.khuyenMai.giaTri}%
-                                                </p>
-                                            </div>
-                                        )}
-                                        <img
-                                            src={product.hinhAnhUrls[0]}
-                                            alt={product.sanPhamTen}
-                                            className="w-full h-[250px] object-cover mb-2"
-                                        />
-                                        <h3 className="font-semibold">
-                                            {product.sanPhamTen} [{product.trongLuongTen}]
-                                        </h3>
-                                        {promotion ? (
-                                            <div className="flex items-center space-x-2">
-                                                <p className="text-red-500 font-bold">
-                                                    {(
-                                                        product.donGia *
-                                                        (1 - promotion.khuyenMai.giaTri / 100)
-                                                    ).toLocaleString()}{' '}
-                                                    VND
-                                                </p>
-                                                <p className="text-gray-500 line-through">
-                                                    {product.donGia.toLocaleString()} VND
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            <p className="text-gray-500">{product.donGia.toLocaleString()} VND</p>
-                                        )}
-                                        <p className="text-gray-500">Số lượng: {product.soLuong}</p>
-                                        <button
-                                            className="absolute top-2 right-2 text-blue-500 hover:text-blue-700"
-                                            onClick={() => handleQuantityModal(product)}
-                                        >
-                                            <AddIcon />
-                                        </button>
-                                    </div>
-                                );
-                            })}
+                            {filteredProducts
+                                .filter(product => product.trangThai !== 0) // Chỉ hiển thị sản phẩm có trạng thái khác 0
+                                .map((product) => {
+                                    const promotion = productPromotions[product.id];
+                                    return (
+                                        <div key={product.id} className="border rounded p-2 relative">
+                                            {promotion && (
+                                                <div className="absolute text-white px-2 py-1 rounded-full text-xs z-10">
+                                                    <p className="text-green-600 font-semibold">
+                                                        -{promotion.khuyenMai.giaTri}%
+                                                    </p>
+                                                </div>
+                                            )}
+                                            <img
+                                                src={product.hinhAnhUrls[0]}
+                                                alt={product.sanPhamTen}
+                                                className="w-full h-[250px] object-cover mb-2"
+                                            />
+                                            <h3 className="font-semibold">
+                                                {product.sanPhamTen} [{product.trongLuongTen}]
+                                            </h3>
+                                            {promotion ? (
+                                                <div className="flex items-center space-x-2">
+                                                    <p className="text-red-500 font-bold">
+                                                        {(
+                                                            product.donGia *
+                                                            (1 - promotion.khuyenMai.giaTri / 100)
+                                                        ).toLocaleString()}{' '}
+                                                        VND
+                                                    </p>
+                                                    <p className="text-gray-500 line-through">
+                                                        {product.donGia.toLocaleString()} VND
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <p className="text-gray-500">{product.donGia.toLocaleString()} VND</p>
+                                            )}
+                                            <p className="text-gray-500">Số lượng: {product.soLuong}</p>
+                                            <button
+                                                className="absolute top-2 right-2 text-blue-500 hover:text-blue-700"
+                                                onClick={() => handleQuantityModal(product)}
+                                            >
+                                                <AddIcon />
+                                            </button>
+                                        </div>
+                                    );
+                                })}
                         </div>
                     </div>
                 </div>

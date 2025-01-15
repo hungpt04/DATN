@@ -178,4 +178,7 @@ public interface KhuyenMaiRepository extends JpaRepository<KhuyenMai, Integer> {
 """
     )
     List<KhuyenMai> getAllKhuyenMaiWrong(LocalDateTime dateNow);
+
+    @Query("SELECT km FROM KhuyenMai km JOIN SanPhamKhuyenMai spkm ON km.id = spkm.khuyenMai.id WHERE spkm.sanPhamCT.id = :productDetailId")
+    List<KhuyenMai> getPromotionsByProductDetailId(@Param("productDetailId") Integer productDetailId);
 }

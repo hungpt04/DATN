@@ -89,6 +89,15 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
 
     @Override
     public KhuyenMai addKhuyenMaiOnProduct(KhuyenMaiRequest khuyenMaiRequest) {
+        // Kiểm tra trùng lặp khuyến mãi trước khi thêm
+        if (checkPromotionOverlap(
+                khuyenMaiRequest.getIdProductDetail(),
+                khuyenMaiRequest.getTgBatDau(),
+                khuyenMaiRequest.getTgKetThuc()
+        )) {
+            throw new RuntimeException("Đã tồn tại khuyến mãi trùng thời gian cho sản phẩm này");
+        }
+
         // Tạo đối tượng KhuyenMai từ request và lưu vào cơ sở dữ liệu
         KhuyenMai khuyenMai = khuyenMaiRequest.newKhuyenMaiAddSanPham(new KhuyenMai());
         khuyenMaiRepository.save(khuyenMai);
@@ -150,47 +159,6 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
         // Chuyển kết quả từ double sang int (có thể làm tròn nếu cần)
         return (int) Math.round(discountPrice); // Làm tròn giá sau khi tính toán
     }
-
-    // cập nhật lại hàm voucher vì thêm tính giá tiền: chưa làm
-//    @Override
-//    public KhuyenMai updateKhuyenMai(KhuyenMaiRequest khuyenMaiRequest, Integer id) {
-//        KhuyenMai existingKhuyenMai = khuyenMaiRepository.findById(id)
-//                .orElseThrow(() -> new IllegalArgumentException("KhuyenMai not found for ID: " + id));
-//
-//        // Xóa tất cả sản phẩm khuyến mãi cũ
-//        List<SanPhamKhuyenMai> oldSanPhamKhuyenMai = sanPhamKhuyenMaiRepository.getListSanPhamKhuyenMaiByIdKhuyenMai(id);
-//        if (!oldSanPhamKhuyenMai.isEmpty()) {
-//            sanPhamKhuyenMaiRepository.deleteAll(oldSanPhamKhuyenMai);
-//        }
-//
-//        // Cập nhật thông tin khuyến mãi
-//        KhuyenMai updatedKhuyenMai = khuyenMaiRequest.newKhuyenMaiAddSanPham(existingKhuyenMai);
-//        khuyenMaiRepository.save(updatedKhuyenMai);
-//
-//        // Thêm mới danh sách sản phẩm khuyến mãi
-//        List<SanPhamKhuyenMai> newSanPhamKhuyenMaiList = new ArrayList<>();
-//        if (!khuyenMaiRequest.getLoai()) {
-//            List<SanPhamCT> spctList = sanPhamChiTietRepository.findAll();
-//            for (SanPhamCT spct : spctList) {
-//                SanPhamKhuyenMai newSanPhamKhuyenMai = new SanPhamKhuyenMai();
-//                newSanPhamKhuyenMai.setKhuyenMai(updatedKhuyenMai);
-//                newSanPhamKhuyenMai.setSanPhamCT(spct);
-//                newSanPhamKhuyenMaiList.add(newSanPhamKhuyenMai);
-//            }
-//        } else {
-//            for (Integer idProductDetail : khuyenMaiRequest.getIdProductDetail()) {
-//                SanPhamCT spct = sanPhamChiTietRepository.findById(idProductDetail)
-//                        .orElseThrow(() -> new IllegalArgumentException("SanPhamChiTiet not found for ID: " + idProductDetail));
-//                SanPhamKhuyenMai newSanPhamKhuyenMai = new SanPhamKhuyenMai();
-//                newSanPhamKhuyenMai.setKhuyenMai(updatedKhuyenMai);
-//                newSanPhamKhuyenMai.setSanPhamCT(spct);
-//                newSanPhamKhuyenMaiList.add(newSanPhamKhuyenMai);
-//            }
-//        }
-//        sanPhamKhuyenMaiRepository.saveAll(newSanPhamKhuyenMaiList);
-//
-//        return updatedKhuyenMai;
-//    }
 
     @Override
     public KhuyenMai updateKhuyenMai(KhuyenMaiRequest khuyenMaiRequest, Integer id) {
@@ -342,4 +310,30 @@ public class KhuyenMaiServiceImpl implements KhuyenMaiService {
             }
         }
     }
+
+
+    @Override
+    public Boolean checkPromotionOverlap(List<Integer> idSanPhamCT, LocalDateTime newTgBatDau, LocalDateTime newTgKetThuc) {
+        for (Integer id : idSanPhamCT) {
+            // Retrieve the existing promotions for the product detail ID
+            List<KhuyenMai> existingPromotions = khuyenMaiRepository.getPromotionsByProductDetailId(id);
+
+            for (KhuyenMai existingPromotion : existingPromotions) {
+                LocalDateTime existingTgBatDau = existingPromotion.getTgBatDau();
+                LocalDateTime existingTgKetThuc = existingPromotion.getTgKetThuc();
+
+                // Check for overlap
+                if (isTimeOverlap(existingTgBatDau, existingTgKetThuc, newTgBatDau, newTgKetThuc)) {
+                    return true; // Overlap found
+                }
+            }
+        }
+        return false; // No overlap found
+    }
+
+    // Helper method to check if two time intervals overlap
+    private boolean isTimeOverlap(LocalDateTime existingTgBatDau, LocalDateTime existingTgKetThuc, LocalDateTime newTgBatDau, LocalDateTime newTgKetThuc) {
+        return !(newTgBatDau.isAfter(existingTgKetThuc) || newTgKetThuc.isBefore(existingTgBatDau));
+    }
+
 }

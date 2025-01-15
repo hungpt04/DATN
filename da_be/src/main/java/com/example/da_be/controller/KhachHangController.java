@@ -66,11 +66,6 @@ public class KhachHangController {
         return ResponseEntity.ok(khachHangService.getKhachHangById(id));
     }
 
-//    @PutMapping("/update/{id}")
-//    public ResponseEntity<?> updateKhachHang(@PathVariable Integer id, @ModelAttribute KhachHangRequest khachHangRequest) throws ParseException {
-//        return ResponseEntity.ok(khachHangService.update(id, khachHangRequest));
-//    }
-
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateKhachHang(
             @PathVariable Integer id,

@@ -25,29 +25,29 @@ function Customer() {
 
     const loadKhachHangSearch = (searchKhachHang, currentPage) => {
         const params = new URLSearchParams({
-            tenSearch: searchKhachHang.tenSearch,
-            emailSearch: searchKhachHang.emailSearch,
-            sdtSearch: searchKhachHang.sdtSearch,
-            gioiTinhSearch: searchKhachHang.gioiTinhSearch,
-            trangThaiSearch: searchKhachHang.trangThaiSearch,
+            tenSearch: searchKhachHang.tenSearch || '',
+            emailSearch: searchKhachHang.emailSearch || '',
+            sdtSearch: searchKhachHang.sdtSearch || '',
+            gioiTinhSearch: searchKhachHang.gioiTinhSearch || '',
+            trangThaiSearch: searchKhachHang.trangThaiSearch || '',
             size: size,
             currentPage: currentPage
         })
         axios.get(`http://localhost:8080/api/khach-hang/searchKhachHang?${params.toString()}`)
-        .then((response) => {
-            setCustomer(response.data.content);
-            setPageCount(response.data.totalPages);
-            setCurrentPage(response.data.currentPage)
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-            
+            .then((response) => {
+                setCustomer(response.data.content);
+                setPageCount(response.data.totalPages);
+                setCurrentPage(response.data.currentPage)
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+
     }
 
     useEffect(() => {
-        loadKhachHangSearch(searchKhachHang, 0)
-    }, [searchKhachHang])
+        loadKhachHangSearch(searchKhachHang, currentPage)
+    }, [searchKhachHang, currentPage])
 
     const handleDelete = async (id) => {
         const title = 'Xác nhận thay đổi trạng thái hoạt động?'
@@ -106,14 +106,14 @@ function Customer() {
                         className="border border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 rounded-md px-4 py-2 text-gray-700 w-1/2"
                         value={searchKhachHang.tenSearch}
                         onChange={(e) => {
-                            const newTenSearch = e.target.value;
+                            const newValue = e.target.value;
                             setSeachKhachHang({
                                 ...searchKhachHang,
-                                tenSearch: newTenSearch
+                                tenSearch: newValue 
                             });
                             loadKhachHangSearch({
                                 ...searchKhachHang,
-                                tenSearch: newTenSearch
+                                tenSearch: newValue
                             }, 0); // Gọi lại hàm tìm kiếm với trang đầu tiên
                         }}
                     />
@@ -205,14 +205,17 @@ function Customer() {
 
                                 <td className="py-2 px-4 border-b">{customer.hoTen}</td>
                                 <td className="py-2 px-4 border-b">{customer.email}</td>
-                                <td className="py-2 px-4 border-b">{customer.sdt}</td>
-                                <td className="py-2 px-4 border-b">{new Date(customer.ngaySinh).toLocaleDateString('vi-VN', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                    year: 'numeric',
-                                })}
+                                <td className="py-2 px-4 border-b">{customer.sdt || ""}</td>
+                                <td className="py-2 px-4 border-b">
+                                    {customer.ngaySinh ? new Date(customer.ngaySinh).toLocaleDateString('vi-VN', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric',
+                                    }) : ''}
                                 </td>
-                                <td className="py-2 px-4 border-b">{customer.gioiTinh === 0 ? 'Nam' : 'Nữ'}</td>
+                                <td className="py-2 px-4 border-b">
+                                    {customer.gioiTinh === 0 ? 'Nam' : customer.gioiTinh === 1 ? 'Nữ' : ''}
+                                </td>
                                 <td className="py-2 px-4 border-b">
                                     <span
                                         className={`py-1 px-3 rounded-full text-xs whitespace-nowrap ${customer.trangThai === 0

@@ -67,6 +67,7 @@ public class SanPhamCTService {
                 sanPhamCT.getChatLieu().getTen(),
                 sanPhamCT.getTrongLuong().getTen(),
                 sanPhamCT.getDiemCanBang().getTen(),
+                sanPhamCT.getTrangThai(),
                 hinhAnhUrls
         );
     }
@@ -94,6 +95,7 @@ public class SanPhamCTService {
                     sanPhamCT.getChatLieu().getTen(),
                     sanPhamCT.getTrongLuong().getTen(),
                     sanPhamCT.getDiemCanBang().getTen(),
+                    sanPhamCT.getTrangThai(),
                     hinhAnhUrls
             );
         }).collect(Collectors.toList()); // Trả về danh sách DTO

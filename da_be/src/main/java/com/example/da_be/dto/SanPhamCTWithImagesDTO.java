@@ -23,17 +23,15 @@ public class SanPhamCTWithImagesDTO {
 
     private String diemCanBangTen;
 
+    private Integer trangThai;
+
     private List<String> hinhAnhUrls;
 
     // Constructors
     public SanPhamCTWithImagesDTO() {
     }
 
-    public SanPhamCTWithImagesDTO(Integer id, String ten, String ma, int soLuong, double donGia,
-                                  String sanPhamTen, String sanPhamMa,
-                                  String thuongHieuTen, String mauSacTen, String chatLieuTen,
-                                  String trongLuongTen, String diemCanBangTen,
-                                  List<String> hinhAnhUrls) {
+    public SanPhamCTWithImagesDTO(Integer id, String ten, String ma, int soLuong, double donGia, String sanPhamTen, String sanPhamMa, String thuongHieuTen, String mauSacTen, String chatLieuTen, String trongLuongTen, String diemCanBangTen, Integer trangThai, List<String> hinhAnhUrls) {
         this.id = id;
         this.ten = ten;
         this.ma = ma;
@@ -46,10 +44,9 @@ public class SanPhamCTWithImagesDTO {
         this.chatLieuTen = chatLieuTen;
         this.trongLuongTen = trongLuongTen;
         this.diemCanBangTen = diemCanBangTen;
+        this.trangThai = trangThai;
         this.hinhAnhUrls = hinhAnhUrls;
     }
-
-    // Getters and Setters
 
     public Integer getId() {
         return id;
@@ -145,6 +142,14 @@ public class SanPhamCTWithImagesDTO {
 
     public void setDiemCanBangTen(String diemCanBangTen) {
         this.diemCanBangTen = diemCanBangTen;
+    }
+
+    public Integer getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(Integer trangThai) {
+        this.trangThai = trangThai;
     }
 
     public List<String> getHinhAnhUrls() {
